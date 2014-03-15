@@ -55,7 +55,7 @@ while (searchDepth > 0):
                     if(loopBandName.find('ex') != -1):
                         loopBandName[loopBandName.find('ex')+3:]
                         # get rid of trailing "live"
-                bandsList.append('\t"' + bandName + '" -- "' + loopBandName+ '":')
+                bandsList.append('\t"' + bandName + '" -- "' + loopBandName+ '";')
         else:
             isEndReached = True
 
