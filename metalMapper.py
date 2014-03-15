@@ -37,7 +37,7 @@ while (searchDepth > 0):
         if (seeAlsoIndex != -1):
             equalIndex = website.find('="',seeAlsoIndex)
             tableElementEndIndex = website.find('</td>',equalIndex)
-            loopBands = website[equalIndex:tableElementIndex]
+            loopBands = website[equalIndex:tableElementEndIndex]
             bandsListRaw = loopBands.split(',')
 
             for s in BandsListRaw:
