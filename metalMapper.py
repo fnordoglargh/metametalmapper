@@ -2,7 +2,7 @@
 
 import urllib2,os
 
-bandsToVisit = ['urllib2.urlopen("http://www.metal-archives.com/bands/Entombed/7']
+bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
 bandsVisited = list()
 searchDepth = 1
 
