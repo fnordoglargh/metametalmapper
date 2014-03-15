@@ -1,12 +1,26 @@
 ! /usr/bin/env python
 
-import urllib2
+import urllib2,os
 
-website = urllib2.urlopen("http://www.metal-archives.com/bands/Entombed/7").read()
-indexBand = website.find('class="band_name"')
-indexBand = website.find('">',indexBand+1)
-indexBand = website.find('">',indexBand+1)
-indexBandEnd = website.find('</',indexBand)
+bandsToVisit = ['urllib2.urlopen("http://www.metal-archives.com/bands/Entombed/7']
+bandsVisited = list()
+searchDepth = 1
+
+bandsList = list()
+bandsList.append('strict graph G')
+bandsList.append('{')
+bandsList.append('\tedge [len=4];')
+
+while (searchDepth > 0):
+
+    bandCurrentlyVisiting = bandsToVisit.pop()
+    bandsVsited.append(bandCurentlyBeingVisited)
+
+    website = urllib2.urlopen(bandCurrentlyVisiting).read()
+    indexBand = website.find('class="band_name"')
+    indexBand = website.find('">',indexBand+1)
+    indexBand = website.find('">',indexBand+1)
+    indexBandEnd = website.find('</',indexBand)
 
 print 'Band: ' + website[indexBand+2:indexBandEnd]
 
