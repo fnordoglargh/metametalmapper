@@ -72,5 +72,5 @@ for s in bandsList:
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
 
 bandsFile.close()
-os.System("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
+os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
     
