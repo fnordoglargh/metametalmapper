@@ -40,7 +40,7 @@ while (searchDepth > 0):
             loopBands = website[equalIndex:tableElementEndIndex]
             bandsListRaw = loopBands.split(',')
 
-            for s in BandsListRaw:
+            for s in bandsListRaw:
                 linkIndex = s.find('http:')
                 # Look here for "ex"-Bands
 
