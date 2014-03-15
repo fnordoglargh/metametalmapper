@@ -14,7 +14,7 @@ bandsList.append('\tedge [len=4];')
 while (searchDepth > 0):
 
     bandCurrentlyVisiting = bandsToVisit.pop()
-    bandsVsited.append(bandCurentlyBeingVisited)
+    bandsVisited.append(bandCurentlyBeingVisited)
 
     website = urllib2.urlopen(bandCurrentlyVisiting).read()
     indexBand = website.find('class="band_name"')
