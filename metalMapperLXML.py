@@ -4,6 +4,10 @@ import urllib2,os
 import lxml.html
 from lxml import etree
 import xml.etree.ElementTree as ET
+from bs4 import BeautifulSoup
+
+def has_class(tag):
+    return tag.has_attr('class')
 
 bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
 bandsVisited = list()
@@ -16,9 +20,18 @@ while (searchDepth > 0):
     bandsVisited.append(bandCurrentlyVisiting)
 
     website = urllib2.urlopen(bandCurrentlyVisiting).read()
-    html = lxml.html.fromstring(website)
-    root = ET.fromstring(html)
-    print(tree.xpath("//h1[@class=\"band_name\"]/text()"))
+    
+    soup = BeautifulSoup(website)
+    
+    # Finds band name; needs to extract link.
+    s = soup.find_all(attrs={"class": "band_name"})
+    print(s[0].next_element.next_element)
+
+#    print(s.next_element)
+
+#    html = lxml.html.fromstring(website)
+#    root = ET.fromstring(html)
+#    print(tree.xpath("//h1[@class=\"band_name\"]/text()"))
 #    print(html.xpath("//div"))
 
 
