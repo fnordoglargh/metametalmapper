@@ -25,7 +25,11 @@ while (searchDepth > 0):
     
     # Finds band name; needs to extract link.
     s = soup.find_all(attrs={"class": "band_name"})
-    print(s[0].next_element.next_element)
+    print 'Visiting [' + str(s[0].next_element.next_element) + ']...'
+
+    bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
+    print '[' + str(len(bandLinks)) + '] persons in lineup found.'
+    print(bandLinks[0].next_element.next_element)
 
 #    print(s.next_element)
 
