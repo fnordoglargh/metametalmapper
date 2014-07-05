@@ -32,9 +32,29 @@ while (searchDepth > 0):
 	print '[' + str(len(bandLinks)) + '] persons in lineup found.'
 
 	for bandLink in bandLinks:
-		if "ex-" in str(bandlink.a.previous_sibling):
-			firstBandIsEx = str(bandlink.a.previous_sibling).contains
-			print '>>>' + str(bandLink) + '<<<'
+		
+		if "ex-" in str(bandLink.a.previous_sibling):
+			firstBandIsEx = True
+		else:
+			firstBandIsEx = False
+
+		print '***'
+		
+		link = bandLink.a
+
+		# Loop through all bands in person lineup.
+		while link != None:
+			if "," in link: # Bands without DB entries have no links.
+				bandsLoop = link.split(",")
+				for s in bandsLoop:
+					print '['+s.lstrip()+']'
+			else: # This is the actual link and text.
+				print link
+			
+			link = link.next_sibling
+
+
+		#		print '>>>' + str(bandLink) + '<<<'
 
 #    print '*** Next Sibling ***'
 #    print(bandLinks[0].a.previous_sibling)
