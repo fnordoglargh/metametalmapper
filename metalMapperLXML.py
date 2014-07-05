@@ -38,7 +38,7 @@ while (searchDepth > 0):
 		else:
 			firstBandIsEx = False
 
-		print '***'
+		print '**'
 		
 		link = bandLink.a
 
@@ -50,25 +50,12 @@ while (searchDepth > 0):
 					print '['+s.lstrip()+']'
 			else: # This is the actual link and text.
 				print link
-			
+				if str(link).rstrip() != "":
+					print link.get('href')
+					cleanBandName = link.next_element
+
 			link = link.next_sibling
 
-
-		#		print '>>>' + str(bandLink) + '<<<'
-
-#    print '*** Next Sibling ***'
-#    print(bandLinks[0].a.previous_sibling)
-#    print '*** Next Sibling ***'
-
-#    print(s.next_element)
-
-#    html = lxml.html.fromstring(website)
-#    root = ET.fromstring(html)
-#    print(tree.xpath("//h1[@class=\"band_name\"]/text()"))
-#    print(html.xpath("//div"))
-
-
-#    print lxml.html.tostring(html)
 	searchDepth-=1
 
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
