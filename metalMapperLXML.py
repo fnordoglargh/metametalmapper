@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
+from bs4 import BeautifulSoup
 import urllib2,os
 import lxml.html
 from lxml import etree
 import xml.etree.ElementTree as ET
-from bs4 import BeautifulSoup
 
 def has_class(tag):
 	return tag.has_attr('class')
@@ -14,13 +14,11 @@ bandsVisited = list()
 
 searchDepth = 1
 
-while (searchDepth > 0):
+while searchDepth > 0:
 
 	bandCurrentlyVisiting = bandsToVisit.pop()
 	bandsVisited.append(bandCurrentlyVisiting)
-
 	website = urllib2.urlopen(bandCurrentlyVisiting).read()
-
 	soup = BeautifulSoup(website)
 
 	# Finds band name; needs to extract link.
@@ -49,11 +47,10 @@ while (searchDepth > 0):
 				for s in bandsLoop:
 					print '['+s.lstrip()+']'
 			else: # This is the actual link and text.
-				print link
-				if str(link).rstrip() != "":
-					print link.get('href')
-					cleanBandName = link.next_element
-
+				if str(link).rstrip() != "" and "live" not in link:
+					bandsToVisit.append(link.get('href'))
+					print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list"
+					
 			link = link.next_sibling
 
 	searchDepth-=1
