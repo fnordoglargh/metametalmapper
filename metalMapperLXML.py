@@ -11,7 +11,6 @@ def has_class(tag):
 
 bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
 bandsVisited = list()
-
 searchDepth = 1
 
 while searchDepth > 0:
@@ -37,7 +36,6 @@ while searchDepth > 0:
 			firstBandIsEx = False
 
 		print '**'
-		
 		link = bandLink.a
 
 		# Loop through all bands in person lineup.
