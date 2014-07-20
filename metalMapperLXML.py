@@ -2,9 +2,6 @@
 
 from bs4 import BeautifulSoup
 import urllib2,os
-import lxml.html
-from lxml import etree
-import xml.etree.ElementTree as ET
 
 def has_class(tag):
 	return tag.has_attr('class')
@@ -18,8 +15,10 @@ def isNotEmptyStringOrLive(s):
 bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
 bandsVisited = list()
 searchDepth = 1
+searchLevel = 0
+bandsList = list()
 
-while searchDepth > 0:
+while searchLevel < searchDepth:
 
 	bandCurrentlyVisiting = bandsToVisit.pop()
 	bandsVisited.append(bandCurrentlyVisiting)
@@ -63,7 +62,7 @@ while searchDepth > 0:
 					
 			link = link.next_sibling
 
-	searchDepth-=1
+	searchLevel+=1
 
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
 
