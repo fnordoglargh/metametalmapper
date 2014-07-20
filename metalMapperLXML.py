@@ -9,6 +9,12 @@ import xml.etree.ElementTree as ET
 def has_class(tag):
 	return tag.has_attr('class')
 
+def isNotEmptyStringOrLive(s):
+	if len(s.rstrip().lstrip()) == 0 or "live" in s:
+		return False
+	else:
+		return True
+
 bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
 bandsVisited = list()
 searchDepth = 1
@@ -35,7 +41,6 @@ while searchDepth > 0:
 		else:
 			firstBandIsEx = False
 
-		print '**'
 		link = bandLink.a
 
 		# Loop through all bands in person lineup.
@@ -43,11 +48,13 @@ while searchDepth > 0:
 			if "," in link: # Bands without DB entries have no links.
 				bandsLoop = link.split(",")
 				for s in bandsLoop:
-					print '['+s.lstrip()+']'
+					loopingBand = s.lstrip().rstrip()
+					if isNotEmptyStringOrLive(loopingBand): # Test for "-ex" here.
+						print '['+loopingBand+']'
 			else: # This is the actual link and text.
 				if str(link).rstrip() != "" and "live" not in link:
 					bandsToVisit.append(link.get('href'))
-					print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list"
+					print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 					
 			link = link.next_sibling
 
