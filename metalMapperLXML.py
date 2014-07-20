@@ -10,7 +10,7 @@ def has_class(tag):
 	return tag.has_attr('class')
 
 def isNotEmptyStringOrLive(s):
-	if len(s.rstrip().lstrip()) == 0 or "live" in s:
+	if len(s) == 0 or "live" in s:
 		return False
 	else:
 		return True
@@ -50,11 +50,16 @@ while searchDepth > 0:
 				for s in bandsLoop:
 					loopingBand = s.lstrip().rstrip()
 					if isNotEmptyStringOrLive(loopingBand): # Test for "-ex" here.
-						print '['+loopingBand+']'
+						if "ex-" in loopingBand: # Handle flag later for different diagram.
+							foundExBand = True
+						else:
+							print '['+loopingBand+']'
 			else: # This is the actual link and text.
 				if str(link).rstrip() != "" and "live" not in link:
-					bandsToVisit.append(link.get('href'))
-					print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
+					refLink = link.get('href')
+					if refLink not in bandsToVisit:
+						bandsToVisit.append(refLink)
+						print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 					
 			link = link.next_sibling
 
