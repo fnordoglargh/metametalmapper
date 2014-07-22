@@ -12,26 +12,40 @@ def isNotEmptyStringOrLive(s):
 	else:
 		return True
 
-bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
-bandsVisited = list()
+def prepareGraph(bandToBandsDict):
+	graph = []
+	graph.append("strict graph Metal\n{\n\tedge [len=4];")
+	for k, v in bandToBandsDict.items():
+		for bandName in v:
+			graph.append('\t"' + k + " -- " + bandName + '";\n')
+	graph.append('}')
+
+	return ''.join(graph)
+
+bandsToVisit = set()
+bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
+bandsVisited = set()
 searchDepth = 1
 searchLevel = 0
-bandsList = list()
+graphBandToBands = dict()
 
 while searchLevel < searchDepth:
 
 	bandCurrentlyVisiting = bandsToVisit.pop()
-	bandsVisited.append(bandCurrentlyVisiting)
+	bandsVisited.add(bandCurrentlyVisiting)
 	website = urllib2.urlopen(bandCurrentlyVisiting).read()
 	soup = BeautifulSoup(website)
 
 	# Finds band name; needs to extract link.
 	s = soup.find_all(attrs={"class": "band_name"})
-	print 'Visiting [' + str(s[0].next_element.next_element) + ']...'
+	actualBandName = str(s[0].next_element.next_element)
+	print 'Visiting [' + actualBandName + ']...'
 
 	# Takes all bands which belong to a person. 
 	bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
-	print '[' + str(len(bandLinks)) + '] persons in lineup found.'
+	print "Found [" + str(len(bandLinks)) + "] persons in lineup."
+
+	graphBandNames = set();
 
 	for bandLink in bandLinks:
 		
@@ -52,16 +66,19 @@ while searchLevel < searchDepth:
 						if "ex-" in loopingBand: # Handle flag later for different diagram.
 							foundExBand = True
 						else:
-							print '['+loopingBand+']'
+							graphBandNames.add(loopingBand)
+							# print '['+loopingBand+']'
 			else: # This is the actual link and text.
 				if str(link).rstrip() != "" and "live" not in link:
 					refLink = link.get('href')
-					if refLink not in bandsToVisit:
-						bandsToVisit.append(refLink)
-						print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
+					bandsToVisit.add(refLink)
+					graphBandNames.add(link.next_element)
+					# print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 					
 			link = link.next_sibling
-
+	print "Found [" + str(len(graphBandNames)) + "] connected bands."
+	graphBandToBands.update({actualBandName: graphBandNames})
+	# prepareGraph(graphBandToBands)
 	searchLevel+=1
 
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
