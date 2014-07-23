@@ -3,9 +3,6 @@
 from bs4 import BeautifulSoup
 import urllib2,os
 
-def has_class(tag):
-	return tag.has_attr('class')
-
 def isNotEmptyStringOrLive(s):
 	if len(s) == 0 or "live" in s:
 		return False
@@ -21,6 +18,12 @@ def prepareGraph(bandToBandsDict):
 	graph.append('}')
 
 	return ''.join(graph)
+
+def writeGraphAndCallGraphviz(graphvizString):
+	bandsFile = open('bandsGraph.dot', 'w')
+	bandsFile.write(graphvizString)
+	bandsFile.close()
+	os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
 
 bandsToVisit = set()
 bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
@@ -44,7 +47,6 @@ while searchLevel < searchDepth:
 	# Takes all bands which belong to a person. 
 	bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
 	print "Found [" + str(len(bandLinks)) + "] persons in lineup."
-
 	graphBandNames = set();
 
 	for bandLink in bandLinks:
@@ -78,8 +80,8 @@ while searchLevel < searchDepth:
 			link = link.next_sibling
 	print "Found [" + str(len(graphBandNames)) + "] connected bands."
 	graphBandToBands.update({actualBandName: graphBandNames})
-	# prepareGraph(graphBandToBands)
 	searchLevel+=1
 
+# prepareGraph(graphBandToBands)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
 
