@@ -11,10 +11,10 @@ def isNotEmptyStringOrLive(s):
 
 def prepareGraph(bandToBandsDict):
 	graph = []
-	graph.append("strict graph Metal\n{\n\tedge [len=4];")
+	graph.append("strict graph Metal\n{\n\tedge [len=4];\n")
 	for k, v in bandToBandsDict.items():
 		for bandName in v:
-			graph.append('\t"' + k + " -- " + bandName + '";\n')
+			graph.append('\t"' + k + '" -- "' + bandName + '";\n')
 	graph.append('}')
 
 	return ''.join(graph)
