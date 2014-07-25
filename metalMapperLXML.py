@@ -21,7 +21,7 @@ def prepareGraph(bandToBandsDict):
 
 def writeGraphAndCallGraphviz(graphvizString):
 	bandsFile = open('bandsGraph.dot', 'w')
-	bandsFile.write(graphvizString)
+	bandsFile.write(graphvizString.encode('utf-8'))
 	bandsFile.close()
 	os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
 
