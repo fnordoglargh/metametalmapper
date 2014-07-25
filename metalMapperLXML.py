@@ -82,6 +82,7 @@ while searchLevel < searchDepth:
 	graphBandToBands.update({actualBandName: graphBandNames})
 	searchLevel+=1
 
-# prepareGraph(graphBandToBands)
+bandGraph = prepareGraph(graphBandToBands)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
+print bandGraph
 
