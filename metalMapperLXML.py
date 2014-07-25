@@ -34,7 +34,6 @@ searchLevel = 0
 graphBandToBands = dict()
 
 while searchLevel < searchDepth:
-
 	bandsToVisit = bandsToVisitInNextRound
 	bandsToVisitInNextRound = set()
 	bandCurrentlyVisiting = bandsToVisit.pop()
@@ -53,7 +52,6 @@ while searchLevel < searchDepth:
 	graphBandNames = set();
 
 	for bandLink in bandLinks:
-		
 		if "ex-" in str(bandLink.a.previous_sibling):
 			firstBandIsEx = True
 		else:
@@ -87,4 +85,3 @@ while searchLevel < searchDepth:
 
 # prepareGraph(graphBandToBands)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
-
