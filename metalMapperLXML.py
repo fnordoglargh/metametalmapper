@@ -51,12 +51,14 @@ while searchLevel < searchDepth:
 	graphBandNames = set();
 
 	for bandLink in bandLinks:
-		if "ex-" in str(bandLink.a.previous_sibling):
+		link = bandLink.a
+
+		if link is None:
+			continue
+		elif "ex-" in str(bandLink.a.previous_sibling):
 			firstBandIsEx = True
 		else:
 			firstBandIsEx = False
-
-		link = bandLink.a
 
 		# Loop through all bands in person lineup.
 		while link != None:
