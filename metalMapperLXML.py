@@ -26,16 +26,15 @@ def writeGraphAndCallGraphviz(graphvizString):
 	os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
 
 bandsToVisit = set()
+bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
+#bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
 bandsToVisitInNextRound = set()
-bandsToVisitInNextRound.add('http://www.metal-archives.com/bands/Entombed/7')
 bandsVisited = set()
-searchDepth = 1
+searchDepth = 2
 searchLevel = 0
 graphBandToBands = dict()
 
 while searchLevel < searchDepth:
-	bandsToVisit = bandsToVisitInNextRound
-	bandsToVisitInNextRound = set()
 	bandCurrentlyVisiting = bandsToVisit.pop()
 	bandsVisited.add(bandCurrentlyVisiting)
 	website = urllib2.urlopen(bandCurrentlyVisiting).read()
@@ -79,9 +78,14 @@ while searchLevel < searchDepth:
 					# print "Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 					
 			link = link.next_sibling
+	
+	if not bandsToVisit:
+		bandsToVisit = bandsToVisitInNextRound
+		bandsToVisitInNextRound = set()
+		searchLevel+=1
+	
 	print "Found [" + str(len(graphBandNames)) + "] connected bands."
 	graphBandToBands.update({actualBandName: graphBandNames})
-	searchLevel+=1
 
 # prepareGraph(graphBandToBands)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
