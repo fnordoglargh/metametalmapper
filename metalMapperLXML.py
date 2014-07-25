@@ -11,17 +11,17 @@ def isNotEmptyStringOrLive(s):
 
 def prepareGraph(bandToBandsDict):
 	graph = []
-	graph.append("strict graph Metal\n{\n\tedge [len=4];")
+	graph.append("strict graph Metal\n{\n\tedge [len=4];\n")
 	for k, v in bandToBandsDict.items():
 		for bandName in v:
-			graph.append('\t"' + k + " -- " + bandName + '";\n')
+			graph.append('\t"' + k + '" -- "' + bandName + '";\n')
 	graph.append('}')
 
 	return ''.join(graph)
 
 def writeGraphAndCallGraphviz(graphvizString):
 	bandsFile = open('bandsGraph.dot', 'w')
-	bandsFile.write(graphvizString)
+	bandsFile.write(graphvizString.encode('utf-8'))
 	bandsFile.close()
 	os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
 
@@ -91,5 +91,6 @@ while searchLevel < searchDepth:
 	print "  Found [" + str(len(graphBandNames)) + "] connected bands."
 	graphBandToBands.update({actualBandName: graphBandNames})
 
-# prepareGraph(graphBandToBands)
+bandGraph = prepareGraph(graphBandToBands)
+writeGraphAndCallGraphviz(bandGraph)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
