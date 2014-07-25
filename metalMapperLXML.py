@@ -83,6 +83,6 @@ while searchLevel < searchDepth:
 	searchLevel+=1
 
 bandGraph = prepareGraph(graphBandToBands)
+writeGraphAndCallGraphviz(bandGraph)
 print 'Visited [' + str(len(bandsVisited)) + '] bands.'
-print bandGraph
 
