@@ -26,8 +26,8 @@ def writeGraphAndCallGraphviz(graphvizString):
 	os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
 
 bandsToVisit = set()
-bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
-#bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
+#bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
+bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
 bandsToVisitInNextRound = set()
 bandsVisited = set()
 searchDepth = 2
@@ -54,6 +54,8 @@ while searchLevel < searchDepth:
 		link = bandLink.a
 
 		if link is None:
+			# TODO: Find solution for multiple bands with no link.
+			graphBandNames.add(bandLink.text.split(':')[1].rstrip().lstrip())
 			continue
 		elif "ex-" in str(bandLink.a.previous_sibling):
 			firstBandIsEx = True
