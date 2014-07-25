@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import urllib2,os
 
 def isNotEmptyStringOrLive(s):
-	if len(s) == 0 or "live" in s:
+	if not s or "live" in s:
 		return False
 	else:
 		return True
