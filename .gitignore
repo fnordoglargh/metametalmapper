@@ -3,3 +3,5 @@
 *.py~
 *.swp
 *.html
+*.stackdump
+*.svg

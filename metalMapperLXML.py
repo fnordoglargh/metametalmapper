@@ -45,8 +45,9 @@ while searchLevel < searchDepth:
 	actualBandName = str(s[0].next_element.next_element)
 	print 'Visiting [' + actualBandName + ']...'
 
-	# Takes all bands which belong to a person. 
+	# Takes all bands which belong to a person.
 	bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
+
 	print "  Found [" + str(len(bandLinks)) + "] persons in lineup."
 	graphBandNames = set();
 
@@ -80,14 +81,14 @@ while searchLevel < searchDepth:
 					bandsToVisitInNextRound.add(refLink)
 					graphBandNames.add(link.next_element)
 					# print "  Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
-					
+
 			link = link.next_sibling
-	
+
 	if not bandsToVisit:
 		bandsToVisit = bandsToVisitInNextRound
 		bandsToVisitInNextRound = set()
 		searchLevel+=1
-	
+
 	print "  Found [" + str(len(graphBandNames)) + "] connected bands."
 	graphBandToBands.update({actualBandName: graphBandNames})
 
