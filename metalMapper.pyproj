@@ -28,6 +28,9 @@
     <Content Include="meh.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="diagramCreator.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="metalMapper.py" />
     <Compile Include="metalCrawler.py" />
   </ItemGroup>

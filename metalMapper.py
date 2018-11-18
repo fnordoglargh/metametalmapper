@@ -3,6 +3,7 @@ import os
 import sys
 import getopt
 from enum import Enum
+from metalCrawler import crawlBands
 
 class MapMode(Enum):
     Error = -1
@@ -36,7 +37,7 @@ def main(argv):
             printHelp()
             sys.exit()
         elif opt == '-c':
-            print('Crawl MODE!')
+            crawlBands()
 
 
 if __name__ == "__main__":

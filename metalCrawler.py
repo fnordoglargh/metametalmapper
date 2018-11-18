@@ -1,9 +1,8 @@
-#! /usr/bin/env python
-
 import certifi
 import urllib3
 import os
 from bs4 import BeautifulSoup
+from diagramCreator import *
 
 def displayChildren(c):
     if c is not None:
@@ -22,122 +21,99 @@ def isNotEmptyStringOrLive(s):
     else:
         return True
 
-def prepareGraph(bandToBandsDict):
-    graph = []
-    graph.append("strict graph Metal\n{\n\tedge [len=4];\n")
-    for k, v in bandToBandsDict.items():
-        for bandName in v:
-            graph.append('\t"')
-            graph.append(k)
-            #graph.append(k.encode('utf-8'))
-            graph.append('" -- "')
-            #graph.append(bandName.encode('utf-8'))
-            print(bandName)
-            graph.append(bandName)
-            graph.append('";\n')
-    graph.append('}')
+def crawlBands():
+    bandsToVisit = set()
+    #bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
+    bandsToVisit.add('https://www.metal-archives.com/bands/Obituary/165')
+    #bandsToVisit.add('https://www.metal-archives.com/bands/Metallica')
+    #bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
+    #bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
+    bandsToVisitInNextRound = set()
+    bandsVisited = set()
+    searchDepth = 1
+    searchLevel = 0
+    graphBandToBands = dict()
 
-    return ''.join(graph)
+    while searchLevel < searchDepth:
+        # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
+        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
-def writeGraphAndCallGraphviz(graphvizString):
-    bandsFile = open('bandsGraph.dot', 'w')
-    #bandsFile.write(graphvizString.encode('utf-8'))
-    bandsFile.write(graphvizString)
-    bandsFile.close()
-    #os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
-
-bandsToVisit = set()
-#bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
-bandsToVisit.add('https://www.metal-archives.com/bands/Obituary/165')
-#bandsToVisit.add('https://www.metal-archives.com/bands/Metallica')
-#bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
-#bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
-bandsToVisitInNextRound = set()
-bandsVisited = set()
-searchDepth = 1
-searchLevel = 0
-graphBandToBands = dict()
-
-while searchLevel < searchDepth:
-    # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-
-    # Pop a band from the "to visit" collection and add to visited collection.
-    bandCurrentlyVisiting = bandsToVisit.pop()
-    bandsVisited.add(bandCurrentlyVisiting)
+        # Pop a band from the "to visit" collection and add to visited collection.
+        bandCurrentlyVisiting = bandsToVisit.pop()
+        bandsVisited.add(bandCurrentlyVisiting)
     
-    website = http.request('GET', bandCurrentlyVisiting)
-    soup = BeautifulSoup(website.data, "html.parser")
+        website = http.request('GET', bandCurrentlyVisiting)
+        soup = BeautifulSoup(website.data, "html.parser")
 
-    # Finds band name; needs to extract link.
-    s = soup.find_all(attrs={"class": "band_name"})
-    actualBandName = s[0].next_element.next_element#.encode('utf-8')
-    print('Visiting [' + actualBandName + ']...')
+        # Finds band name; needs to extract link.
+        s = soup.find_all(attrs={"class": "band_name"})
+        actualBandName = s[0].next_element.next_element#.encode('utf-8')
+        print('Visiting [' + actualBandName + ']...')
 
-    # Takes all bands which belong to a person.
-    bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
+        # Takes all bands which belong to a person.
+        bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
 
-    print("  Found [" + str(len(bandLinks)//2) + "] persons with connected bands in lineup.")
-    graphBandNames = set();
-    #print(bandLinks)
+        print("  Found [" + str(len(bandLinks)//2) + "] persons with connected bands in lineup.")
+        graphBandNames = set();
+        #print(bandLinks)
 
-    lineup = soup.find_all(attrs={"id": "band_tab_members_all"})
-    lineup2 = soup.find(attrs={"id": "band_tab_members_all"})
+        lineup = soup.find_all(attrs={"id": "band_tab_members_all"})
+        lineup2 = soup.find(attrs={"id": "band_tab_members_all"})
 
-#    displayChildren(lineup)
+    #    displayChildren(lineup)
 
-    for bandLink in bandLinks:
-        link = bandLink.a
+        for bandLink in bandLinks:
+            link = bandLink.a
 
-        #print(bandLink.text.strip())
+            #print(bandLink.text.strip())
 
-        if link is None:
-            # TODO: Find solution for multiple bands with no link.
-            graphBandNames.add(bandLink.text.split(':')[1].rstrip().lstrip().replace("ex-", ""))
-            continue
-        elif "ex-" in str(bandLink.a.previous_sibling):
-            firstBandIsEx = True
-        else:
-            firstBandIsEx = False
+            if link is None:
+                # TODO: Find solution for multiple bands with no link.
+                graphBandNames.add(bandLink.text.split(':')[1].rstrip().lstrip().replace("ex-", ""))
+                continue
+            elif "ex-" in str(bandLink.a.previous_sibling):
+                firstBandIsEx = True
+            else:
+                firstBandIsEx = False
 
-        # Loop through all bands in person lineup.
-        while link != None:
-            if "," in link: # Bands without DB entries have no links.
-                bandsLoop = link.split(",")
-                for s in bandsLoop:
-                    # This can be anything (e.g. "ex-" "(live)" or whitespaces).
-                    # We want everything starting with "ex-" follwed by a band name.
-                    # Or a band name followed by "(live)".
-                    loopingBand = s.lstrip().rstrip() 
+            # Loop through all bands in person lineup.
+            while link != None:
+                if "," in link: # Bands without DB entries have no links.
+                    bandsLoop = link.split(",")
+                    for s in bandsLoop:
+                        # This can be anything (e.g. "ex-" "(live)" or whitespaces).
+                        # We want everything starting with "ex-" follwed by a band name.
+                        # Or a band name followed by "(live)".
+                        loopingBand = s.lstrip().rstrip() 
 
-                    # TODO: Make this better: Handle live better. 
-                    # This will return true for legitimate bands followed by "(live)".
-                    if isNotEmptyStringOrLive(loopingBand): 
-                        print(loopingBand)
-                        if loopingBand != "ex-": # Test for "-ex" here. Handle flag later for different diagram.
-                            loopingBand = loopingBand.replace("ex-", "")
-                            loopingBand = loopingBand.replace("(live)", "")
-                            graphBandNames.add(loopingBand)
-            else: # This is the actual link and text.
-                if str(link).rstrip() != "" and "live" not in link:
-                    refLink = link.get('href')
-                    bandsToVisitInNextRound.add(refLink)
-                    graphBandNames.add(link.next_element)
-                    #print "  Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
+                        # TODO: Make this better: Handle live better. 
+                        # This will return true for legitimate bands followed by "(live)".
+                        if isNotEmptyStringOrLive(loopingBand): 
+                            print(loopingBand)
+                            if loopingBand != "ex-": # Test for "-ex" here. Handle flag later for different diagram.
+                                loopingBand = loopingBand.replace("ex-", "")
+                                loopingBand = loopingBand.replace("(live)", "")
+                                graphBandNames.add(loopingBand)
+                else: # This is the actual link and text.
+                    if str(link).rstrip() != "" and "live" not in link:
+                        refLink = link.get('href')
+                        bandsToVisitInNextRound.add(refLink)
+                        graphBandNames.add(link.next_element)
+                        #print "  Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 
-            link = link.next_sibling
+                link = link.next_sibling
 
-    if not bandsToVisit:
-        bandsToVisit = bandsToVisitInNextRound
-        bandsToVisitInNextRound = set()
-        searchLevel+=1
+        if not bandsToVisit:
+            bandsToVisit = bandsToVisitInNextRound
+            bandsToVisitInNextRound = set()
+            searchLevel+=1
 
-    print("  Found [" + str(len(graphBandNames)) + "] connected bands.")
-    graphBandToBands.update({actualBandName: graphBandNames})
+        print("  Found [" + str(len(graphBandNames)) + "] connected bands.")
+        graphBandToBands.update({actualBandName: graphBandNames})
 
-#    for e in graphBandNames:
-#        print e
+    #    for e in graphBandNames:
+    #        print e
 
-bandGraph = prepareGraph(graphBandToBands)
-writeGraphAndCallGraphviz(bandGraph)
-print('Visited [' + str(len(bandsVisited)) + '] bands.')
+    bandGraph = prepareGraph(graphBandToBands)
+    writeGraphAndCallGraphviz(bandGraph)
+    print('Visited [' + str(len(bandsVisited)) + '] bands.')
