@@ -21,20 +21,23 @@ def main(argv):
     os.system('mode con: cols=153 lines=9999')
 
     try:
-        opts, args = getopt.getopt(argv, "ah")
+        opts, args = getopt.getopt(argv, "ch")
     except getopt.GetoptError:
         printHelp()
         sys.exit(2)
 
     mode = MapMode.Error
 
-    if len(opts) == 0:
+    if not opts:
         printHelp()
 
     for opt, arg in opts:
         if opt == '-h':
             printHelp()
             sys.exit()
+        elif opt == '-c':
+            print('Crawl MODE!')
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
