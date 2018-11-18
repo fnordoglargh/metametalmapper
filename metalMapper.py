@@ -1,76 +1,40 @@
-#! /usr/bin/env python
+#!/usr/bin/python
+import os
+import sys
+import getopt
+from enum import Enum
 
-import urllib2,os
+class MapMode(Enum):
+    Error = -1
+    SingleCrawl = 0
 
-bandsToVisit = ['http://www.metal-archives.com/bands/Entombed/7']
-bandsVisited = list()
-searchDepth = 1
+def printHelp():
+    print('Supported modes:')
+    print('  Crawl mode: metalMapper.py -c')
 
-bandsList = list()
-bandsList.append('strict graph G')
-bandsList.append('{')
-bandsList.append('\tedge [len=4];')
-
-while (searchDepth > 0):
-
-    bandCurrentlyVisiting = bandsToVisit.pop()
-    bandsVisited.append(bandCurrentlyVisiting)
-
-    website = urllib2.urlopen(bandCurrentlyVisiting).read()
-    indexBand = website.find('class="band_name"')
-    indexBand = website.find('">',indexBand+1)
-    indexBand = website.find('">',indexBand+1)
-    indexBandEnd = website.find('</',indexBand)
+def main(argv):
     
-    bandName = website[indexBand+2:indexBandEnd]
-    print 'Band: ' + bandName
+    firstSet = ''
+    lastSet = ''
 
-    isEndReached = False
-    loopBandLink = 'Empty'
-    loopBandName = 'Empty'
-    seeAlsoIndex = website.find('See also:')
-    tableElementEndIndex = 0
-    loopbands = 'Empty'
+    # Change to a terminal size in which everything fits.
+    os.system('mode con: cols=153 lines=9999')
 
-    while (not isEndReached):
-    
-        if (seeAlsoIndex != -1):
-            equalIndex = website.find('="',seeAlsoIndex)
-            tableElementEndIndex = website.find('</td>',equalIndex)
-            loopBands = website[equalIndex:tableElementEndIndex]
-            bandsListRaw = loopBands.split(',')
+    try:
+        opts, args = getopt.getopt(argv, "ah")
+    except getopt.GetoptError:
+        printHelp()
+        sys.exit(2)
 
-            for s in bandsListRaw:
-                linkIndex = s.find('http:')
-                # Look here for "ex"-Bands
+    mode = MapMode.Error
 
-                if linkIndex != -1:
-                    linkEndIndex = s.find('"', linkIndex)
-                    loopBandLink = s[linkIndex:linkEndIndex]
-                    bandsToVisit.append(loopBandLink)
-                    loopBandName = s[s.find('">')+2:s.find('</a>')]
-                else:
-                    loopBandName = s.lstrip().rstrip()
-                    
-                    if(loopBandName.find('ex') != -1):
-                        loopBandName[loopBandName.find('ex')+3:]
-                        # get rid of trailing "live"
-                bandsList.append('\t"' + bandName + '" -- "' + loopBandName+ '";')
-        else:
-            isEndReached = True
+    if len(opts) == 0:
+        printHelp()
 
-        seeAlsoIndex = website.find('See also:', seeAlsoIndex + 1)
+    for opt, arg in opts:
+        if opt == '-h':
+            printHelp()
+            sys.exit()
 
-    searchDepth-=1
-
-bandsList.append('}')
-bandsFile = open('bandsGraph.dot', 'w')
-
-for s in bandsList:
-    bandsFile.write("%s\n" % s)
-
-print 'Visited [' + str(len(bandsVisited)) + '] bands.'
-
-bandsFile.close()
-os.system("fdp -Tpng bandsGraph.dot -o bandsGraph.png")
-    
+if __name__ == "__main__":
+   main(sys.argv[1:])

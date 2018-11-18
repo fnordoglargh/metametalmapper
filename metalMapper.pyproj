@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{96483d65-3dd2-4f35-bb5c-2b2a78aaef1c}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>metalMapperLXML.py</StartupFile>
+    <StartupFile>metalMapper.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -27,7 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="metalMapper.py" />
-    <Compile Include="metalMapperLXML.py" />
+    <Compile Include="metalCrawler.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>
