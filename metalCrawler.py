@@ -1,8 +1,12 @@
 import certifi
 import urllib3
 import os
+import logging
 from bs4 import BeautifulSoup
 from diagramCreator import *
+
+linkMain = 'http://www.metal-archives.com/'
+bands = 'bands/'
 
 def displayChildren(c):
     if c is not None:
@@ -21,6 +25,11 @@ def isNotEmptyStringOrLive(s):
     else:
         return True
 
+def crawlBand(bandName):
+    linkBand = linkMain + bands + bandName
+    logger = logging.getLogger('Crawler')
+    logger.debug('Crawling [' + bandName + '].')
+
 def crawlBands():
     bandsToVisit = set()
     #bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
@@ -35,7 +44,7 @@ def crawlBands():
     graphBandToBands = dict()
 
     while searchLevel < searchDepth:
-        # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
+        # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
         # Pop a band from the "to visit" collection and add to visited collection.
@@ -53,8 +62,8 @@ def crawlBands():
         # Takes all bands which belong to a person.
         bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
 
-        print("  Found [" + str(len(bandLinks)//2) + "] persons with connected bands in lineup.")
-        graphBandNames = set();
+        print("  Found [" + str(len(bandLinks) // 2) + "] persons with connected bands in lineup.")
+        graphBandNames = set()
         #print(bandLinks)
 
         lineup = soup.find_all(attrs={"id": "band_tab_members_all"})
@@ -81,16 +90,16 @@ def crawlBands():
                 if "," in link: # Bands without DB entries have no links.
                     bandsLoop = link.split(",")
                     for s in bandsLoop:
-                        # This can be anything (e.g. "ex-" "(live)" or whitespaces).
+                        # This can be anything (e.g.  "ex-" "(live)" or whitespaces).
                         # We want everything starting with "ex-" follwed by a band name.
                         # Or a band name followed by "(live)".
                         loopingBand = s.lstrip().rstrip() 
 
-                        # TODO: Make this better: Handle live better. 
+                        # TODO: Make this better: Handle live better.
                         # This will return true for legitimate bands followed by "(live)".
                         if isNotEmptyStringOrLive(loopingBand): 
                             print(loopingBand)
-                            if loopingBand != "ex-": # Test for "-ex" here. Handle flag later for different diagram.
+                            if loopingBand != "ex-": # Test for "-ex" here.  Handle flag later for different diagram.
                                 loopingBand = loopingBand.replace("ex-", "")
                                 loopingBand = loopingBand.replace("(live)", "")
                                 graphBandNames.add(loopingBand)
@@ -99,7 +108,7 @@ def crawlBands():
                         refLink = link.get('href')
                         bandsToVisitInNextRound.add(refLink)
                         graphBandNames.add(link.next_element)
-                        #print "  Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
+                        #print " Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 
                 link = link.next_sibling
 

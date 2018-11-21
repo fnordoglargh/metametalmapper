@@ -2,8 +2,14 @@
 import os
 import sys
 import getopt
+import logging
+import logging.config
+import yaml
 from enum import Enum
-from metalCrawler import crawlBands
+from metalCrawler import *
+
+#FORMAT = '%(asctime)-15s - %(message)s'
+#logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
 
 class MapMode(Enum):
     Error = -1
@@ -14,12 +20,16 @@ def printHelp():
     print('  Crawl mode: metalMapper.py -c')
 
 def main(argv):
-    
-    firstSet = ''
-    lastSet = ''
+
+    with open('loggerConfig.yaml', 'r') as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
 
     # Change to a terminal size in which everything fits.
     os.system('mode con: cols=153 lines=9999')
+    logger = logging.getLogger('MAIN')
+    logger.debug('***************************************************************')
+    logger.debug('Starting up...')
 
     try:
         opts, args = getopt.getopt(argv, "ch")
@@ -37,8 +47,13 @@ def main(argv):
             printHelp()
             sys.exit()
         elif opt == '-c':
-            crawlBands()
+            #crawlBands()
+            crawlBand('Darkthrone')
 
+    input('...ending')
+    logging.shutdown()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
+
+
