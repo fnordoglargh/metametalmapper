@@ -26,6 +26,26 @@ def isNotEmptyStringOrLive(s):
     else:
         return True
 
+def visitBandList(countryLink, startIndex, bandLinks):
+    logger = logging.getLogger('Crawler')
+    linkCountryTemp = countryLink + str(startIndex)
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    countryJson = http.request('GET', linkCountryTemp)
+    jsonDataString = countryJson.data.decode("utf-8")
+    jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
+    jsonData = json.loads(jsonDataString)
+
+    for band in jsonData["aaData"]:
+        indexFirstApostrophe = band[0].find("'")
+        indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
+        bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
+        logger.debug("  link: " + bandLink)
+        indexFirstClosingBracket = band[0].find(">")
+        indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
+        bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
+        logger.debug("  name: " + bandName)
+        bandLinks[bandName] = bandLink
+
 def crawlCountry():
     linkCountry = "https://www.metal-archives.com/browse/ajax-country/c/NO/"
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
@@ -42,23 +62,11 @@ def crawlCountry():
     amountRetries = amountEntries / displayConstant
     linkSuffix = "json/1?sEcho=1&iDisplayStart="
 
-    for i in range(0,amountEntries,displayConstant):
-        linkCountryTemp = linkCountry + linkSuffix + str(i)
-        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-        countryJson = http.request('GET', linkCountryTemp)
-        jsonDataString = countryJson.data.decode("utf-8")
-        jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-        jsonData = json.loads(jsonDataString)
+    bandLinks = {}
 
-        for band in jsonData["aaData"]:
-            indexFirstApostrophe = band[0].find("'")
-            indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
-            bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
-            logger.debug("  link: " + bandLink)
-            indexFirstClosingBracket = band[0].find(">")
-            indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
-            bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
-            logger.debug("  name: " + bandName)
+    for i in range(0, amountEntries, displayConstant):
+        visitBandList(linkCountry + linkSuffix, i , bandLinks)
+        
     logger.debug("<<< Crawling Country")
 
 def crawlBand(bandName):
@@ -70,9 +78,12 @@ def crawlBand(bandName):
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
     bandPage = http.request('GET', linkBand)
     soup = BeautifulSoup(bandPage.data, "html.parser")
+    #soup = BeautifulSoup(bandPage.data, "lxml")
 
     # Finds band name; needs to extract the ID later.
     s = soup.find_all(attrs={"class": "band_name"})
+    #s = soup.find_all(attrs={"id": "band_info"})
+
     actualBandName = s[0].next_element.next_element#.encode('utf-8')
 
     s = soup.find_all(attrs={"class": "float_left"})
