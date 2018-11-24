@@ -48,7 +48,10 @@ def main(argv):
             sys.exit()
         elif opt == '-c':
             #crawlBands()
-            crawlBand('Darkthrone')
+            #crawlBand('Darkthrone')
+            #crawlBand('Bathory')
+            #crawlBand('LIK')
+            crawlCountry()
 
     input('...ending')
     logging.shutdown()
