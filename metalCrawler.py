@@ -28,7 +28,42 @@ def isNotEmptyStringOrLive(s):
 def crawlBand(bandName):
     linkBand = linkMain + bands + bandName
     logger = logging.getLogger('Crawler')
-    logger.debug('Crawling [' + bandName + '].')
+    logger.debug('>>> Crawling [' + bandName + ']')
+
+    # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    bandPage = http.request('GET', linkBand)
+    soup = BeautifulSoup(bandPage.data, "html.parser")
+
+    # Finds band name; needs to extract the ID later.
+    s = soup.find_all(attrs={"class": "band_name"})
+    actualBandName = s[0].next_element.next_element#.encode('utf-8')
+
+    s = soup.find_all(attrs={"class": "float_left"})
+    location = s[1].contents[7].contents[0]
+    status = s[1].contents[11].contents[0]
+    formed = s[1].contents[15].contents[0]
+
+    s = soup.find_all(attrs={"class": "clear"})
+    active = ""
+    # This also contains earlier incarnations.  We take the last element for now.
+    for element in s[3].contents[3].contents:
+        active = element
+    active = active.replace('\t', '')
+    active = active.replace('),', '')
+    active = active.replace('\n', '')
+    active = active.replace(' ', '')
+
+    s = soup.find_all(attrs={"class": "float_right"})
+    genres = s[3].contents[3].contents[0]
+
+    logger.debug('  Location : ' + location)
+    logger.debug('  Status   : ' + status)
+    logger.debug('  Formed in: ' + formed)
+    logger.debug('  Active   : ' + active)
+    logger.debug('  Genres   : ' + genres)
+    logger.debug('<<< Crawling [' + bandName + ']')
+
 
 def crawlBands():
     bandsToVisit = set()
