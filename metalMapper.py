@@ -52,7 +52,8 @@ def main(argv):
             #crawlBand('Bathory')
             #crawlBand('Sepultura')
             #crawlBand('LIK')
-            crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
+            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
+            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/DE/")
             crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
 
     input('...ending')

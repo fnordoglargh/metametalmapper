@@ -15,7 +15,6 @@ ajaxLinks = queue.Queue()
 
 class visitBandListThread(threading.Thread):
 
-    #def __init__(self, threadID, name, countryLink, startIndex, bandLinks):
     def __init__(self, threadID, countryLinks, bandLinks):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -27,20 +26,22 @@ class visitBandListThread(threading.Thread):
 
     def run(self):
         self.logger.debug("Running " + self.name)
+        linkCounter = 0
 
         while self.countryLinks.qsize() != 0:
-            linkCountryTemp = self.countryLinks.get()
+            linkCountryTemp = self.countryLinks.get_nowait()
             http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
             countryJson = http.request('GET', linkCountryTemp)
             jsonDataString = countryJson.data.decode("utf-8")
             jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-
             jsonData = None
+            self.logger.debug("  Working on:" + linkCountryTemp)
 
             try:
                 jsonData = json.loads(jsonDataString)
             except:
-                self.logger.error("JSON error for [" + linkCountryTemp + "].")
+                self.logger.error("  JSON error for [" + linkCountryTemp + "]. Putting it back in circulation...")
+                self.countryLinks.put(linkCountryTemp)
             
             if jsonData is not None:
                 for band in jsonData["aaData"]:
@@ -50,11 +51,11 @@ class visitBandListThread(threading.Thread):
                     indexFirstClosingBracket = band[0].find(">")
                     indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
                     bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
-                    self.logger.debug("  {}: {}".format(bandName, bandLink))
+                    self.logger.debug("    {}: {}".format(bandName, bandLink))
                     self.bandLinks.put(bandLink)
+                    linkCounter += 1
 
-        self.logger.debug("Finished" + self.name)
-
+        self.logger.debug("Finished {} and added {} links.".format(self.name,str(linkCounter)))
 
 def displayChildren(c):
     if c is not None:
@@ -108,42 +109,35 @@ def crawlCountry(linkCountry):
     logger.debug("  Country has [{}] entries.".format(amountEntries))
     # Limit imposed by MA.
     displayConstant = 500
-    threadCount = 8
     # Amount of runs needed.
     neededRunCount = (amountEntries // displayConstant)
 
-    # We need at least one and always one more.
+    # We need at least one and always one more (because of the division rounding down).
     if amountEntries % displayConstant > 0:
         neededRunCount += 1
 
-    # Override number of threads.
+    threadCount = 8
+
+    # Override number of threads in case we don't need all.
     if neededRunCount < threadCount:
         threadCount = neededRunCount
 
     logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(neededRunCount), str(threadCount)))
-
     linkSuffix = "json/1?sEcho=1&iDisplayStart="
 
+    # Prepare the AJAX links for the actual run.
     for i in range(0, amountEntries, displayConstant):
         ajaxLinks.put_nowait(linkCountry + linkSuffix + str(i))
-        logger.debug("generating link: " + str(i))
+        logger.debug("    Prepping link: " + str(i))
 
-    bandLinks = {}
     threads = []
 
-    #while ajaxLinks.qsize() != 0:
-    #    logger.debug("queue link: " + ajaxLinks.get_nowait())
-
+    # Create threads and let them run.
     for i in range(0, threadCount):
         thread = visitBandListThread(str(i), ajaxLinks, bandsQueue)
         thread.start()
         threads.append(thread)
 
-    #for i in range(0, amountEntries, displayConstant):
-    #    thread = visitBandListThread(str(i), str(i), linkCountry + linkSuffix, i , bandLinks)
-    #    thread.start()
-    #    threads.append(thread)
-     
     for t in threads:
         t.join()
 
