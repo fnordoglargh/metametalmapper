@@ -11,39 +11,47 @@ from diagramCreator import *
 linkMain = 'http://www.metal-archives.com/'
 bands = 'bands/'
 bandsQueue = queue.Queue()
+ajaxLinks = queue.Queue()
 
 class visitBandListThread(threading.Thread):
 
-    def __init__(self, threadID, name, countryLink, startIndex, bandLinks):
-        self.logger = logging.getLogger('Crawler')
-        self.logger.debug("Initing " + name)
+    #def __init__(self, threadID, name, countryLink, startIndex, bandLinks):
+    def __init__(self, threadID, countryLinks, bandLinks):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.name = name
-        self.countryLink = countryLink
-        self.startIndex = startIndex
+        self.name = "BandVisiter_" + threadID
+        self.countryLinks = countryLinks
         self.bandLinks = bandLinks
+        self.logger = logging.getLogger('Crawler')
+        self.logger.debug("Initing " + self.name)
 
     def run(self):
         self.logger.debug("Running " + self.name)
-        linkCountryTemp = self.countryLink + str(self.startIndex)
-        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-        countryJson = http.request('GET', linkCountryTemp)
-        jsonDataString = countryJson.data.decode("utf-8")
-        jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-        jsonData = json.loads(jsonDataString)
 
-        for band in jsonData["aaData"]:
-            indexFirstApostrophe = band[0].find("'")
-            indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
-            bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
-            self.logger.debug("  link: " + bandLink)
-            indexFirstClosingBracket = band[0].find(">")
-            indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
-            bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
-            self.logger.debug("  name: " + bandName)
-            self.bandLinks[bandName] = bandLink
-            bandsQueue.put(bandLink)
+        while self.countryLinks.qsize() != 0:
+            linkCountryTemp = self.countryLinks.get()
+            http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+            countryJson = http.request('GET', linkCountryTemp)
+            jsonDataString = countryJson.data.decode("utf-8")
+            jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
+
+            jsonData = None
+
+            try:
+                jsonData = json.loads(jsonDataString)
+            except:
+                self.logger.error("JSON error for [" + linkCountryTemp + "].")
+            
+            if jsonData is not None:
+                for band in jsonData["aaData"]:
+                    indexFirstApostrophe = band[0].find("'")
+                    indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
+                    bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
+                    indexFirstClosingBracket = band[0].find(">")
+                    indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
+                    bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
+                    self.logger.debug("  {}: {}".format(bandName, bandLink))
+                    self.bandLinks.put(bandLink)
 
         self.logger.debug("Finished" + self.name)
 
@@ -85,8 +93,7 @@ def visitBandList(countryLink, startIndex, bandLinks):
         logger.debug("  name: " + bandName)
         bandLinks[bandName] = bandLink
 
-def crawlCountry():
-    linkCountry = "https://www.metal-archives.com/browse/ajax-country/c/NO/"
+def crawlCountry(linkCountry):
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
     countryJson = http.request('GET', linkCountry)
     jsonDataString = countryJson.data.decode("utf-8")
@@ -96,23 +103,50 @@ def crawlCountry():
     logger = logging.getLogger('Crawler')
     logger.debug(">>> Crawling Country: " + linkCountry)
 
+    # The total amount of entries for this country is the only data we need for now.
     amountEntries = jsonData["iTotalRecords"]
+    logger.debug("  Country has [{}] entries.".format(amountEntries))
+    # Limit imposed by MA.
     displayConstant = 500
-    amountRetries = amountEntries / displayConstant
+    threadCount = 8
+    # Amount of runs needed.
+    neededRunCount = (amountEntries // displayConstant)
+
+    # We need at least one and always one more.
+    if amountEntries % displayConstant > 0:
+        neededRunCount += 1
+
+    # Override number of threads.
+    if neededRunCount < threadCount:
+        threadCount = neededRunCount
+
+    logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(neededRunCount), str(threadCount)))
+
     linkSuffix = "json/1?sEcho=1&iDisplayStart="
+
+    for i in range(0, amountEntries, displayConstant):
+        ajaxLinks.put_nowait(linkCountry + linkSuffix + str(i))
+        logger.debug("generating link: " + str(i))
 
     bandLinks = {}
     threads = []
 
-    for i in range(0, amountEntries, displayConstant):
-        thread = visitBandListThread(str(i), str(i), linkCountry + linkSuffix, i , bandLinks)
+    #while ajaxLinks.qsize() != 0:
+    #    logger.debug("queue link: " + ajaxLinks.get_nowait())
+
+    for i in range(0, threadCount):
+        thread = visitBandListThread(str(i), ajaxLinks, bandsQueue)
         thread.start()
         threads.append(thread)
+
+    #for i in range(0, amountEntries, displayConstant):
+    #    thread = visitBandListThread(str(i), str(i), linkCountry + linkSuffix, i , bandLinks)
+    #    thread.start()
+    #    threads.append(thread)
      
     for t in threads:
         t.join()
 
-    logger.debug("queue element" + bandsQueue.get())
     logger.debug("<<< Crawling Country")
 
 def crawlBand(bandName):

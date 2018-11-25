@@ -50,8 +50,10 @@ def main(argv):
             #crawlBands()
             #crawlBand('Darkthrone')
             #crawlBand('Bathory')
+            #crawlBand('Sepultura')
             #crawlBand('LIK')
-            crawlCountry()
+            crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
+            crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
 
     input('...ending')
     logging.shutdown()
