@@ -55,7 +55,19 @@ def main(argv):
             #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
             #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/DE/")
             #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
-            crawlCountries()
+
+            countryLinks = crawlCountries()
+
+            for countryLink in countryLinks:
+                crawlCountry(countryLink)
+
+            bandLinks_file = open("bandLinks.txt", "w")
+
+            while bandsQueue.qsize() != 0:
+                bandLinks_file.write(bandsQueue.get_nowait())
+                bandLinks_file.flush()
+
+            bandLinks_file.close()
 
     input('...ending')
     logging.shutdown()

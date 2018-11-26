@@ -5,6 +5,7 @@ import logging
 import json
 import threading
 import queue
+import time
 from bs4 import BeautifulSoup
 from diagramCreator import *
 
@@ -95,14 +96,23 @@ def visitBandList(countryLink, startIndex, bandLinks):
         bandLinks[bandName] = bandLink
 
 def crawlCountry(linkCountry):
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    countryJson = http.request('GET', linkCountry)
-    jsonDataString = countryJson.data.decode("utf-8")
-    jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-    jsonData = json.loads(jsonDataString)
-
     logger = logging.getLogger('Crawler')
     logger.debug(">>> Crawling Country: " + linkCountry)
+    jsonDataString = ""
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+
+    while True:
+        countryJson = http.request('GET', linkCountry)
+        jsonDataString = countryJson.data.decode("utf-8")
+
+        if jsonDataString is not 'Forbidden.\n':
+            break
+        else:
+            logger.debug("  trying again...")
+            time.sleep(.5)
+
+    jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
+    jsonData = json.loads(jsonDataString)
 
     # The total amount of entries for this country is the only data we need for now.
     amountEntries = jsonData["iTotalRecords"]
@@ -116,6 +126,7 @@ def crawlCountry(linkCountry):
     if amountEntries % displayConstant > 0:
         neededRunCount += 1
 
+    # 8 might be a bit high (leaves some forbidden messages on getting the JSON data.
     threadCount = 8
 
     # Override number of threads in case we don't need all.
@@ -144,19 +155,19 @@ def crawlCountry(linkCountry):
     logger.debug("<<< Crawling Country")
 
 def crawlCountries():
-    logger = logging.getLogger('Crawler')
-    logger.debug(">>> Crawling Countries")
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
     countriesPage = http.request('GET', "https://www.metal-archives.com/browse/country")
     soup = BeautifulSoup(countriesPage.data, "html.parser")
     s = soup.find_all(attrs={"class": "countryCol"})
+    countryLinks = []
 
     for i in range(0, len(s)):
         for j in range(1, len(s[i].contents), 3):
-            countryLink = s[i].contents[j].attrs["href"]
-            print(countryLink)
+            tempLink = s[i].contents[j].attrs["href"]
+            countryShort = tempLink[len(tempLink) - 2:len(tempLink)]
+            countryLinks.append("https://www.metal-archives.com/browse/ajax-country/c/"+countryShort)
 
-    logger.debug("<<< Crawling Countries")
+    return countryLinks
 
 def crawlBand(bandName):
     linkBand = linkMain + bands + bandName
@@ -199,7 +210,6 @@ def crawlBand(bandName):
     logger.debug('  Active   : ' + active)
     logger.debug('  Genres   : ' + genres)
     logger.debug('<<< Crawling [' + bandName + ']')
-
 
 def crawlBands():
     bandsToVisit = set()
