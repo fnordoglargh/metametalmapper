@@ -54,7 +54,8 @@ def main(argv):
             #crawlBand('LIK')
             #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
             #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/DE/")
-            crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
+            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
+            crawlCountries()
 
     input('...ending')
     logging.shutdown()

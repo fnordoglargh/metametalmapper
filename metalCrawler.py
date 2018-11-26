@@ -143,6 +143,21 @@ def crawlCountry(linkCountry):
 
     logger.debug("<<< Crawling Country")
 
+def crawlCountries():
+    logger = logging.getLogger('Crawler')
+    logger.debug(">>> Crawling Countries")
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    countriesPage = http.request('GET', "https://www.metal-archives.com/browse/country")
+    soup = BeautifulSoup(countriesPage.data, "html.parser")
+    s = soup.find_all(attrs={"class": "countryCol"})
+
+    for i in range(0, len(s)):
+        for j in range(1, len(s[i].contents), 3):
+            countryLink = s[i].contents[j].attrs["href"]
+            print(countryLink)
+
+    logger.debug("<<< Crawling Countries")
+
 def crawlBand(bandName):
     linkBand = linkMain + bands + bandName
     logger = logging.getLogger('Crawler')
