@@ -185,6 +185,9 @@ def crawlBand(bandName):
     s = soup.find_all(attrs={"class": "band_name"})
     #s = soup.find_all(attrs={"id": "band_info"})
 
+    if len(s) == 0:
+        return -1
+
     actualBandName = s[0].next_element.next_element#.encode('utf-8')
 
     s = soup.find_all(attrs={"class": "float_left"})
@@ -212,7 +215,18 @@ def crawlBand(bandName):
     logger.debug('  Genres   : ' + genres)
     logger.debug('<<< Crawling [' + bandName + ']')
 
-def crawlBands():
+def crawlBands(fileWithBandLinks):
+    logger = logging.getLogger('Crawler')
+    logger.debug('>>> Crawling all bands in [{}]'.format(fileWithBandLinks))
+    isFileAvailable = os.path.isfile(fileWithBandLinks)
+
+    if isFileAvailable:
+        logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(fileWithBandLinks))
+    else:
+        logger.error("  {} is not available. Run with -c first.".forformat(fileWithBandLinks))
+    logger.debug('<<< Crawling all bands in [{}]'.format(fileWithBandLinks))
+
+def crawlBandsOld():
     bandsToVisit = set()
     #bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
     bandsToVisit.add('https://www.metal-archives.com/bands/Obituary/165')

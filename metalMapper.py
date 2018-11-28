@@ -10,6 +10,7 @@ from metalCrawler import *
 
 #FORMAT = '%(asctime)-15s - %(message)s'
 #logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
+bandsListFileName = "bandLinks.txt"
 
 class MapMode(Enum):
     Error = -1
@@ -17,7 +18,9 @@ class MapMode(Enum):
 
 def printHelp():
     print('Supported modes:')
-    print('  Crawl mode: metalMapper.py -c')
+    print('  -c: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
+    print('      This action can take almost 10 minutes.')
+    print('  -b: Crawls all bands in the generated file {} from option -c.'.format(bandsListFileName))
 
 def main(argv):
 
@@ -32,7 +35,7 @@ def main(argv):
     logger.debug('Starting up...')
 
     try:
-        opts, args = getopt.getopt(argv, "ch")
+        opts, args = getopt.getopt(argv, "bch")
     except getopt.GetoptError:
         printHelp()
         sys.exit(2)
@@ -47,31 +50,34 @@ def main(argv):
             printHelp()
             sys.exit()
         elif opt == '-c':
-            #crawlBands()
-            #crawlBand('Darkthrone')
-            #crawlBand('Bathory')
-            #crawlBand('Sepultura')
-            #crawlBand('LIK')
-            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/AF/")
-            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/DE/")
-            #crawlCountry("https://www.metal-archives.com/browse/ajax-country/c/US/")
-
             countryLinks = crawlCountries()
 
             for countryLink in countryLinks:
                 crawlCountry(countryLink)
 
-            bandLinks_file = open("bandLinks.txt", "w", encoding="utf-8")
+            bandLinks_file = open(bandsListFileName, "w", encoding="utf-8")
 
             while bandsQueue.qsize() != 0:
-                bandLinks_file.write(bandsQueue.get_nowait()+'\n')
+                bandLinks_file.write(bandsQueue.get_nowait() + '\n')
 
             bandLinks_file.close()
+
+        elif opt == '-b':
+            crawlBands(bandsListFileName)
+            
+
+            #crawlBands()
+            #crawlBand('Darkthrone')
+            #crawlBand('Bathory')
+            #crawlBand('Sepultura')
+            #crawlBand('LIK')
+            #result = crawlBand('LIK')
+
+            #if result == -1:
+            #    logger.error("The name alone was invalid. No bands page to scrape.")
 
     input('...ending')
     logging.shutdown()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
-
-
