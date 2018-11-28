@@ -61,11 +61,10 @@ def main(argv):
             for countryLink in countryLinks:
                 crawlCountry(countryLink)
 
-            bandLinks_file = open("bandLinks.txt", "w")
+            bandLinks_file = open("bandLinks.txt", "w", encoding="utf-8")
 
             while bandsQueue.qsize() != 0:
-                bandLinks_file.write(bandsQueue.get_nowait())
-                bandLinks_file.flush()
+                bandLinks_file.write(bandsQueue.get_nowait()+'\n')
 
             bandLinks_file.close()
 

@@ -53,7 +53,8 @@ class visitBandListThread(threading.Thread):
                     indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
                     bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
                     self.logger.debug("    {}: {}".format(bandName, bandLink))
-                    self.bandLinks.put(bandLink)
+                    # We do not need the leading "https://www.metal-archives.com/bands/".
+                    self.bandLinks.put(bandLink[37:len(bandLink)])
                     linkCounter += 1
 
         self.logger.debug("Finished {} and added {} links.".format(self.name,str(linkCounter)))
@@ -105,7 +106,7 @@ def crawlCountry(linkCountry):
         countryJson = http.request('GET', linkCountry)
         jsonDataString = countryJson.data.decode("utf-8")
 
-        if jsonDataString is not 'Forbidden.\n':
+        if "Forbidden." not in jsonDataString:
             break
         else:
             logger.debug("  trying again...")
