@@ -14,12 +14,32 @@ bands = 'bands/'
 bandsQueue = queue.Queue()
 ajaxLinks = queue.Queue()
 
+# 8 might be a bit high (leaves some forbidden messages on getting the JSON
+# data or the bands).
+threadCount = 8
+
+class visitBandThread(threading.Thread):
+
+    def __init__(self, threadID, bandLinks):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = "BandVisiter_" + threadID
+        self.bandLinks = bandLinks
+        self.logger = logging.getLogger('Crawler')
+        self.logger.debug("Initing " + self.name)
+
+    def run(self):
+        self.logger.debug("Running " + self.name)
+        while self.bandLinks.qsize() != 0:
+            linkBandTemp = self.bandLinks.get_nowait()
+            crawlBand(linkBandTemp)
+
 class visitBandListThread(threading.Thread):
 
     def __init__(self, threadID, countryLinks, bandLinks):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.name = "BandVisiter_" + threadID
+        self.name = "BandListVisiter_" + threadID
         self.countryLinks = countryLinks
         self.bandLinks = bandLinks
         self.logger = logging.getLogger('Crawler')
@@ -127,7 +147,6 @@ def crawlCountry(linkCountry):
     if amountEntries % displayConstant > 0:
         neededRunCount += 1
 
-    # 8 might be a bit high (leaves some forbidden messages on getting the JSON data.
     threadCount = 8
 
     # Override number of threads in case we don't need all.
@@ -166,11 +185,16 @@ def crawlCountries():
         for j in range(1, len(s[i].contents), 3):
             tempLink = s[i].contents[j].attrs["href"]
             countryShort = tempLink[len(tempLink) - 2:len(tempLink)]
-            countryLinks.append("https://www.metal-archives.com/browse/ajax-country/c/"+countryShort)
+            countryLinks.append("https://www.metal-archives.com/browse/ajax-country/c/" + countryShort)
 
     return countryLinks
 
 def crawlBand(bandName):
+    # TODO: The % escaped glyphs only work if the client.py in http
+    # is changed in putrequest() before self._output() is called.
+    # The line looks like this:
+    # url = rfc3986.uri_reference(url).unsplit()
+    # Needs to import rfc3986
     linkBand = linkMain + bands + bandName
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling [' + bandName + ']')
@@ -188,8 +212,7 @@ def crawlBand(bandName):
     if len(s) == 0:
         return -1
 
-    actualBandName = s[0].next_element.next_element#.encode('utf-8')
-
+    actualBandName = s[0].next_element.next_element
     s = soup.find_all(attrs={"class": "float_left"})
     location = s[1].contents[7].contents[0]
     status = s[1].contents[11].contents[0]
@@ -208,11 +231,8 @@ def crawlBand(bandName):
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
 
-    logger.debug('  Location : ' + location)
-    logger.debug('  Status   : ' + status)
-    logger.debug('  Formed in: ' + formed)
-    logger.debug('  Active   : ' + active)
-    logger.debug('  Genres   : ' + genres)
+    logMessage = "\n  Location : {}\n  Status   : {}\n  Formed in: {}\n  Active   : {}\n  Genres   : {}\n".format(location,status,formed,active,genres)
+    logger.debug(logMessage)
     logger.debug('<<< Crawling [' + bandName + ']')
 
 def crawlBands(fileWithBandLinks):
@@ -223,7 +243,26 @@ def crawlBands(fileWithBandLinks):
     if isFileAvailable:
         logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(fileWithBandLinks))
     else:
-        logger.error("  {} is not available. Run with -c first.".forformat(fileWithBandLinks))
+        logger.error("  {} is not available. Run with -c first.".format(fileWithBandLinks))
+        return -1
+
+    localBandsQueue = queue.Queue()
+
+    with open(fileWithBandLinks, "r") as bandsFile:
+        for line in bandsFile:
+            localBandsQueue.put_nowait(line.rstrip('\r\n'))
+
+    threads = []
+
+    # Create threads and let them run.
+    for i in range(0, threadCount):
+        thread = visitBandThread(str(i), localBandsQueue)
+        thread.start()
+        threads.append(thread)
+
+    for t in threads:
+        t.join()
+
     logger.debug('<<< Crawling all bands in [{}]'.format(fileWithBandLinks))
 
 def crawlBandsOld():
