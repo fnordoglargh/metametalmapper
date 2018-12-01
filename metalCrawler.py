@@ -6,7 +6,7 @@ import json
 import threading
 import queue
 import time
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
 
 linkMain = 'http://www.metal-archives.com/'
@@ -212,17 +212,37 @@ def crawlBand(bandName):
     if len(s) == 0:
         return -1
 
-    actualBandName = s[0].next_element.next_element
+    bandData = {}
+    bandData["id"] = bandName[bandName.rfind('/') + 1:]
+    bandData["name"] = s[0].next_element.next_element
+
     s = soup.find_all(attrs={"class": "float_left"})
-    location = s[1].contents[7].contents[0]
-    status = s[1].contents[11].contents[0]
-    formed = s[1].contents[15].contents[0]
+    bandData["country"] = s[1].contents[3].contents[0]
+    bandData["location"] = s[1].contents[7].contents[0]
+    bandData["status"] = s[1].contents[11].contents[0]
+    bandData["formed"] = s[1].contents[15].contents[0]
+    bandData["active"] = []
 
     s = soup.find_all(attrs={"class": "clear"})
     active = ""
-    # This also contains earlier incarnations.  We take the last element for now.
+
+    # This also contains earlier incarnations.  We take all of them.
     for element in s[3].contents[3].contents:
         active = element
+        if type(active) is NavigableString:
+            active = active.replace('\t', '')
+            active = active.replace('),', '')
+            active = active.replace('\n', '')
+            active = active.replace(' ', '')
+            yearTokens = active.split(',')
+            for yearToken in yearTokens:
+                bandData["active"].append(yearToken)
+        elif type(active) is Tag:
+            previousName = " " + active.contents[0]
+            lastPosition = len(bandData["active"]) - 1
+            bandData["active"][lastPosition] += previousName + ")"
+        else:
+            print(type(active))
     active = active.replace('\t', '')
     active = active.replace('),', '')
     active = active.replace('\n', '')
@@ -230,9 +250,13 @@ def crawlBand(bandName):
 
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
+    genres = genres.split(',')
+    bandData["genre"] = []
 
-    logMessage = "\n  Location : {}\n  Status   : {}\n  Formed in: {}\n  Active   : {}\n  Genres   : {}\n".format(location,status,formed,active,genres)
-    logger.debug(logMessage)
+    for genre in genres:
+        bandData["genre"].append(genre)
+
+    logger.debug(bandData)
     logger.debug('<<< Crawling [' + bandName + ']')
 
 def crawlBands(fileWithBandLinks):

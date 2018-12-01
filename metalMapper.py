@@ -63,7 +63,8 @@ def main(argv):
             bandLinks_file.close()
 
         elif opt == '-b':
-            crawlBands(bandsListFileName)
+            crawlBands("bandLinksTest.txt")
+            #crawlBands(bandsListFileName)
             
 
             #crawlBands()
