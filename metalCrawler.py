@@ -218,7 +218,13 @@ def crawlBand(bandName):
 
     s = soup.find_all(attrs={"class": "float_left"})
     bandData["country"] = s[1].contents[3].contents[0]
-    bandData["location"] = s[1].contents[7].contents[0]
+    countryNode = s[1].contents[3].contents[0]
+    countryName = countryNode.contents[0]
+    # Saving the country name and link in a dict.
+    countryLink = countryNode.attrs["href"]
+    bandData["country"] = { countryName : countryLink }
+    bandData["label"] = {labelName:labelLink}
+    bandData["location"] = s[1].contents[7].contents[0].split("/")
     bandData["status"] = s[1].contents[11].contents[0]
     bandData["formed"] = s[1].contents[15].contents[0]
     bandData["active"] = []
@@ -226,7 +232,7 @@ def crawlBand(bandName):
     s = soup.find_all(attrs={"class": "clear"})
     active = ""
 
-    # This also contains earlier incarnations.  We take all of them.
+    # Iterate over all time spans the band was (or is) active.
     for element in s[3].contents[3].contents:
         active = element
         if type(active) is NavigableString:
@@ -243,18 +249,20 @@ def crawlBand(bandName):
             bandData["active"][lastPosition] += previousName + ")"
         else:
             print(type(active))
-    active = active.replace('\t', '')
-    active = active.replace('),', '')
-    active = active.replace('\n', '')
-    active = active.replace(' ', '')
 
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
     genres = genres.split(',')
-    bandData["genre"] = []
+    bandData["genre"] = genres
+    bandData["theme"] = s[3].contents[7].contents[0].split(',')
+    labelNode = s[3].contents[11].contents[0]
 
-    for genre in genres:
-        bandData["genre"].append(genre)
+    if type(labelNode) is NavigableString:
+        bandData["label"] = { s[3].contents[11].contents[0]: ""}
+    else:
+        labelName = labelNode.contents[0]
+        labelLink = labelNode.attrs["href"]
+        bandData["label"] = {labelName:labelLink}
 
     logger.debug(bandData)
     logger.debug('<<< Crawling [' + bandName + ']')
