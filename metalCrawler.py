@@ -207,11 +207,11 @@ def crawlBand(bandName):
 
     # Finds band name; needs to extract the ID later.
     s = soup.find_all(attrs={"class": "band_name"})
-    #s = soup.find_all(attrs={"id": "band_info"})
 
     if len(s) == 0:
         return -1
 
+    # All data of a band is collected here.  Band members are referenced and collected in their own collection.
     bandData = {}
     bandData["id"] = bandName[bandName.rfind('/') + 1:]
     bandData["name"] = s[0].next_element.next_element
@@ -223,7 +223,7 @@ def crawlBand(bandName):
     # Saving the country name and link in a dict.
     countryLink = countryNode.attrs["href"]
     bandData["country"] = { countryName : countryLink }
-    bandData["label"] = {labelName:labelLink}
+    #bandData["label"] = {labelName:labelLink}
     bandData["location"] = s[1].contents[7].contents[0].split("/")
     bandData["status"] = s[1].contents[11].contents[0]
     bandData["formed"] = s[1].contents[15].contents[0]
@@ -258,12 +258,76 @@ def crawlBand(bandName):
     labelNode = s[3].contents[11].contents[0]
 
     if type(labelNode) is NavigableString:
-        bandData["label"] = { s[3].contents[11].contents[0]: ""}
+        bandData["label"] = {s[3].contents[11].contents[0]: ""}
     else:
         labelName = labelNode.contents[0]
         labelLink = labelNode.attrs["href"]
         bandData["label"] = {labelName:labelLink}
 
+    # Most likely not needed.
+    #bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
+    #memberLinks = soup.find_all(attrs={"class": "lineupRow"})
+
+    artistsAndBands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
+    logger.debug("  Scraping all band names and links.")
+    categoryCounter = 0
+
+    # The contents of artistsAndBands contains always four items.
+    for artistOrBandElement in artistsAndBands:
+        actualCategory = artistOrBandElement.contents[1].contents
+        logger.debug("  Outer loop counter {}".format(str(categoryCounter)))
+        
+        categoryCounter += 1
+        
+        # The elements alternate from a band member to bands or member to
+        # member if it's the only band for the latter.
+        # Category (like current or past) are found at index.
+        for i in range(1,len(actualCategory),2):
+            actualRow = actualCategory[i]
+            lastFoundHeader = actualRow.attrs["class"][0]
+            if lastFoundHeader == "lineupHeaders":
+                headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
+                logger.debug("    Found header: {}".format(headerCategory))
+
+            # Five elements for artists.
+            if len(actualRow) is 5:
+                # The leading part ist not needed and stripped
+                # (https://www.metal-archives.com/artists/).  It's always 39
+                # letters long.
+                tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
+                tempArtistName = actualRow.contents[1].contents[1].contents[0]
+                tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '')
+                print("      {:30} | {:50} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
+            ## Bands have three elements, at index 1 is the header.
+            #elif len(actualRow) is 3 and i is not 1:
+            #    tempBands = actualRow.contents[1]
+
+            #    for j in range(1,len(tempBands)):
+            #        tempBandRow = tempBands.contents[j]
+            #        isExBand = False
+
+            #        # A row contains either a band with link, non-metal bands
+            #        # or indicators for live or ex-members.
+            #        if type(tempBandRow) is Tag:
+            #            tempBandLink = tempBandRow.attrs["href"]
+            #            tempBandName = tempBandRow.contents[0]
+            #            tempBandId = tempBandLink[tempBandLink.rfind('/') + 1:]
+            #        elif type(tempBandRow) is NavigableString:
+            #            splitBands = tempBandRow.split(',')
+            #            #for k in range(0,len(splitBands)):
+            #            # if "(live)" in splitBands[k] and k is 0:
+            #                    # TODO: Add handling for live member.
+
+            #                #print(tempBandRow)
+
+            # This finds all links.
+            #memberOrBandLink = actualRow.contents[1].a
+
+            #if memberOrBandLink is not None:
+            #    tempLink = memberOrBandLink.attrs["href"]
+            #    tempAlias = memberOrBandLink.contents[0]
+            #    tempId = tempLink[tempLink.rfind('/') + 1:]
+            #    print(" {:11} | {:70} | {}".format(tempId, tempLink, tempAlias))
     logger.debug(bandData)
     logger.debug('<<< Crawling [' + bandName + ']')
 
