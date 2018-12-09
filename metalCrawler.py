@@ -269,35 +269,35 @@ def crawlBand(bandName):
     #memberLinks = soup.find_all(attrs={"class": "lineupRow"})
 
     artistsAndBands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
+    artistsAndBandElement = artistsAndBands[0]
+
     logger.debug("  Scraping all band names and links.")
     categoryCounter = 0
 
-    # The contents of artistsAndBands contains always four items.
-    for artistOrBandElement in artistsAndBands:
-        actualCategory = artistOrBandElement.contents[1].contents
-        logger.debug("  Outer loop counter {}".format(str(categoryCounter)))
+    actualCategory = artistsAndBandElement.contents[1].contents
+    logger.debug("  Outer loop counter {}".format(str(categoryCounter)))
         
-        categoryCounter += 1
+    categoryCounter += 1
         
-        # The elements alternate from a band member to bands or member to
-        # member if it's the only band for the latter.
-        # Category (like current or past) are found at index.
-        for i in range(1,len(actualCategory),2):
-            actualRow = actualCategory[i]
-            lastFoundHeader = actualRow.attrs["class"][0]
-            if lastFoundHeader == "lineupHeaders":
-                headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-                logger.debug("    Found header: {}".format(headerCategory))
+    # The elements alternate from a band member to bands or member to
+    # member if it's the only band for the latter.
+    # Category (like current or past) are found at index.
+    for i in range(1,len(actualCategory),2):
+        actualRow = actualCategory[i]
+        lastFoundHeader = actualRow.attrs["class"][0]
+        if lastFoundHeader == "lineupHeaders":
+            headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
+            logger.debug("    Found header: {}".format(headerCategory))
 
-            # Five elements for artists.
-            if len(actualRow) is 5:
-                # The leading part ist not needed and stripped
-                # (https://www.metal-archives.com/artists/).  It's always 39
-                # letters long.
-                tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
-                tempArtistName = actualRow.contents[1].contents[1].contents[0]
-                tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '')
-                print("      {:30} | {:50} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
+        # Five elements for artists.
+        if len(actualRow) is 5:
+            # The leading part ist not needed and stripped
+            # (https://www.metal-archives.com/artists/).  It's always 39
+            # letters long.
+            tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
+            tempArtistName = actualRow.contents[1].contents[1].contents[0]
+            tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '')
+            print("      {:30} | {:50} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
             ## Bands have three elements, at index 1 is the header.
             #elif len(actualRow) is 3 and i is not 1:
             #    tempBands = actualRow.contents[1]
