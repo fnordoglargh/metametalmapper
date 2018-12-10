@@ -6,6 +6,7 @@ import json
 import threading
 import queue
 import time
+import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
 
@@ -223,7 +224,6 @@ def crawlBand(bandName):
     # Saving the country name and link in a dict.
     countryLink = countryNode.attrs["href"]
     bandData["country"] = { countryName : countryLink }
-    #bandData["label"] = {labelName:labelLink}
     bandData["location"] = s[1].contents[7].contents[0].split("/")
     bandData["status"] = s[1].contents[11].contents[0]
     bandData["formed"] = s[1].contents[15].contents[0]
@@ -248,7 +248,7 @@ def crawlBand(bandName):
             lastPosition = len(bandData["active"]) - 1
             bandData["active"][lastPosition] += previousName + ")"
         else:
-            print(type(active))
+            debug.warn("  Found an element of type {}. This should not happen.".format(type(active)))
 
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
@@ -268,7 +268,8 @@ def crawlBand(bandName):
     artistsAndBandElement = artistsAndBands[0]
     logger.debug("  Scraping artists from actual band.")
     actualCategory = artistsAndBandElement.contents[1].contents
-        
+    bandData["lineup"] = {}
+
     # The elements alternate from a band member to bands or member to
     # member if it's the only band for the latter.
     # Category (like current or past) are found at index.
@@ -278,6 +279,7 @@ def crawlBand(bandName):
         if lastFoundHeader == "lineupHeaders":
             headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
             logger.debug("    Found header: {}".format(headerCategory))
+            bandData["lineup"][headerCategory] = {}
 
         # Five elements for artists.
         if len(actualRow) is 5:
@@ -286,9 +288,35 @@ def crawlBand(bandName):
             # letters long.
             tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
             tempArtistName = actualRow.contents[1].contents[1].contents[0]
-            tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '')
+            tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
+            tempSplitInstruments = tempInstruments.split(',')
+            bandData["lineup"][headerCategory][tempArtistLink] = [tempArtistName]
+
+            tempInstrument = ''
+            tempIntrumentTimespan = []
+            tempInstrumentCollection = {}
+
+            for splitInstrument in tempSplitInstruments:
+                indexBracket = splitInstrument.find('(')
+                if indexBracket is not -1:
+                    tempInstrument = splitInstrument[0:indexBracket]
+                    tempIntrumentTimespan.append(splitInstrument[indexBracket + 1:])
+                elif tempInstrument is not '':
+                    indexBracket = splitInstrument.find(')')
+                    if indexBracket is not -1:
+                        tempIntrumentTimespan.append(splitInstrument[0:indexBracket])
+                        tempInstrumentCollection[tempInstrument] = tempIntrumentTimespan
+                        tempInstrument = ''
+                        tempIntrumentTimespan = []
+                    else:
+                        tempInstrumentCollection[splitInstrument] = None
+                        print()
+
+            bandData["lineup"][headerCategory][tempArtistLink].append(tempInstrumentCollection)
             logger.debug("      {:30} | {:30} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
-    logger.debug(bandData)
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(bandData)
+    #logger.debug(bandData)
     logger.debug('<<< Crawling [' + bandName + ']')
 
 def crawlBands(fileWithBandLinks):

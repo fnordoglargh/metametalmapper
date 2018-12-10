@@ -25,7 +25,6 @@
     <Content Include="bandsGraphRadial.png" />
     <Content Include="bandsGraphRadial.svg" />
     <Content Include="Entombed - Encyclopaedia Metallum The Metal Archives2.html" />
-    <Content Include="meh.txt" />
     <Content Include="loggerConfig.yaml" />
   </ItemGroup>
   <ItemGroup>
