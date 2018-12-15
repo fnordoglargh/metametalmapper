@@ -117,7 +117,7 @@ def cut_instruments(instrument_string):
             if has_closing_parenthesis is -1:
                 time_spans.append(element)
             else:
-                temp_time_span = element[0:has_closing_parenthesis]
+                temp_time_span = element[0:has_closing_parenthesis].lstrip().rstrip()
                 time_spans.append(temp_time_span)
                 has_found_multi_year = False
                 # Append and reset.
@@ -135,7 +135,7 @@ def cut_instruments(instrument_string):
                 has_closing_parenthesis = element.find(')')
                 # In this special case we must continue in next loop to extract the following parts.
                 if has_closing_parenthesis is -1:
-                    inner_part = element[index_parenthesis + 1:]
+                    inner_part = element[index_parenthesis + 1:].lstrip().rstrip()
                     has_found_multi_year = True
                     time_spans.append(inner_part)
                 # If we have a closing parenthesis we can append and continue.
@@ -162,18 +162,19 @@ def cut_instruments(instrument_string):
                     is_index_different = index_first_closing_parenthesis is not index_second_closing_parenthesis
                     # Guitars (acoustic)(1989-1998); Cut, append and reset right away.
                     if index_second_closing_parenthesis >= 0 and is_index_different:
-                        time_spans.append(
-                            element[index_second_opening_parenthesis + 1:index_second_closing_parenthesis])
+                        time_spans.append(element[index_second_opening_parenthesis + 1:index_second_closing_parenthesis])
                         collection[temp_instrument] = time_spans
                         time_spans = []
                         instruments = ''
                     else:
                         instruments += temp_instrument
-                        time_spans.append(element[index_second_opening_parenthesis + 1:])
+                        time_spans.append(element[index_second_opening_parenthesis + 1:].lstrip().rstrip())
                         has_found_multi_year = True
                 # Instrument detail without time span: Guitar (acoustic)
                 else:
                     instruments += element + ','
+
+    return collection
 
 
 def visit_band_list(countryLink, startIndex, bandLinks):
@@ -272,15 +273,15 @@ def crawlCountries():
     return countryLinks
 
 
-def crawlBand(bandName):
+def crawlBand(bandShortLink):
     # TODO: The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
     # The line looks like this:
     # url = rfc3986.uri_reference(url).unsplit()
     # Needs to import rfc3986
-    linkBand = linkMain + bands + bandName
+    linkBand = linkMain + bands + bandShortLink
     logger = logging.getLogger('Crawler')
-    logger.debug('>>> Crawling [' + bandName + ']')
+    logger.debug('>>> Crawling [' + bandShortLink + ']')
 
     # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
@@ -296,20 +297,23 @@ def crawlBand(bandName):
 
     # All data of a band is collected here.  Band members are referenced and collected in their own collection.
     bandData = {}
-    bandData["id"] = bandName[bandName.rfind('/') + 1:]
-    bandData["name"] = s[0].next_element.next_element
+    bandID = bandShortLink[bandShortLink.rfind('/') + 1:]
+    bandData[bandID] = {}
+    bandData[bandID]["link"] = bandShortLink
+    bandData[bandID]["name"] = s[0].next_element.next_element
 
     s = soup.find_all(attrs={"class": "float_left"})
-    bandData["country"] = s[1].contents[3].contents[0]
+    bandData[bandID]["country"] = s[1].contents[3].contents[0]
     countryNode = s[1].contents[3].contents[0]
     countryName = countryNode.contents[0]
     # Saving the country name and link in a dict.
     countryLink = countryNode.attrs["href"]
-    bandData["country"] = {countryName: countryLink}
-    bandData["location"] = s[1].contents[7].contents[0].split("/")
-    bandData["status"] = s[1].contents[11].contents[0]
-    bandData["formed"] = s[1].contents[15].contents[0]
-    bandData["active"] = []
+    bandData[bandID]["country"] = {countryName: countryLink}
+    bandData[bandID]["location"] = s[1].contents[7].contents[0].split("/")
+    bandData[bandID]["status"] = s[1].contents[11].contents[0]
+    bandData[bandID]["formed"] = s[1].contents[15].contents[0]
+    bandData[bandID]["active"] = []
+    artistData = {}
 
     s = soup.find_all(attrs={"class": "clear"})
     active = ""
@@ -324,33 +328,33 @@ def crawlBand(bandName):
             active = active.replace(' ', '')
             yearTokens = active.split(',')
             for yearToken in yearTokens:
-                bandData["active"].append(yearToken)
+                bandData[bandID]["active"].append(yearToken)
         elif type(active) is Tag:
             previousName = " " + active.contents[0]
-            lastPosition = len(bandData["active"]) - 1
-            bandData["active"][lastPosition] += previousName + ")"
+            lastPosition = len(bandData[bandID]["active"]) - 1
+            bandData[bandID]["active"][lastPosition] += previousName + ")"
         else:
-            debug.warn("  Found an element of type {}. This should not happen.".format(type(active)))
+            logger.warning("  Found an element of type {}. This should not happen.".format(type(active)))
 
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
     genres = genres.split(',')
-    bandData["genre"] = genres
-    bandData["theme"] = s[3].contents[7].contents[0].split(',')
+    bandData[bandID]["genre"] = genres
+    bandData[bandID]["theme"] = s[3].contents[7].contents[0].split(',')
     labelNode = s[3].contents[11].contents[0]
 
     if type(labelNode) is NavigableString:
-        bandData["label"] = {s[3].contents[11].contents[0]: ""}
+        bandData[bandID]["label"] = {s[3].contents[11].contents[0]: ""}
     else:
         labelName = labelNode.contents[0]
         labelLink = labelNode.attrs["href"]
-        bandData["label"] = {labelName: labelLink}
+        bandData[bandID]["label"] = {labelName: labelLink}
 
     artistsAndBands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artistsAndBandElement = artistsAndBands[0]
     logger.debug("  Scraping artists from actual band.")
     actualCategory = artistsAndBandElement.contents[1].contents
-    bandData["lineup"] = {}
+    bandData[bandID]["lineup"] = {}
 
     # The elements alternate from a band member to bands or member to
     # member if it's the only band for the latter.
@@ -361,7 +365,7 @@ def crawlBand(bandName):
         if lastFoundHeader == "lineupHeaders":
             headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
             logger.debug("    Found header: {}".format(headerCategory))
-            bandData["lineup"][headerCategory] = {}
+            bandData[bandID]["lineup"][headerCategory] = []
 
         # Five elements for artists.
         if len(actualRow) is 5:
@@ -369,37 +373,27 @@ def crawlBand(bandName):
             # (https://www.metal-archives.com/artists/).  It's always 39
             # letters long.
             tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
-            tempArtistName = actualRow.contents[1].contents[1].contents[0]
+            temp_artist_id = tempArtistLink[tempArtistLink.find('/') + 1:]
+            tempArtistName = str(actualRow.contents[1].contents[1].contents[0])
+            bandData[bandID]["lineup"][headerCategory].append(temp_artist_id)
             tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
-            tempSplitInstruments = tempInstruments.split(',')
-            bandData["lineup"][headerCategory][tempArtistLink] = [tempArtistName]
-            print(tempInstruments)
-            tempInstrument = ''
-            tempIntrumentTimespan = []
-            tempInstrumentCollection = {}
+            instruments = cut_instruments(tempInstruments)
 
-            for splitInstrument in tempSplitInstruments:
-                indexBracket = splitInstrument.find('(')
-                if indexBracket is not -1:
-                    tempInstrument = splitInstrument[0:indexBracket]
-                    tempIntrumentTimespan.append(splitInstrument[indexBracket + 1:])
-                elif tempInstrument is not '':
-                    indexBracket = splitInstrument.find(')')
-                    if indexBracket is not -1:
-                        tempIntrumentTimespan.append(splitInstrument[0:indexBracket])
-                        tempInstrumentCollection[tempInstrument] = tempIntrumentTimespan
-                        tempInstrument = ''
-                        tempIntrumentTimespan = []
-                    else:
-                        tempInstrumentCollection[splitInstrument] = None
-                        print()
+            artistData[temp_artist_id] = {}
+            artistData[temp_artist_id]["link"] = tempArtistLink
+            artistData[temp_artist_id]["name"] = tempArtistName
+            artistData[temp_artist_id]["bands"] = {}
+            artistData[temp_artist_id]["bands"][bandID] = instruments
 
-            bandData["lineup"][headerCategory][tempArtistLink].append(tempInstrumentCollection)
-            logger.debug("      {:30} | {:30} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(bandData)
-    #logger.debug(bandData)
-    logger.debug('<<< Crawling [' + bandName + ']')
+            # bandData["lineup"][headerCategory][tempArtistLink].append(tempInstrumentCollection)
+    #            logger.debug("      {:30} | {:30} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
+    #    pp = pprint.PrettyPrinter(indent=4)
+    #    pp.pprint(bandData)
+    # logger.debug(bandData)
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(artistData)
+    logger.debug('<<< Crawling [' + bandShortLink + ']')
+
 
 def crawlBands(fileWithBandLinks):
     logger = logging.getLogger('Crawler')
@@ -407,7 +401,8 @@ def crawlBands(fileWithBandLinks):
     isFileAvailable = os.path.isfile(fileWithBandLinks)
 
     if isFileAvailable:
-        logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(fileWithBandLinks))
+        logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(
+            fileWithBandLinks))
     else:
         logger.error("  {} is not available. Run with -c first.".format(fileWithBandLinks))
         return -1
