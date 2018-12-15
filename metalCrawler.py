@@ -101,7 +101,82 @@ def is_not_empty_string_or_live(s):
     else:
         return True
 
-def visitBandList(countryLink, startIndex, bandLinks):
+
+def cut_instruments(instrument_string):
+    temp_instruments = instrument_string.split(',')
+    instruments = ''
+    has_found_multi_year = False
+    time_spans = []
+    collection = {}
+
+    for element in temp_instruments:
+        if '(' not in element and not has_found_multi_year:
+            instruments += element + ','
+        elif has_found_multi_year:
+            has_closing_parenthesis = element.find(')')
+            if has_closing_parenthesis is -1:
+                time_spans.append(element)
+            else:
+                temp_time_span = element[0:has_closing_parenthesis]
+                time_spans.append(temp_time_span)
+                has_found_multi_year = False
+                # Append and reset.
+                collection[instruments] = time_spans
+                time_spans = []
+                instruments = ''
+        else:
+            index_parenthesis = element.find('(')
+            # Test if the letter immediately after the parentheses is a number.
+            is_number_after_parentheses = str.isdigit(element[index_parenthesis + 1:index_parenthesis + 2])
+            # Found a year after an instrument.
+            if is_number_after_parentheses:
+                # Attach instrument. We now need to to get the time span(s).
+                instruments += element[0:index_parenthesis]
+                has_closing_parenthesis = element.find(')')
+                # In this special case we must continue in next loop to extract the following parts.
+                if has_closing_parenthesis is -1:
+                    inner_part = element[index_parenthesis + 1:]
+                    has_found_multi_year = True
+                    time_spans.append(inner_part)
+                # If we have a closing parenthesis we can append and continue.
+                else:
+                    inner_part = element[index_parenthesis + 1:has_closing_parenthesis]
+                    # Append and reset.
+                    time_spans.append(inner_part)
+                    collection[instruments] = time_spans
+                    time_spans = []
+                    instruments = ''
+            # Found a detail for the instrument.
+            else:
+                index_first_opening_parenthesis = element.find('(')
+                index_second_opening_parenthesis = element.rfind('(')
+                is_index_different = index_first_opening_parenthesis is not index_second_opening_parenthesis
+                # Instrument detail with time span. Comes in different versions:
+                # Guitars (acoustic)(1989-1998); Cut, append and reset right away.
+                # Guitars (acoustic)(1989-1998
+                # If the second closing parenthesis is missing, the rest will be in next element.
+                if index_first_opening_parenthesis >= 0 and is_index_different:
+                    temp_instrument = element[0:index_second_opening_parenthesis]
+                    index_first_closing_parenthesis = element.find(')')
+                    index_second_closing_parenthesis = element.rfind(')')
+                    is_index_different = index_first_closing_parenthesis is not index_second_closing_parenthesis
+                    # Guitars (acoustic)(1989-1998); Cut, append and reset right away.
+                    if index_second_closing_parenthesis >= 0 and is_index_different:
+                        time_spans.append(
+                            element[index_second_opening_parenthesis + 1:index_second_closing_parenthesis])
+                        collection[temp_instrument] = time_spans
+                        time_spans = []
+                        instruments = ''
+                    else:
+                        instruments += temp_instrument
+                        time_spans.append(element[index_second_opening_parenthesis + 1:])
+                        has_found_multi_year = True
+                # Instrument detail without time span: Guitar (acoustic)
+                else:
+                    instruments += element + ','
+
+
+def visit_band_list(countryLink, startIndex, bandLinks):
     logger = logging.getLogger('Crawler')
     linkCountryTemp = countryLink + str(startIndex)
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
