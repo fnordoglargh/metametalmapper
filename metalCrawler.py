@@ -19,7 +19,8 @@ ajaxLinks = queue.Queue()
 # data or the bands).
 threadCount = 8
 
-class visitBandThread(threading.Thread):
+
+class VisitBandThread(threading.Thread):
 
     def __init__(self, threadID, bandLinks):
         threading.Thread.__init__(self)
@@ -35,7 +36,8 @@ class visitBandThread(threading.Thread):
             linkBandTemp = self.bandLinks.get_nowait()
             crawlBand(linkBandTemp)
 
-class visitBandListThread(threading.Thread):
+
+class VisitBandListThread(threading.Thread):
 
     def __init__(self, threadID, countryLinks, bandLinks):
         threading.Thread.__init__(self)
@@ -64,7 +66,7 @@ class visitBandListThread(threading.Thread):
             except:
                 self.logger.error("  JSON error for [" + linkCountryTemp + "]. Putting it back in circulation...")
                 self.countryLinks.put(linkCountryTemp)
-            
+
             if jsonData is not None:
                 for band in jsonData["aaData"]:
                     indexFirstApostrophe = band[0].find("'")
@@ -78,15 +80,17 @@ class visitBandListThread(threading.Thread):
                     self.bandLinks.put(bandLink[37:len(bandLink)])
                     linkCounter += 1
 
-        self.logger.debug("Finished {} and added {} links.".format(self.name,str(linkCounter)))
+        self.logger.debug("Finished {} and added {} links.".format(self.name, str(linkCounter)))
 
-def displayChildren(c):
+
+def display_children(c):
     if c is not None:
         print(c)
         for e in c:
-            displayChildren(e)
+            display_children(e)
 
-def isNotEmptyStringOrLive(s):
+
+def is_not_empty_string_or_live(s):
     if not s:
         return False
     elif "(live)" in s:
@@ -116,6 +120,7 @@ def visitBandList(countryLink, startIndex, bandLinks):
         bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
         logger.debug("  name: " + bandName)
         bandLinks[bandName] = bandLink
+
 
 def crawlCountry(linkCountry):
     logger = logging.getLogger('Crawler')
@@ -166,7 +171,7 @@ def crawlCountry(linkCountry):
 
     # Create threads and let them run.
     for i in range(0, threadCount):
-        thread = visitBandListThread(str(i), ajaxLinks, bandsQueue)
+        thread = VisitBandListThread(str(i), ajaxLinks, bandsQueue)
         thread.start()
         threads.append(thread)
 
@@ -174,6 +179,7 @@ def crawlCountry(linkCountry):
         t.join()
 
     logger.debug("<<< Crawling Country")
+
 
 def crawlCountries():
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
@@ -190,6 +196,7 @@ def crawlCountries():
 
     return countryLinks
 
+
 def crawlBand(bandName):
     # TODO: The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
@@ -204,7 +211,7 @@ def crawlBand(bandName):
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
     bandPage = http.request('GET', linkBand)
     soup = BeautifulSoup(bandPage.data, "html.parser")
-    #soup = BeautifulSoup(bandPage.data, "lxml")
+    # soup = BeautifulSoup(bandPage.data, "lxml")
 
     # Finds band name; needs to extract the ID later.
     s = soup.find_all(attrs={"class": "band_name"})
@@ -223,7 +230,7 @@ def crawlBand(bandName):
     countryName = countryNode.contents[0]
     # Saving the country name and link in a dict.
     countryLink = countryNode.attrs["href"]
-    bandData["country"] = { countryName : countryLink }
+    bandData["country"] = {countryName: countryLink}
     bandData["location"] = s[1].contents[7].contents[0].split("/")
     bandData["status"] = s[1].contents[11].contents[0]
     bandData["formed"] = s[1].contents[15].contents[0]
@@ -262,7 +269,7 @@ def crawlBand(bandName):
     else:
         labelName = labelNode.contents[0]
         labelLink = labelNode.attrs["href"]
-        bandData["label"] = {labelName:labelLink}
+        bandData["label"] = {labelName: labelLink}
 
     artistsAndBands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artistsAndBandElement = artistsAndBands[0]
@@ -273,7 +280,7 @@ def crawlBand(bandName):
     # The elements alternate from a band member to bands or member to
     # member if it's the only band for the latter.
     # Category (like current or past) are found at index.
-    for i in range(1,len(actualCategory),2):
+    for i in range(1, len(actualCategory), 2):
         actualRow = actualCategory[i]
         lastFoundHeader = actualRow.attrs["class"][0]
         if lastFoundHeader == "lineupHeaders":
@@ -291,7 +298,7 @@ def crawlBand(bandName):
             tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             tempSplitInstruments = tempInstruments.split(',')
             bandData["lineup"][headerCategory][tempArtistLink] = [tempArtistName]
-
+            print(tempInstruments)
             tempInstrument = ''
             tempIntrumentTimespan = []
             tempInstrumentCollection = {}
@@ -340,7 +347,7 @@ def crawlBands(fileWithBandLinks):
 
     # Create threads and let them run.
     for i in range(0, threadCount):
-        thread = visitBandThread(str(i), localBandsQueue)
+        thread = VisitBandThread(str(i), localBandsQueue)
         thread.start()
         threads.append(thread)
 
@@ -349,13 +356,14 @@ def crawlBands(fileWithBandLinks):
 
     logger.debug('<<< Crawling all bands in [{}]'.format(fileWithBandLinks))
 
+
 def crawlBandsOld():
     bandsToVisit = set()
-    #bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
+    # bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
     bandsToVisit.add('https://www.metal-archives.com/bands/Obituary/165')
-    #bandsToVisit.add('https://www.metal-archives.com/bands/Metallica')
-    #bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
-    #bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
+    # bandsToVisit.add('https://www.metal-archives.com/bands/Metallica')
+    # bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
+    # bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
     bandsToVisitInNextRound = set()
     bandsVisited = set()
     searchDepth = 1
@@ -369,13 +377,13 @@ def crawlBandsOld():
         # Pop a band from the "to visit" collection and add to visited collection.
         bandCurrentlyVisiting = bandsToVisit.pop()
         bandsVisited.add(bandCurrentlyVisiting)
-    
+
         website = http.request('GET', bandCurrentlyVisiting)
         soup = BeautifulSoup(website.data, "html.parser")
 
         # Finds band name; needs to extract link.
         s = soup.find_all(attrs={"class": "band_name"})
-        actualBandName = s[0].next_element.next_element#.encode('utf-8')
+        actualBandName = s[0].next_element.next_element  # .encode('utf-8')
         print('Visiting [' + actualBandName + ']...')
 
         # Takes all bands which belong to a person.
@@ -383,17 +391,17 @@ def crawlBandsOld():
 
         print("  Found [" + str(len(bandLinks) // 2) + "] persons with connected bands in lineup.")
         graphBandNames = set()
-        #print(bandLinks)
+        # print(bandLinks)
 
         lineup = soup.find_all(attrs={"id": "band_tab_members_all"})
         lineup2 = soup.find(attrs={"id": "band_tab_members_all"})
 
-    #    displayChildren(lineup)
+        #    displayChildren(lineup)
 
         for bandLink in bandLinks:
             link = bandLink.a
 
-            #print(bandLink.text.strip())
+            # print(bandLink.text.strip())
 
             if link is None:
                 # TODO: Find solution for multiple bands with no link.
@@ -406,35 +414,35 @@ def crawlBandsOld():
 
             # Loop through all bands in person lineup.
             while link != None:
-                if "," in link: # Bands without DB entries have no links.
+                if "," in link:  # Bands without DB entries have no links.
                     bandsLoop = link.split(",")
                     for s in bandsLoop:
                         # This can be anything (e.g.  "ex-" "(live)" or whitespaces).
                         # We want everything starting with "ex-" follwed by a band name.
                         # Or a band name followed by "(live)".
-                        loopingBand = s.lstrip().rstrip() 
+                        loopingBand = s.lstrip().rstrip()
 
                         # TODO: Make this better: Handle live better.
                         # This will return true for legitimate bands followed by "(live)".
-                        if isNotEmptyStringOrLive(loopingBand): 
+                        if is_not_empty_string_or_live(loopingBand):
                             print(loopingBand)
-                            if loopingBand != "ex-": # Test for "-ex" here.  Handle flag later for different diagram.
+                            if loopingBand != "ex-":  # Test for "-ex" here.  Handle flag later for different diagram.
                                 loopingBand = loopingBand.replace("ex-", "")
                                 loopingBand = loopingBand.replace("(live)", "")
                                 graphBandNames.add(loopingBand)
-                else: # This is the actual link and text.
+                else:  # This is the actual link and text.
                     if str(link).rstrip() != "" and "live" not in link:
                         refLink = link.get('href')
                         bandsToVisitInNextRound.add(refLink)
                         graphBandNames.add(link.next_element)
-                        #print " Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
+                        # print " Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
 
                 link = link.next_sibling
 
         if not bandsToVisit:
             bandsToVisit = bandsToVisitInNextRound
             bandsToVisitInNextRound = set()
-            searchLevel+=1
+            searchLevel += 1
 
         print("  Found [" + str(len(graphBandNames)) + "] connected bands.")
         graphBandToBands.update({actualBandName: graphBandNames})

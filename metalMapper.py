@@ -8,22 +8,24 @@ import yaml
 from enum import Enum
 from metalCrawler import *
 
-#FORMAT = '%(asctime)-15s - %(message)s'
-#logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
+# FORMAT = '%(asctime)-15s - %(message)s'
+# logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
 bandsListFileName = "bandLinks.txt"
+
 
 class MapMode(Enum):
     Error = -1
     SingleCrawl = 0
 
-def printHelp():
+
+def print_help():
     print('Supported modes:')
     print('  -c: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
     print('      This action can take almost 10 minutes.')
     print('  -b: Crawls all bands in the generated file {} from option -c.'.format(bandsListFileName))
 
-def main(argv):
 
+def main(argv):
     with open('loggerConfig.yaml', 'r') as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
@@ -37,17 +39,17 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "bch")
     except getopt.GetoptError:
-        printHelp()
+        print_help()
         sys.exit(2)
 
     mode = MapMode.Error
 
     if not opts:
-        printHelp()
+        print_help()
 
     for opt, arg in opts:
         if opt == '-h':
-            printHelp()
+            print_help()
             sys.exit()
         elif opt == '-c':
             countryLinks = crawlCountries()
@@ -64,21 +66,21 @@ def main(argv):
 
         elif opt == '-b':
             crawlBands("bandLinksTest.txt")
-            #crawlBands(bandsListFileName)
-            
+            # crawlBands(bandsListFileName)
 
-            #crawlBands()
-            #crawlBand('Darkthrone')
-            #crawlBand('Bathory')
-            #crawlBand('Sepultura')
-            #crawlBand('LIK')
-            #result = crawlBand('LIK')
+            # crawlBands()
+            # crawlBand('Darkthrone')
+            # crawlBand('Bathory')
+            # crawlBand('Sepultura')
+            # crawlBand('LIK')
+            # result = crawlBand('LIK')
 
-            #if result == -1:
+            # if result == -1:
             #    logger.error("The name alone was invalid. No bands page to scrape.")
 
     input('...ending')
     logging.shutdown()
 
+
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])
