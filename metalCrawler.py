@@ -115,7 +115,7 @@ def cut_instruments(instrument_string):
         elif has_found_multi_year:
             has_closing_parenthesis = element.find(')')
             if has_closing_parenthesis is -1:
-                time_spans.append(element)
+                time_spans.append(element.lstrip().rstrip())
             else:
                 temp_time_span = element[0:has_closing_parenthesis].lstrip().rstrip()
                 time_spans.append(temp_time_span)
@@ -140,7 +140,7 @@ def cut_instruments(instrument_string):
                     time_spans.append(inner_part)
                 # If we have a closing parenthesis we can append and continue.
                 else:
-                    inner_part = element[index_parenthesis + 1:has_closing_parenthesis]
+                    inner_part = element[index_parenthesis + 1:has_closing_parenthesis].lstrip().rstrip()
                     # Append and reset.
                     time_spans.append(inner_part)
                     collection[instruments] = time_spans
@@ -148,27 +148,29 @@ def cut_instruments(instrument_string):
                     instruments = ''
             # Found a detail for the instrument.
             else:
-                index_first_opening_parenthesis = element.find('(')
-                index_second_opening_parenthesis = element.rfind('(')
-                is_index_different = index_first_opening_parenthesis is not index_second_opening_parenthesis
+                idx_opening_parenthesis_1 = element.find('(')
+                idx_opening_parenthesis_2 = element.rfind('(')
+                is_index_different = idx_opening_parenthesis_1 is not idx_opening_parenthesis_2
                 # Instrument detail with time span. Comes in different versions:
                 # Guitars (acoustic)(1989-1998); Cut, append and reset right away.
                 # Guitars (acoustic)(1989-1998
                 # If the second closing parenthesis is missing, the rest will be in next element.
-                if index_first_opening_parenthesis >= 0 and is_index_different:
-                    temp_instrument = element[0:index_second_opening_parenthesis]
+                if idx_opening_parenthesis_1 >= 0 and is_index_different:
+                    temp_instrument = element[0:idx_opening_parenthesis_2]
                     index_first_closing_parenthesis = element.find(')')
                     index_second_closing_parenthesis = element.rfind(')')
                     is_index_different = index_first_closing_parenthesis is not index_second_closing_parenthesis
                     # Guitars (acoustic)(1989-1998); Cut, append and reset right away.
                     if index_second_closing_parenthesis >= 0 and is_index_different:
-                        time_spans.append(element[index_second_opening_parenthesis + 1:index_second_closing_parenthesis])
+                        time_span = element[idx_opening_parenthesis_2 + 1:index_second_closing_parenthesis]
+                        time_span = time_span.lstrip().rstrip()
+                        time_spans.append(time_span)
                         collection[temp_instrument] = time_spans
                         time_spans = []
                         instruments = ''
                     else:
                         instruments += temp_instrument
-                        time_spans.append(element[index_second_opening_parenthesis + 1:].lstrip().rstrip())
+                        time_spans.append(element[idx_opening_parenthesis_2 + 1:].lstrip().rstrip())
                         has_found_multi_year = True
                 # Instrument detail without time span: Guitar (acoustic)
                 else:
