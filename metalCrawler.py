@@ -385,12 +385,9 @@ def crawlBand(bandShortLink):
             artistData[temp_artist_id]["link"] = tempArtistLink
             artistData[temp_artist_id]["name"] = tempArtistName
             artistData[temp_artist_id]["bands"] = {}
-            artistData[temp_artist_id]["bands"][bandID] = instruments
+            artistData[temp_artist_id]["bands"][bandID] = {}
+            artistData[temp_artist_id]["bands"][bandID][headerCategory] = instruments
 
-            # bandData["lineup"][headerCategory][tempArtistLink].append(tempInstrumentCollection)
-    #            logger.debug("      {:30} | {:30} | {}".format(tempArtistLink, tempArtistName, tempInstruments))
-    #    pp = pprint.PrettyPrinter(indent=4)
-    #    pp.pprint(bandData)
     # logger.debug(bandData)
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(artistData)
