@@ -52,17 +52,17 @@ def main(argv):
             print_help()
             sys.exit()
         elif opt == '-c':
-            countryLinks = crawl_countries()
+            country_links = crawl_countries()
 
-            for countryLink in countryLinks:
+            for countryLink in country_links:
                 crawl_country(countryLink)
 
-            bandLinks_file = open(bandsListFileName, "w", encoding="utf-8")
+            band_links_file = open(bandsListFileName, "w", encoding="utf-8")
 
             while bandsQueue.qsize() != 0:
-                bandLinks_file.write(bandsQueue.get_nowait() + '\n')
+                band_links_file.write(bandsQueue.get_nowait() + '\n')
 
-            bandLinks_file.close()
+            band_links_file.close()
 
         elif opt == '-b':
             crawl_bands("bandLinksTest.txt")
