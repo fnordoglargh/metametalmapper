@@ -52,10 +52,10 @@ def main(argv):
             print_help()
             sys.exit()
         elif opt == '-c':
-            countryLinks = crawlCountries()
+            countryLinks = crawl_countries()
 
             for countryLink in countryLinks:
-                crawlCountry(countryLink)
+                crawl_country(countryLink)
 
             bandLinks_file = open(bandsListFileName, "w", encoding="utf-8")
 
@@ -65,7 +65,7 @@ def main(argv):
             bandLinks_file.close()
 
         elif opt == '-b':
-            crawlBands("bandLinksTest.txt")
+            crawl_bands("bandLinksTest.txt")
             # crawlBands(bandsListFileName)
 
             # crawlBands()

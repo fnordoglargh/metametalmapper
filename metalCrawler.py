@@ -34,53 +34,53 @@ class VisitBandThread(threading.Thread):
         self.logger.debug("Running " + self.name)
         while self.bandLinks.qsize() != 0:
             linkBandTemp = self.bandLinks.get_nowait()
-            crawlBand(linkBandTemp)
+            crawl_band(linkBandTemp)
 
 
 class VisitBandListThread(threading.Thread):
 
-    def __init__(self, threadID, countryLinks, bandLinks):
+    def __init__(self, thread_id, country_links, band_links):
         threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.name = "BandListVisiter_" + threadID
-        self.countryLinks = countryLinks
-        self.bandLinks = bandLinks
+        self.threadID = thread_id
+        self.name = "BandListVisiter_" + thread_id
+        self.countryLinks = country_links
+        self.bandLinks = band_links
         self.logger = logging.getLogger('Crawler')
-        self.logger.debug("Initing " + self.name)
+        self.logger.debug("Initializing " + self.name)
 
     def run(self):
         self.logger.debug("Running " + self.name)
-        linkCounter = 0
+        link_counter = 0
 
         while self.countryLinks.qsize() != 0:
-            linkCountryTemp = self.countryLinks.get_nowait()
+            link_country_temp = self.countryLinks.get_nowait()
             http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-            countryJson = http.request('GET', linkCountryTemp)
-            jsonDataString = countryJson.data.decode("utf-8")
-            jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-            jsonData = None
-            self.logger.debug("  Working on:" + linkCountryTemp)
+            country_json = http.request('GET', link_country_temp)
+            json_data_string = country_json.data.decode("utf-8")
+            json_data_string = json_data_string.replace("\"sEcho\": ,", '')
+            json_data = None
+            self.logger.debug("  Working on:" + link_country_temp)
 
             try:
-                jsonData = json.loads(jsonDataString)
+                json_data = json.loads(json_data_string)
             except:
-                self.logger.error("  JSON error for [" + linkCountryTemp + "]. Putting it back in circulation...")
-                self.countryLinks.put(linkCountryTemp)
+                self.logger.error("  JSON error for [" + link_country_temp + "]. Putting it back in circulation...")
+                self.countryLinks.put(link_country_temp)
 
-            if jsonData is not None:
-                for band in jsonData["aaData"]:
-                    indexFirstApostrophe = band[0].find("'")
-                    indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
-                    bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
-                    indexFirstClosingBracket = band[0].find(">")
-                    indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
-                    bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
-                    self.logger.debug("    {}: {}".format(bandName, bandLink))
+            if json_data is not None:
+                for band in json_data["aaData"]:
+                    index_first_apostrophe = band[0].find("'")
+                    index_second_apostrophe = band[0].find("'", index_first_apostrophe + 1)
+                    band_link = band[0][index_first_apostrophe + 1:index_second_apostrophe]
+                    index_first_closing_bracket = band[0].find(">")
+                    index_second_opening_bracket = band[0].find("<", index_first_closing_bracket)
+                    band_name = band[0][index_first_closing_bracket + 1:index_second_opening_bracket]
+                    self.logger.debug("    {}: {}".format(band_name, band_link))
                     # We do not need the leading "https://www.metal-archives.com/bands/".
-                    self.bandLinks.put(bandLink[37:len(bandLink)])
-                    linkCounter += 1
+                    self.bandLinks.put(band_link[37:len(band_link)])
+                    link_counter += 1
 
-        self.logger.debug("Finished {} and added {} links.".format(self.name, str(linkCounter)))
+        self.logger.debug("Finished {} and added {} links.".format(self.name, str(link_counter)))
 
 
 def display_children(c):
@@ -179,76 +179,76 @@ def cut_instruments(instrument_string):
     return collection
 
 
-def visit_band_list(countryLink, startIndex, bandLinks):
+def visit_band_list(country_link, start_index, band_links):
     logger = logging.getLogger('Crawler')
-    linkCountryTemp = countryLink + str(startIndex)
+    link_country_temp = country_link + str(start_index)
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    countryJson = http.request('GET', linkCountryTemp)
-    jsonDataString = countryJson.data.decode("utf-8")
-    jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-    jsonData = json.loads(jsonDataString)
+    country_json = http.request('GET', link_country_temp)
+    json_data_string = country_json.data.decode("utf-8")
+    json_data_string = json_data_string.replace("\"sEcho\": ,", '')
+    json_data = json.loads(json_data_string)
 
-    for band in jsonData["aaData"]:
-        indexFirstApostrophe = band[0].find("'")
-        indexSecondApostrophe = band[0].find("'", indexFirstApostrophe + 1)
-        bandLink = band[0][indexFirstApostrophe + 1:indexSecondApostrophe]
-        logger.debug("  link: " + bandLink)
-        indexFirstClosingBracket = band[0].find(">")
-        indexSecondOpeningBracket = band[0].find("<", indexFirstClosingBracket)
-        bandName = band[0][indexFirstClosingBracket + 1:indexSecondOpeningBracket]
-        logger.debug("  name: " + bandName)
-        bandLinks[bandName] = bandLink
+    for band in json_data["aaData"]:
+        index_first_apostrophe = band[0].find("'")
+        index_second_apostrophe = band[0].find("'", index_first_apostrophe + 1)
+        band_link = band[0][index_first_apostrophe + 1:index_second_apostrophe]
+        logger.debug("  link: " + band_link)
+        index_first_closing_bracket = band[0].find(">")
+        index_second_opening_bracket = band[0].find("<", index_first_closing_bracket)
+        band_name = band[0][index_first_closing_bracket + 1:index_second_opening_bracket]
+        logger.debug("  name: " + band_name)
+        band_links[band_name] = band_link
 
 
-def crawlCountry(linkCountry):
+def crawl_country(link_country):
     logger = logging.getLogger('Crawler')
-    logger.debug(">>> Crawling Country: " + linkCountry)
-    jsonDataString = ""
+    logger.debug(">>> Crawling Country: " + link_country)
+    json_data_string = ""
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
     while True:
-        countryJson = http.request('GET', linkCountry)
-        jsonDataString = countryJson.data.decode("utf-8")
+        country_json = http.request('GET', link_country)
+        json_data_string = country_json.data.decode("utf-8")
 
-        if "Forbidden." not in jsonDataString:
+        if "Forbidden." not in json_data_string:
             break
         else:
             logger.debug("  trying again...")
             time.sleep(.5)
 
-    jsonDataString = jsonDataString.replace("\"sEcho\": ,", '')
-    jsonData = json.loads(jsonDataString)
+    json_data_string = json_data_string.replace("\"sEcho\": ,", '')
+    json_data = json.loads(json_data_string)
 
     # The total amount of entries for this country is the only data we need for now.
-    amountEntries = jsonData["iTotalRecords"]
-    logger.debug("  Country has [{}] entries.".format(amountEntries))
+    amount_entries = json_data["iTotalRecords"]
+    logger.debug("  Country has [{}] entries.".format(amount_entries))
     # Limit imposed by MA.
-    displayConstant = 500
+    display_constant = 500
     # Amount of runs needed.
-    neededRunCount = (amountEntries // displayConstant)
+    needed_run_count = (amount_entries // display_constant)
 
     # We need at least one and always one more (because of the division rounding down).
-    if amountEntries % displayConstant > 0:
-        neededRunCount += 1
+    if amount_entries % display_constant > 0:
+        needed_run_count += 1
 
-    threadCount = 8
+    thread_count = 8
 
     # Override number of threads in case we don't need all.
-    if neededRunCount < threadCount:
-        threadCount = neededRunCount
+    if needed_run_count < thread_count:
+        thread_count = needed_run_count
 
-    logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(neededRunCount), str(threadCount)))
-    linkSuffix = "json/1?sEcho=1&iDisplayStart="
+    logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(needed_run_count), str(thread_count)))
+    link_suffix = "json/1?sEcho=1&iDisplayStart="
 
     # Prepare the AJAX links for the actual run.
-    for i in range(0, amountEntries, displayConstant):
-        ajaxLinks.put_nowait(linkCountry + linkSuffix + str(i))
+    for i in range(0, amount_entries, display_constant):
+        ajaxLinks.put_nowait(link_country + link_suffix + str(i))
         logger.debug("    Prepping link: " + str(i))
 
     threads = []
 
     # Create threads and let them run.
-    for i in range(0, threadCount):
+    for i in range(0, thread_count):
         thread = VisitBandListThread(str(i), ajaxLinks, bandsQueue)
         thread.start()
         threads.append(thread)
@@ -259,36 +259,36 @@ def crawlCountry(linkCountry):
     logger.debug("<<< Crawling Country")
 
 
-def crawlCountries():
+def crawl_countries():
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    countriesPage = http.request('GET', "https://www.metal-archives.com/browse/country")
-    soup = BeautifulSoup(countriesPage.data, "html.parser")
+    countries_page = http.request('GET', "https://www.metal-archives.com/browse/country")
+    soup = BeautifulSoup(countries_page.data, "html.parser")
     s = soup.find_all(attrs={"class": "countryCol"})
-    countryLinks = []
+    country_links = []
 
     for i in range(0, len(s)):
         for j in range(1, len(s[i].contents), 3):
-            tempLink = s[i].contents[j].attrs["href"]
-            countryShort = tempLink[len(tempLink) - 2:len(tempLink)]
-            countryLinks.append("https://www.metal-archives.com/browse/ajax-country/c/" + countryShort)
+            temp_link = s[i].contents[j].attrs["href"]
+            country_short = temp_link[len(temp_link) - 2:len(temp_link)]
+            country_links.append("https://www.metal-archives.com/browse/ajax-country/c/" + country_short)
 
-    return countryLinks
+    return country_links
 
 
-def crawlBand(bandShortLink):
+def crawl_band(band_short_link):
     # TODO: The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
     # The line looks like this:
     # url = rfc3986.uri_reference(url).unsplit()
     # Needs to import rfc3986
-    linkBand = linkMain + bands + bandShortLink
+    link_band = linkMain + bands + band_short_link
     logger = logging.getLogger('Crawler')
-    logger.debug('>>> Crawling [' + bandShortLink + ']')
+    logger.debug('>>> Crawling [' + band_short_link + ']')
 
     # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    bandPage = http.request('GET', linkBand)
-    soup = BeautifulSoup(bandPage.data, "html.parser")
+    band_page = http.request('GET', link_band)
+    soup = BeautifulSoup(band_page.data, "html.parser")
     # soup = BeautifulSoup(bandPage.data, "lxml")
 
     # Finds band name; needs to extract the ID later.
@@ -298,24 +298,24 @@ def crawlBand(bandShortLink):
         return -1
 
     # All data of a band is collected here.  Band members are referenced and collected in their own collection.
-    bandData = {}
-    bandID = bandShortLink[bandShortLink.rfind('/') + 1:]
-    bandData[bandID] = {}
-    bandData[bandID]["link"] = bandShortLink
-    bandData[bandID]["name"] = s[0].next_element.next_element
+    band_data = {}
+    band_id = band_short_link[band_short_link.rfind('/') + 1:]
+    band_data[band_id] = {}
+    band_data[band_id]["link"] = band_short_link
+    band_data[band_id]["name"] = s[0].next_element.next_element
 
     s = soup.find_all(attrs={"class": "float_left"})
-    bandData[bandID]["country"] = s[1].contents[3].contents[0]
-    countryNode = s[1].contents[3].contents[0]
-    countryName = countryNode.contents[0]
+    band_data[band_id]["country"] = s[1].contents[3].contents[0]
+    country_node = s[1].contents[3].contents[0]
+    country_name = country_node.contents[0]
     # Saving the country name and link in a dict.
-    countryLink = countryNode.attrs["href"]
-    bandData[bandID]["country"] = {countryName: countryLink}
-    bandData[bandID]["location"] = s[1].contents[7].contents[0].split("/")
-    bandData[bandID]["status"] = s[1].contents[11].contents[0]
-    bandData[bandID]["formed"] = s[1].contents[15].contents[0]
-    bandData[bandID]["active"] = []
-    artistData = {}
+    country_link = country_node.attrs["href"]
+    band_data[band_id]["country"] = {country_name: country_link}
+    band_data[band_id]["location"] = s[1].contents[7].contents[0].split("/")
+    band_data[band_id]["status"] = s[1].contents[11].contents[0]
+    band_data[band_id]["formed"] = s[1].contents[15].contents[0]
+    band_data[band_id]["active"] = []
+    artist_data = {}
 
     s = soup.find_all(attrs={"class": "clear"})
     active = ""
@@ -328,102 +328,102 @@ def crawlBand(bandShortLink):
             active = active.replace('),', '')
             active = active.replace('\n', '')
             active = active.replace(' ', '')
-            yearTokens = active.split(',')
-            for yearToken in yearTokens:
-                bandData[bandID]["active"].append(yearToken)
+            year_tokens = active.split(',')
+            for yearToken in year_tokens:
+                band_data[band_id]["active"].append(yearToken)
         elif type(active) is Tag:
-            previousName = " " + active.contents[0]
-            lastPosition = len(bandData[bandID]["active"]) - 1
-            bandData[bandID]["active"][lastPosition] += previousName + ")"
+            previous_name = " " + active.contents[0]
+            last_position = len(band_data[band_id]["active"]) - 1
+            band_data[band_id]["active"][last_position] += previous_name + ")"
         else:
             logger.warning("  Found an element of type {}. This should not happen.".format(type(active)))
 
     s = soup.find_all(attrs={"class": "float_right"})
     genres = s[3].contents[3].contents[0]
     genres = genres.split(',')
-    bandData[bandID]["genre"] = genres
-    bandData[bandID]["theme"] = s[3].contents[7].contents[0].split(',')
-    labelNode = s[3].contents[11].contents[0]
+    band_data[band_id]["genre"] = genres
+    band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(',')
+    label_node = s[3].contents[11].contents[0]
 
-    if type(labelNode) is NavigableString:
-        bandData[bandID]["label"] = {s[3].contents[11].contents[0]: ""}
+    if type(label_node) is NavigableString:
+        band_data[band_id]["label"] = {s[3].contents[11].contents[0]: ""}
     else:
-        labelName = labelNode.contents[0]
-        labelLink = labelNode.attrs["href"]
-        bandData[bandID]["label"] = {labelName: labelLink}
+        label_name = label_node.contents[0]
+        label_link = label_node.attrs["href"]
+        band_data[band_id]["label"] = {label_name: label_link}
 
-    artistsAndBands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
-    artistsAndBandElement = artistsAndBands[0]
+    artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
+    artists_and_band_element = artists_and_bands[0]
     logger.debug("  Scraping artists from actual band.")
-    actualCategory = artistsAndBandElement.contents[1].contents
-    bandData[bandID]["lineup"] = {}
+    actual_category = artists_and_band_element.contents[1].contents
+    band_data[band_id]["lineup"] = {}
 
     # The elements alternate from a band member to bands or member to
     # member if it's the only band for the latter.
     # Category (like current or past) are found at index.
-    for i in range(1, len(actualCategory), 2):
-        actualRow = actualCategory[i]
-        lastFoundHeader = actualRow.attrs["class"][0]
-        if lastFoundHeader == "lineupHeaders":
-            headerCategory = actualRow.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-            logger.debug("    Found header: {}".format(headerCategory))
-            bandData[bandID]["lineup"][headerCategory] = []
+    for i in range(1, len(actual_category), 2):
+        actual_row = actual_category[i]
+        last_found_header = actual_row.attrs["class"][0]
+        if last_found_header == "lineupHeaders":
+            header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
+            logger.debug("    Found header: {}".format(header_category))
+            band_data[band_id]["lineup"][header_category] = []
 
         # Five elements for artists.
-        if len(actualRow) is 5:
+        if len(actual_row) is 5:
             # The leading part ist not needed and stripped
             # (https://www.metal-archives.com/artists/).  It's always 39
             # letters long.
-            tempArtistLink = actualRow.contents[1].contents[1].attrs["href"][39:]
-            temp_artist_id = tempArtistLink[tempArtistLink.find('/') + 1:]
-            tempArtistName = str(actualRow.contents[1].contents[1].contents[0])
-            bandData[bandID]["lineup"][headerCategory].append(temp_artist_id)
-            tempInstruments = actualRow.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
-            instruments = cut_instruments(tempInstruments)
+            temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
+            temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
+            temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
+            band_data[band_id]["lineup"][header_category].append(temp_artist_id)
+            temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
+            instruments = cut_instruments(temp_instruments)
 
-            artistData[temp_artist_id] = {}
-            artistData[temp_artist_id]["link"] = tempArtistLink
-            artistData[temp_artist_id]["name"] = tempArtistName
-            artistData[temp_artist_id]["bands"] = {}
-            artistData[temp_artist_id]["bands"][bandID] = {}
-            artistData[temp_artist_id]["bands"][bandID][headerCategory] = instruments
+            artist_data[temp_artist_id] = {}
+            artist_data[temp_artist_id]["link"] = temp_artist_link
+            artist_data[temp_artist_id]["name"] = temp_artist_name
+            artist_data[temp_artist_id]["bands"] = {}
+            artist_data[temp_artist_id]["bands"][band_id] = {}
+            artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
     # logger.debug(bandData)
     pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(artistData)
-    logger.debug('<<< Crawling [' + bandShortLink + ']')
+    pp.pprint(artist_data)
+    logger.debug('<<< Crawling [' + band_short_link + ']')
 
 
-def crawlBands(fileWithBandLinks):
+def crawl_bands(file_with_band_links):
     logger = logging.getLogger('Crawler')
-    logger.debug('>>> Crawling all bands in [{}]'.format(fileWithBandLinks))
-    isFileAvailable = os.path.isfile(fileWithBandLinks)
+    logger.debug('>>> Crawling all bands in [{}]'.format(file_with_band_links))
+    is_file_available = os.path.isfile(file_with_band_links)
 
-    if isFileAvailable:
+    if is_file_available:
         logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(
-            fileWithBandLinks))
+            file_with_band_links))
     else:
-        logger.error("  {} is not available. Run with -c first.".format(fileWithBandLinks))
+        logger.error("  {} is not available. Run with -c first.".format(file_with_band_links))
         return -1
 
-    localBandsQueue = queue.Queue()
+    local_bands_queue = queue.Queue()
 
-    with open(fileWithBandLinks, "r") as bandsFile:
+    with open(file_with_band_links, "r") as bandsFile:
         for line in bandsFile:
-            localBandsQueue.put_nowait(line.rstrip('\r\n'))
+            local_bands_queue.put_nowait(line.rstrip('\r\n'))
 
     threads = []
 
     # Create threads and let them run.
     for i in range(0, threadCount):
-        thread = VisitBandThread(str(i), localBandsQueue)
+        thread = VisitBandThread(str(i), local_bands_queue)
         thread.start()
         threads.append(thread)
 
     for t in threads:
         t.join()
 
-    logger.debug('<<< Crawling all bands in [{}]'.format(fileWithBandLinks))
+    logger.debug('<<< Crawling all bands in [{}]'.format(file_with_band_links))
 
 
 def crawlBandsOld():
