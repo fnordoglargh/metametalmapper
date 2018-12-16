@@ -377,6 +377,7 @@ def crawl_band(band_short_link):
             temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
+            logger.debug("      Recording artist data for " + temp_artist_name)
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
             temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             instruments = cut_instruments(temp_instruments)
@@ -388,9 +389,8 @@ def crawl_band(band_short_link):
             artist_data[temp_artist_id]["bands"][band_id] = {}
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
-    # logger.debug(bandData)
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(artist_data)
+    # pp = pprint.PrettyPrinter(indent=2)
+    # pp.pprint(artist_data)
     logger.debug('<<< Crawling [' + band_short_link + ']')
 
 
