@@ -403,7 +403,8 @@ def crawl_bands(file_with_band_links):
         logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(
             file_with_band_links))
     else:
-        logger.error("  {} is not available. Run with -c first.".format(file_with_band_links))
+        logger.error("  {} is not available. Run with -c first or add links by hand".format(file_with_band_links))
+        logger.error("  (one band per line in format: The_Gathering/797).")
         return -1
 
     local_bands_queue = queue.Queue()
