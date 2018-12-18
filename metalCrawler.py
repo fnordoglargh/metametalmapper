@@ -103,11 +103,16 @@ def is_not_empty_string_or_live(s):
 
 
 def cut_instruments(instrument_string):
+    collection = {}
+
+    if '1' not in instrument_string or '2' not in instrument_string:
+        collection[instrument_string.lstrip().rstrip()] = []
+        return collection
+
     temp_instruments = instrument_string.split(',')
     instruments = ''
     has_found_multi_year = False
     time_spans = []
-    collection = {}
 
     for element in temp_instruments:
         if '(' not in element and not has_found_multi_year:
@@ -364,9 +369,15 @@ def crawl_band(band_short_link):
     for i in range(1, len(actual_category), 2):
         actual_row = actual_category[i]
         last_found_header = actual_row.attrs["class"][0]
+
+        # Normal case.
         if last_found_header == "lineupHeaders":
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
             logger.debug("    Found header: {}".format(header_category))
+            band_data[band_id]["lineup"][header_category] = []
+        # Special case where a band only has a current line-up.
+        elif last_found_header == "lineupRow":
+            header_category="Current"
             band_data[band_id]["lineup"][header_category] = []
 
         # Five elements for artists.
