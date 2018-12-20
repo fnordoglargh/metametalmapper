@@ -10,10 +10,13 @@ import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
 
-linkMain = 'http://www.metal-archives.com/'
+em_link_main = 'https://www.metal-archives.com/'
+em_link_label = em_link_main + 'labels/'
 bands = 'bands/'
 bandsQueue = queue.Queue()
 ajaxLinks = queue.Queue()
+
+lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
 
 # 8 might be a bit high (leaves some forbidden messages on getting the JSON
 # data or the bands).
@@ -22,19 +25,43 @@ threadCount = 8
 
 class VisitBandThread(threading.Thread):
 
-    def __init__(self, threadID, bandLinks):
+    def __init__(self, thread_id, band_links, database, lock):
         threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.name = "BandVisiter_" + threadID
-        self.bandLinks = bandLinks
+        self.threadID = thread_id
+        self.name = "BandVisitor_" + thread_id
+        self.bandLinks = band_links
+        self.database = database
         self.logger = logging.getLogger('Crawler')
-        self.logger.debug("Initing " + self.name)
+        self.logger.debug("Initializing " + self.name)
+        self.lock = lock
 
     def run(self):
         self.logger.debug("Running " + self.name)
         while self.bandLinks.qsize() != 0:
-            linkBandTemp = self.bandLinks.get_nowait()
-            crawl_band(linkBandTemp)
+            link_band_temp = self.bandLinks.get_nowait()
+            try:
+                result = crawl_band(link_band_temp)
+            except Exception:
+                self.logger.exception("Something bad happened.")
+            temp_band_data = result[0]
+            temp_artist_data = result[1]
+
+            self.lock.acquire()
+            try:
+                for artist in temp_artist_data:
+                    if artist in self.database["artists"]:
+                        for band in temp_artist_data[artist]["bands"]:
+                            self.database["artists"][artist]["bands"][band] = temp_artist_data[artist]["bands"][band]
+                        print()
+                    else:
+                        self.database["artists"][artist] = temp_artist_data[artist]
+
+                for band in temp_band_data:
+                    self.database["bands"][band] = temp_band_data[band]
+            except:
+                self.logger.error("Writing artists failed! This is bad.")
+            finally:
+                self.lock.release()
 
 
 class VisitBandListThread(threading.Thread):
@@ -42,7 +69,7 @@ class VisitBandListThread(threading.Thread):
     def __init__(self, thread_id, country_links, band_links):
         threading.Thread.__init__(self)
         self.threadID = thread_id
-        self.name = "BandListVisiter_" + thread_id
+        self.name = "BandListVisitor_" + thread_id
         self.countryLinks = country_links
         self.bandLinks = band_links
         self.logger = logging.getLogger('Crawler')
@@ -286,7 +313,7 @@ def crawl_band(band_short_link):
     # The line looks like this:
     # url = rfc3986.uri_reference(url).unsplit()
     # Needs to import rfc3986
-    link_band = linkMain + bands + band_short_link
+    link_band = em_link_main + bands + band_short_link
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling [' + band_short_link + ']')
 
@@ -351,11 +378,19 @@ def crawl_band(band_short_link):
     label_node = s[3].contents[11].contents[0]
 
     if type(label_node) is NavigableString:
-        band_data[band_id]["label"] = {s[3].contents[11].contents[0]: ""}
+        label_name = str(s[3].contents[11].contents[0])
+        if label_name is "Unsigned/independent":
+            label_id = -1
+        else:
+            label_id = label_name
+        label_link = ""
     else:
         label_name = label_node.contents[0]
-        label_link = label_node.attrs["href"]
-        band_data[band_id]["label"] = {label_name: label_link}
+        label_link = label_node.attrs["href"][len(em_link_label):]
+        label_id = label_link[label_link.find('/') + 1:]
+
+    band_data[band_id]["label"] = label_id
+    label_data = {label_id: {"name": label_name, "link": label_link}}
 
     artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artists_and_band_element = artists_and_bands[0]
@@ -375,9 +410,13 @@ def crawl_band(band_short_link):
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
             logger.debug("    Found header: {}".format(header_category))
             band_data[band_id]["lineup"][header_category] = []
-        # Special case where a band only has a current line-up.
+        # Special case where a band only has one line-up.
         elif last_found_header == "lineupRow":
-            header_category="Current"
+            # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
+            # For active bands with changing lineup we get 'Current'.
+            # For a band with no lineup changes it will be empty.
+            test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
+            header_category = lineup_mapping[test_header2]
             band_data[band_id]["lineup"][header_category] = []
 
         # Five elements for artists.
@@ -390,22 +429,26 @@ def crawl_band(band_short_link):
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
             logger.debug("      Recording artist data for " + temp_artist_name)
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
-            temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
-            instruments = cut_instruments(temp_instruments)
 
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
             artist_data[temp_artist_id]["name"] = temp_artist_name
             artist_data[temp_artist_id]["bands"] = {}
             artist_data[temp_artist_id]["bands"][band_id] = {}
+            temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
+            instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
+        else:
+            print()
 
-    # pp = pprint.PrettyPrinter(indent=2)
-    # pp.pprint(artist_data)
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(band_data)
+    pp.pprint(artist_data)
     logger.debug('<<< Crawling [' + band_short_link + ']')
+    return [band_data, artist_data, label_data]
 
 
-def crawl_bands(file_with_band_links):
+def crawl_bands(file_with_band_links, database, lock):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands in [{}]'.format(file_with_band_links))
     is_file_available = os.path.isfile(file_with_band_links)
@@ -415,7 +458,7 @@ def crawl_bands(file_with_band_links):
             file_with_band_links))
     else:
         logger.error("  {} is not available. Run with -c first or add links by hand".format(file_with_band_links))
-        logger.error("  (one band per line in format: The_Gathering/797).")
+        logger.error("  (one band per line in this format: The_Gathering/797).")
         return -1
 
     local_bands_queue = queue.Queue()
@@ -428,7 +471,7 @@ def crawl_bands(file_with_band_links):
 
     # Create threads and let them run.
     for i in range(0, threadCount):
-        thread = VisitBandThread(str(i), local_bands_queue)
+        thread = VisitBandThread(str(i), local_bands_queue, database, lock)
         thread.start()
         threads.append(thread)
 

@@ -65,7 +65,13 @@ def main(argv):
             band_links_file.close()
 
         elif opt == '-b':
-            crawl_bands("bandLinksTest.txt")
+            database = {}
+            database["artists"]={}
+            database["bands"]={}
+            lock = threading.Lock()
+            crawl_bands("bandLinksTest.txt", database, lock)
+
+            print()
             # crawlBands(bandsListFileName)
 
             # crawlBands()
