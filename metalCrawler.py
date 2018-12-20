@@ -323,7 +323,7 @@ def crawl_band(band_short_link):
     band_page = http.request('GET', link_band)
     soup = BeautifulSoup(band_page.data, "html.parser")
     # soup = BeautifulSoup(bandPage.data, "lxml")
-
+    logger.debug("  Start scraping from actual band.")
     # Finds band name; needs to extract the ID later.
     s = soup.find_all(attrs={"class": "band_name"})
 
@@ -399,6 +399,11 @@ def crawl_band(band_short_link):
     actual_category = artists_and_band_element.contents[1].contents
     band_data[band_id]["lineup"] = {}
 
+    lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
+    is_lineup_diverse = True
+    if len(lineup_finder) == 0:
+        is_lineup_diverse = False
+
     # The elements alternate from a band member to bands or member to
     # member if it's the only band for the latter.
     # Category (like current or past) are found at index.
@@ -410,14 +415,15 @@ def crawl_band(band_short_link):
         if last_found_header == "lineupHeaders":
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
             logger.debug("    Found header: {}".format(header_category))
-            band_data[band_id]["lineup"][header_category] = []
         # Special case where a band only has one line-up.
         elif last_found_header == "lineupRow":
             # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
             # For active bands with changing lineup we get 'Current'.
             # For a band with no lineup changes it will be empty.
-            test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
-            header_category = lineup_mapping[test_header2]
+            if not is_lineup_diverse:
+                test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
+                header_category = lineup_mapping[test_header2]
+        if header_category not in band_data[band_id]["lineup"]:
             band_data[band_id]["lineup"][header_category] = []
 
         # Five elements for artists.
@@ -439,8 +445,6 @@ def crawl_band(band_short_link):
             temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
-        else:
-            print(actual_row)
 
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(band_data)
