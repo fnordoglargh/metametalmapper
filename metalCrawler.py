@@ -371,10 +371,8 @@ def crawl_band(band_short_link):
             logger.warning("  Found an element of type {}. This should not happen.".format(type(active)))
 
     s = soup.find_all(attrs={"class": "float_right"})
-    genres = s[3].contents[3].contents[0]
-    genres = genres.split(',')
-    band_data[band_id]["genre"] = genres
-    band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(',')
+    band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
+    band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
     label_node = s[3].contents[11].contents[0]
 
     if type(label_node) is NavigableString:
@@ -390,7 +388,7 @@ def crawl_band(band_short_link):
         label_id = label_link[label_link.find('/') + 1:]
 
     band_data[band_id]["label"] = label_id
-    label_data = {label_id: {"name": label_name, "link": label_link}, "band": band_id}
+    label_data = {label_id: {"name": label_name, "link": label_link, "band": band_id}}
 
     artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artists_and_band_element = artists_and_bands[0]
@@ -429,7 +427,7 @@ def crawl_band(band_short_link):
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
             logger.debug("      Recording artist data for " + temp_artist_name)
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
-
+            # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
             artist_data[temp_artist_id]["name"] = temp_artist_name
@@ -439,11 +437,12 @@ def crawl_band(band_short_link):
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
         else:
-            print()
+            print(actual_row)
 
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(band_data)
     pp.pprint(artist_data)
+    pp.pprint(label_data)
     logger.debug('<<< Crawling [' + band_short_link + ']')
     return [band_data, artist_data, label_data]
 
