@@ -390,7 +390,7 @@ def crawl_band(band_short_link):
         label_id = label_link[label_link.find('/') + 1:]
 
     band_data[band_id]["label"] = label_id
-    label_data = {label_id: {"name": label_name, "link": label_link}}
+    label_data = {label_id: {"name": label_name, "link": label_link}, "band": band_id}
 
     artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artists_and_band_element = artists_and_bands[0]
