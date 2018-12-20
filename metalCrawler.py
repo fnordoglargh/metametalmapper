@@ -308,7 +308,8 @@ def crawl_countries():
 
 
 def crawl_band(band_short_link):
-    # TODO: The % escaped glyphs only work if the client.py in http
+    # TODO: Change your environment or this won't work!
+    # The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
     # The line looks like this:
     # url = rfc3986.uri_reference(url).unsplit()
@@ -362,7 +363,9 @@ def crawl_band(band_short_link):
             active = active.replace(' ', '')
             year_tokens = active.split(',')
             for yearToken in year_tokens:
-                band_data[band_id]["active"].append(yearToken)
+                # TODO: Very strange case for bands which changed their name. Maybe we want to pass on that time span.
+                if yearToken != ')':
+                    band_data[band_id]["active"].append(yearToken)
         elif type(active) is Tag:
             previous_name = " " + active.contents[0]
             last_position = len(band_data[band_id]["active"]) - 1
