@@ -45,6 +45,7 @@ class VisitBandThread(threading.Thread):
                 self.logger.exception("Something bad happened.")
             temp_band_data = result[0]
             temp_artist_data = result[1]
+            temp_label_data = result[2]
 
             self.lock.acquire()
             try:
@@ -414,7 +415,7 @@ def crawl_band(band_short_link):
         # Normal case.
         if last_found_header == "lineupHeaders":
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-            logger.debug("    Found header: {}".format(header_category))
+            logger.debug("  Found header: {}".format(header_category))
         # Special case where a band only has one line-up.
         elif last_found_header == "lineupRow":
             # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
@@ -423,6 +424,7 @@ def crawl_band(band_short_link):
             if not is_lineup_diverse:
                 test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                 header_category = lineup_mapping[test_header2]
+                logger.debug("  Didn't find a header. Digging deeper: {}".format(header_category))
         if header_category not in band_data[band_id]["lineup"]:
             band_data[band_id]["lineup"][header_category] = []
 
@@ -434,22 +436,22 @@ def crawl_band(band_short_link):
             temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-            logger.debug("      Recording artist data for " + temp_artist_name)
+            logger.debug("    Recording artist data for " + temp_artist_name)
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
             # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
-            artist_data[temp_artist_id]["name"] = temp_artist_name
             artist_data[temp_artist_id]["bands"] = {}
             artist_data[temp_artist_id]["bands"][band_id] = {}
+            artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
             temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(band_data)
-    pp.pprint(artist_data)
-    pp.pprint(label_data)
+    # pp = pprint.PrettyPrinter(indent=2)
+    # # pp.pprint(band_data)
+    # # pp.pprint(artist_data)
+    # # pp.pprint(label_data)
     logger.debug('<<< Crawling [' + band_short_link + ']')
     return [band_data, artist_data, label_data]
 
