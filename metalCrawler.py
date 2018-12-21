@@ -9,6 +9,7 @@ import time
 import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
+import re
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -133,7 +134,8 @@ def is_not_empty_string_or_live(s):
 def cut_instruments(instrument_string):
     collection = {}
 
-    if '1' not in instrument_string or '2' not in instrument_string:
+    # if '1' not in instrument_string or '2' not in instrument_string:
+    if not bool(re.search(r'\d', instrument_string)):
         collection[instrument_string.lstrip().rstrip()] = []
         return collection
 
@@ -143,12 +145,14 @@ def cut_instruments(instrument_string):
     time_spans = []
 
     for element in temp_instruments:
+        element = element.lstrip().rstrip()
+
         if '(' not in element and not has_found_multi_year:
-            instruments += element + ','
+            instruments += element + ', '
         elif has_found_multi_year:
             has_closing_parenthesis = element.find(')')
             if has_closing_parenthesis is -1:
-                time_spans.append(element.lstrip().rstrip())
+                time_spans.append(element)
             else:
                 temp_time_span = element[0:has_closing_parenthesis].lstrip().rstrip()
                 time_spans.append(temp_time_span)
@@ -444,6 +448,7 @@ def crawl_band(band_short_link):
             artist_data[temp_artist_id]["bands"] = {}
             artist_data[temp_artist_id]["bands"][band_id] = {}
             artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
+            # Last replace is not a normal white space (\xa0).
             temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
