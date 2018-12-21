@@ -23,9 +23,16 @@ class CrawlMode(Enum):
 
 def print_help():
     print('Supported modes:')
-    print('  -c: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
+    print('  -a: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
     print('      This action can take almost 10 minutes.')
     print('  -b: Crawls all bands in the generated file {} from option -c.'.format(bandsListFileName))
+    print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
+    print('     and uses the standard file name together with the ID to write a')
+    print('     file with all band links from the given country. See Wikipedia for examples:')
+    print('     https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes')
+    print('  -f <filename>: filename is a parameter to override the standard file name')
+    print('     for -b or -c and is used either to write an output file or to read an')
+    print('     input file.')
 
 
 def main(argv):
@@ -33,19 +40,19 @@ def main(argv):
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
 
-    # Change to a terminal size in which everything fits.
-    os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
-    logger.debug('***************************************************************')
-    logger.debug('Starting up...')
 
     try:
-        opts, args = getopt.getopt(argv, "bac:hf:")
+        opts, args = getopt.getopt(argv, "bac:hf:t")
     except getopt.GetoptError:
         logger.exception("There's an issue with the parameters.")
         print_help()
         sys.exit(2)
 
+    # Change to a terminal size in which everything fits.
+    os.system('mode con: cols=153 lines=9999')
+    logger.debug('***************************************************************')
+    logger.debug('Starting up...')
     mode = CrawlMode.Error
 
     if not opts:
@@ -88,6 +95,9 @@ def main(argv):
                 logger.info("No file name supplied. Using standards to load and save.")
             else:
                 logger.info("File name: " + filename)
+        elif opt == '-t':
+            result = cut_instruments('Drums(1988-1993, 1994-present)')
+            print()
         else:
             mode = CrawlMode.Error
 
@@ -114,7 +124,7 @@ def main(argv):
                 band_links_file.write(bandsQueue.get_nowait() + '\n')
             band_links_file.close()
         else:
-            logger.warning("No bands in country {}. To check country manually, click above link.".format(country))
+            logger.warning("No bands in country {}. To check country manually, use above link.".format(country))
     input('...ending')
     logging.shutdown()
 
