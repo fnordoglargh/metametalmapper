@@ -71,6 +71,7 @@ def main(argv):
             database = {}
             database["artists"] = {}
             database["bands"] = {}
+            database["labels"] = {}
             lock = threading.Lock()
             crawl_bands("bandLinksTest.txt", database, lock)
 

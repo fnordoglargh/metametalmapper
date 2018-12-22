@@ -60,6 +60,9 @@ class VisitBandThread(threading.Thread):
 
                 for band in temp_band_data:
                     self.database["bands"][band] = temp_band_data[band]
+                for label in temp_label_data:
+                    if label not in self.database["labels"]:
+                        self.database["labels"][label]=temp_label_data[label]
             except:
                 self.logger.error("Writing artists failed! This is bad.")
             finally:
@@ -340,7 +343,7 @@ def crawl_band(band_short_link):
     band_id = band_short_link[band_short_link.rfind('/') + 1:]
     band_data[band_id] = {}
     band_data[band_id]["link"] = band_short_link
-    band_data[band_id]["name"] = s[0].next_element.next_element
+    band_data[band_id]["name"] = str(s[0].next_element.text)
 
     s = soup.find_all(attrs={"class": "float_left"})
     band_data[band_id]["country"] = s[1].contents[3].contents[0]
@@ -350,8 +353,8 @@ def crawl_band(band_short_link):
     country_link = country_node.attrs["href"]
     band_data[band_id]["country"] = {country_name: country_link}
     band_data[band_id]["location"] = s[1].contents[7].contents[0].split("/")
-    band_data[band_id]["status"] = s[1].contents[11].contents[0]
-    band_data[band_id]["formed"] = s[1].contents[15].contents[0]
+    band_data[band_id]["status"] = s[1].contents[11].text
+    band_data[band_id]["formed"] = s[1].contents[15].text
     band_data[band_id]["active"] = []
     artist_data = {}
 
@@ -396,7 +399,7 @@ def crawl_band(band_short_link):
         label_id = label_link[label_link.find('/') + 1:]
 
     band_data[band_id]["label"] = label_id
-    label_data = {label_id: {"name": label_name, "link": label_link, "band": band_id}}
+    label_data = {label_id: {"name": label_name, "link": label_link}}
 
     artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artists_and_band_element = artists_and_bands[0]
