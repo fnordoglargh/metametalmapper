@@ -7,6 +7,7 @@ import logging.config
 import yaml
 from enum import Enum
 from metalCrawler import *
+import json
 import pprint
 
 # FORMAT = '%(asctime)-15s - %(message)s'
@@ -68,28 +69,19 @@ def main(argv):
         elif opt == '-a':
             mode = CrawlMode.CrawlAllCountries
         elif opt == '-b':
-            database = {}
-            database["artists"] = {}
-            database["bands"] = {}
-            database["labels"] = {}
+            database = {"artists": {}, "bands": {}, "labels": {}}
             lock = threading.Lock()
             crawl_bands("bandLinksTest.txt", database, lock)
+            json.dump(database, open("database.json", 'w'))
+            logger.info("Saved database into json file.")
 
-            pp = pprint.PrettyPrinter(indent=2)
-            pp.pprint(database)
+            # pp = pprint.PrettyPrinter(indent=2)
+            # pp.pprint(database)
 
-            print()
+            # d2 = json.load(open("database.txt"))
+            # pp.pprint(d2)
+
             # crawlBands(bandsListFileName)
-
-            # crawlBands()
-            # crawlBand('Darkthrone')
-            # crawlBand('Bathory')
-            # crawlBand('Sepultura')
-            # crawlBand('LIK')
-            # result = crawlBand('LIK')
-
-            # if result == -1:
-            #    logger.error("The name alone was invalid. No bands page to scrape.")
         elif opt == '-f':
             filename = arg
             if len(filename) == 0:
