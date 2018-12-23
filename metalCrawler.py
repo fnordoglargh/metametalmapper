@@ -43,7 +43,13 @@ class VisitBandThread(threading.Thread):
             try:
                 result = crawl_band(link_band_temp)
             except Exception:
-                self.logger.exception("Something bad happened.")
+                self.logger.exception("Something bad happened while crawling.")
+
+            # Error case: putting the link back into circulation.
+            if result == -1:
+                self.bandLinks.put(link_band_temp)
+                continue
+
             temp_band_data = result[0]
             temp_artist_data = result[1]
             temp_label_data = result[2]
@@ -54,7 +60,6 @@ class VisitBandThread(threading.Thread):
                     if artist in self.database["artists"]:
                         for band in temp_artist_data[artist]["bands"]:
                             self.database["artists"][artist]["bands"][band] = temp_artist_data[artist]["bands"][band]
-                        print()
                     else:
                         self.database["artists"][artist] = temp_artist_data[artist]
 
@@ -328,7 +333,17 @@ def crawl_band(band_short_link):
 
     # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    band_page = http.request('GET', link_band)
+
+    while True:
+        band_page = http.request('GET', link_band)
+        band_data_string = band_page.data.decode("utf-8")
+
+        if "Forbidden." not in band_data_string:
+            break
+        else:
+            logger.debug("  trying again...")
+            time.sleep(.5)
+
     soup = BeautifulSoup(band_page.data, "html.parser")
     # soup = BeautifulSoup(bandPage.data, "lxml")
     logger.debug("  Start scraping from actual band.")
@@ -336,6 +351,9 @@ def crawl_band(band_short_link):
     s = soup.find_all(attrs={"class": "band_name"})
 
     if len(s) == 0:
+        logger.fatal("  Did not find the attribute band_name for {}.".format(band_short_link))
+        logger.debug("  Band page source for reference:")
+        logger.debug(band_page.data)
         return -1
 
     # All data of a band is collected here.  Band members are referenced and collected in their own collection.
