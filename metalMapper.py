@@ -12,7 +12,8 @@ import pprint
 
 # FORMAT = '%(asctime)-15s - %(message)s'
 # logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
-bandsListFileName = "bandLinks.txt"
+link_extension = ".lnks"
+bandsListFileName = "bands" + link_extension
 
 
 class CrawlMode(Enum):
@@ -44,6 +45,7 @@ def main(argv):
     logger = logging.getLogger('MAIN')
 
     try:
+        # TODO: Fix defect while using -c and -f together.
         opts, args = getopt.getopt(argv, "bac:hf:t")
     except getopt.GetoptError:
         logger.exception("There's an issue with the parameters.")
@@ -55,6 +57,7 @@ def main(argv):
     logger.debug('***************************************************************')
     logger.debug('Starting up...')
     mode = CrawlMode.Error
+    filename = ""
 
     if not opts:
         print_help()
@@ -69,25 +72,10 @@ def main(argv):
         elif opt == '-a':
             mode = CrawlMode.CrawlAllCountries
         elif opt == '-b':
-            database = {"artists": {}, "bands": {}, "labels": {}}
-            lock = threading.Lock()
-            crawl_bands("bandLinksTest.txt", database, lock)
-            json.dump(database, open("database.json", 'w'))
-            logger.info("Saved database into json file.")
-
-            # pp = pprint.PrettyPrinter(indent=2)
-            # pp.pprint(database)
-
-            # d2 = json.load(open("database.txt"))
-            # pp.pprint(d2)
-
-            # crawlBands(bandsListFileName)
+            mode = CrawlMode.CrawlBands
         elif opt == '-f':
             filename = arg
-            if len(filename) == 0:
-                logger.info("No file name supplied. Using standards to load and save.")
-            else:
-                logger.info("File name: " + filename)
+            logger.info("Supplied file name: " + filename)
         elif opt == '-t':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
             print()
@@ -111,13 +99,32 @@ def main(argv):
         logger.info("Crawling a single country: " + country)
         country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
         crawl_country(country_link)
+        country_filename = "bands-{}{}".format(country, link_extension)
         if bandsQueue.qsize() != 0:
-            band_links_file = open("bandsList-{}.txt".format(country), "w", encoding="utf-8")
+            band_links_file = open(country_filename, "w", encoding="utf-8")
             while bandsQueue.qsize() != 0:
                 band_links_file.write(bandsQueue.get_nowait() + '\n')
             band_links_file.close()
+            logger.info("Saved bands of {} in file {}.".format(country, country_filename))
         else:
             logger.warning("No bands in country {}. To check country manually, use above link.".format(country))
+    elif mode is CrawlMode.CrawlBands:
+        if len(filename) is 0:
+            filename = bandsListFileName
+
+        database = {"artists": {}, "bands": {}, "labels": {}}
+        lock = threading.Lock()
+        crawl_bands(filename, database, lock)
+        json.dump(database, open(bandsListFileName + ".json", 'w'))
+        logger.info("Saved database into json file.")
+
+        # pp = pprint.PrettyPrinter(indent=2)
+        # pp.pprint(database)
+
+        # d2 = json.load(open("database.txt"))
+        # pp.pprint(d2)
+
+        # crawlBands(bandsListFileName)
     input('...ending')
     logging.shutdown()
 
