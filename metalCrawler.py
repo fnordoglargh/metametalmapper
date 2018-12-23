@@ -381,9 +381,7 @@ def crawl_band(band_short_link):
     band_data[band_id]["formed"] = s[1].contents[15].text
     band_data[band_id]["active"] = []
     artist_data = {}
-
     s = soup.find_all(attrs={"class": "clear"})
-    active = ""
 
     # Iterate over all time spans the band was (or is) active.
     for element in s[3].contents[3].contents:
@@ -424,15 +422,14 @@ def crawl_band(band_short_link):
 
     band_data[band_id]["label"] = label_id
     label_data = {label_id: {"name": label_name, "link": label_link}}
-
     artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
     artists_and_band_element = artists_and_bands[0]
     logger.debug("  Scraping artists from actual band.")
     actual_category = artists_and_band_element.contents[1].contents
     band_data[band_id]["lineup"] = {}
-
     lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
     is_lineup_diverse = True
+
     if len(lineup_finder) == 0:
         is_lineup_diverse = False
 

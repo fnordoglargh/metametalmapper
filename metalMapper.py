@@ -109,6 +109,7 @@ def main(argv):
         else:
             logger.warning("No bands in country {}. To check country manually, use above link.".format(country))
     elif mode is CrawlMode.CrawlBands:
+        # Use standard file name if no -f has been supplied.
         if len(filename) is 0:
             filename = bandsListFileName
 
