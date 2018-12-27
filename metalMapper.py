@@ -116,16 +116,18 @@ def main(argv):
         database = {"artists": {}, "bands": {}, "labels": {}}
         lock = threading.Lock()
         crawl_bands(filename, database, lock)
-        json.dump(database, open(bandsListFileName + ".json", 'w'))
-        logger.info("Saved database into json file.")
+        json_database_string = json.dumps(database)
 
-        # pp = pprint.PrettyPrinter(indent=2)
-        # pp.pprint(database)
+        with open(filename + ".json", 'w', encoding="utf-8") as database_json_file:
+            database_json_file.write(json_database_string)
 
-        # d2 = json.load(open("database.txt"))
-        # pp.pprint(d2)
+        logger.info("Database is now available as {}.".format(filename + ".json"))
 
-        # crawlBands(bandsListFileName)
+        # bands_json_file2 = open(filename + ".json", 'r', encoding="utf-8")
+        # read_json_string = bands_json_file2.read()
+        # bands_json_file2.close()
+        # database_from_file = json.loads(read_json_string)
+
     input('...ending')
     logging.shutdown()
 
