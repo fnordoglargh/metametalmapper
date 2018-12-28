@@ -15,8 +15,8 @@ import pprint
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
 
-FOLDER_LINKS = "links"
-FOLDER_DB = "databases"
+FOLDER_LINKS = Path("links")
+FOLDER_DB = Path("databases")
 folders = [FOLDER_LINKS, FOLDER_DB]
 
 
@@ -67,14 +67,15 @@ def main(argv):
 
     # Check necessary folders exist, try to create them otherwise.
     for folder in folders:
-        if os.path.isdir(folder) is False:
+        if not folder.exists() and not folder.is_dir():
             try:
-                os.mkdir(folder)
-            except OSError:
+                folder.mkdir()
+                logger.info(f"Successfully created the directory {folder}.")
+            except:
                 logger.fatal(f"Creation of the directory {folder} failed.")
                 sys.exit(3)
-            else:
-                logger.info(f"Successfully created the directory {folder}.")
+        else:
+            logger.debug(f"Standard directory {folder} exists.")
 
     if not opts:
         print_help()
