@@ -50,5 +50,3 @@ def analyse_band_genres(bands_database):
         percentage_of_genre = 100 * genre_count / len(genres)
         percentage_of_bands = 100 * genre_count / len(bands_database)
         print(format_genre.format(genre_id, "(" + str(genre_count) + ")", percentage_of_genre, percentage_of_bands))
-
-    print()
