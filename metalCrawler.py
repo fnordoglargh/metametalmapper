@@ -502,7 +502,7 @@ def crawl_bands(file_with_band_links, database, lock):
 
     with open(file_with_band_links, "r") as bandsFile:
         for line in bandsFile:
-            local_bands_queue.put_nowait(line.rstrip('\r\n'))
+            local_bands_queue.put_nowait(line.rstrip())
 
     threads = []
 
