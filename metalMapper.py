@@ -15,6 +15,7 @@ import pprint
 # logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
+folders = ["links", "databases"]
 
 
 class CrawlMode(Enum):
@@ -40,7 +41,6 @@ def print_help():
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
 
-
 def main(argv):
 
     try:
@@ -62,6 +62,17 @@ def main(argv):
     logger.debug('Starting up...')
     mode = CrawlMode.Error
     filename = ""
+
+    # Check necessary folders exist, try to create them otherwise.
+    for folder in folders:
+        if os.path.isdir(folder) is False:
+            try:
+                os.mkdir(folder)
+            except OSError:
+                logger.fatal(f"Creation of the directory {folder} failed.")
+                sys.exit(3)
+            else:
+                logger.info(f"Successfully created the directory {folder}.")
 
     if not opts:
         print_help()
