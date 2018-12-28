@@ -9,13 +9,15 @@ from enum import Enum
 from metalCrawler import *
 from metalAnalyzer import *
 import json
+from pathlib import Path
 import pprint
 
-# FORMAT = '%(asctime)-15s - %(message)s'
-# logging.basicConfig(filename='crawler.log', level=logging.DEBUG, format=FORMAT)
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
-folders = ["links", "databases"]
+
+FOLDER_LINKS = "links"
+FOLDER_DB = "databases"
+folders = [FOLDER_LINKS, FOLDER_DB]
 
 
 class CrawlMode(Enum):
@@ -41,6 +43,7 @@ def print_help():
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
 
+
 def main(argv):
 
     try:
@@ -50,14 +53,13 @@ def main(argv):
         print_help()
         sys.exit(2)
 
-    with open('loggerConfig.yaml', 'r') as f:
-        config = yaml.safe_load(f.read())
+    with open('loggerConfig.yaml', 'r') as log_config:
+        config = yaml.safe_load(log_config.read())
         logging.config.dictConfig(config)
-
-    logger = logging.getLogger('MAIN')
 
     # Change to a terminal size in which everything fits.
     os.system('mode con: cols=153 lines=9999')
+    logger = logging.getLogger('MAIN')
     logger.debug('***************************************************************')
     logger.debug('Starting up...')
     mode = CrawlMode.Error
@@ -116,7 +118,8 @@ def main(argv):
         logger.info("Crawling a single country: " + country)
         country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
         crawl_country(country_link)
-        country_filename = "bands-{}{}".format(country, link_extension)
+        country_filename = Path(f"{FOLDER_LINKS}/bands-{country}{link_extension}")
+
         if bandsQueue.qsize() != 0:
             band_links_file = open(country_filename, "w", encoding="utf-8")
             while bandsQueue.qsize() != 0:
