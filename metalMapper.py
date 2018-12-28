@@ -7,6 +7,7 @@ import logging.config
 import yaml
 from enum import Enum
 from metalCrawler import *
+from metalAnalyzer import *
 import json
 import pprint
 
@@ -21,20 +22,22 @@ class CrawlMode(Enum):
     CrawlCountry = 0
     CrawlAllCountries = 1
     CrawlBands = 2
+    AnalyseDatabase = 3
 
 
 def print_help():
     print('Supported modes:')
     print('  -a: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
-    print('      This action can take almost 10 minutes.')
-    print('  -b: Crawls all bands in the generated file {} from option -c.'.format(bandsListFileName))
+    print('    This action can take almost 10 minutes.')
+    print('  -b: Crawls all bands in the generated file {} from option -a'.format(bandsListFileName))
+    print('    (or -c if you specify your own file with -f).')
     print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
-    print('     and uses the standard file name together with the ID to write a')
-    print('     file with all band links from the given country. See Wikipedia for examples:')
-    print('     https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes')
+    print('    and uses the standard file name together with the ID to write a')
+    print('    file with all band links from the given country. See Wikipedia for examples:')
+    print('    https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes')
     print('  -f <filename>: filename is a parameter to override the standard file name')
-    print('     for -b or -c and is used either to write an output file or to read an')
-    print('     input file.')
+    print('    for -b or -c and is used either to write an output file or to read an')
+    print('    input file.')
 
 
 def main(argv):
@@ -46,7 +49,7 @@ def main(argv):
 
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "bac:hf:t")
+        opts, args = getopt.getopt(argv, "bac:hf:ty")
     except getopt.GetoptError:
         logger.exception("There's an issue with the parameters.")
         print_help()
@@ -79,6 +82,8 @@ def main(argv):
         elif opt == '-t':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
             print()
+        elif opt == '-y':
+            mode = CrawlMode.AnalyseDatabase
         else:
             mode = CrawlMode.Error
 
@@ -122,11 +127,16 @@ def main(argv):
             database_json_file.write(json_database_string)
 
         logger.info("Database is now available as {}.".format(filename + ".json"))
+    elif mode is CrawlMode.AnalyseDatabase:
+        # Use standard file name if no -f has been supplied.
+        if len(filename) is 0:
+            filename = bandsListFileName
 
-        # bands_json_file2 = open(filename + ".json", 'r', encoding="utf-8")
-        # read_json_string = bands_json_file2.read()
-        # bands_json_file2.close()
-        # database_from_file = json.loads(read_json_string)
+        with open(filename + ".json", 'r', encoding="utf-8") as json_database_string:
+            string_database = json_database_string.read()
+
+        database = json.loads(string_database)
+        analyse_band_genres(database["bands"])
 
     input('...ending')
     logging.shutdown()
