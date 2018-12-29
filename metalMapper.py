@@ -44,8 +44,23 @@ def print_help():
     print('    input file.')
 
 
-def main(argv):
+def flush_queue(country_short):
+    logger = logging.getLogger('Crawler')
+    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
 
+    if bandsQueue.qsize() != 0:
+        band_links_file = open(country_filename, "w", encoding="utf-8")
+        counter = 0
+        while bandsQueue.qsize() != 0:
+            band_links_file.write(bandsQueue.get_nowait() + '\n')
+            counter += 1
+        band_links_file.close()
+        logger.info("Saved {} bands of {} in file '{}'.".format(str(counter), country_short, country_filename))
+    else:
+        logger.warning("No bands in country {}. To check country manually, use above link.".format(country_short))
+
+
+def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
         opts, args = getopt.getopt(argv, "bac:hf:ty")
@@ -104,31 +119,18 @@ def main(argv):
 
     if mode is CrawlMode.CrawlAllCountries:
         logger.info("Crawling all countries...")
+        # This starts bootstrapping from the actual country list as it is on EM.
         country_links = crawl_countries()
 
         for countryLink in country_links:
+            country_short = countryLink[countryLink.rfind('/') + 1:]
             crawl_country(countryLink)
-
-        band_links_file = open(bandsListFileName, "w", encoding="utf-8")
-
-        while bandsQueue.qsize() != 0:
-            band_links_file.write(bandsQueue.get_nowait() + '\n')
-
-        band_links_file.close()
+            flush_queue(country_short)
     elif mode is CrawlMode.CrawlCountry:
         logger.info("Crawling a single country: " + country)
         country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
         crawl_country(country_link)
-        country_filename = Path(f"{FOLDER_LINKS}/bands-{country}{link_extension}")
-
-        if bandsQueue.qsize() != 0:
-            band_links_file = open(country_filename, "w", encoding="utf-8")
-            while bandsQueue.qsize() != 0:
-                band_links_file.write(bandsQueue.get_nowait() + '\n')
-            band_links_file.close()
-            logger.info("Saved bands of {} in file {}.".format(country, country_filename))
-        else:
-            logger.warning("No bands in country {}. To check country manually, use above link.".format(country))
+        flush_queue(country)
     elif mode is CrawlMode.CrawlBands:
         # Use standard file name if no -f has been supplied.
         if len(filename) is 0:
