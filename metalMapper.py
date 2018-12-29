@@ -14,6 +14,7 @@ import pprint
 
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
+bandLinkFileName = "bands-{}" + link_extension
 
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
@@ -29,9 +30,11 @@ class CrawlMode(Enum):
 
 
 def print_help():
+    file_name_a = bandLinkFileName.format('XX')
+    # TODO: Move two letter country names to description section.
     print('Supported modes:')
-    print('  -a: Crawls all countries for bands and saves them in a file named {}.'.format(bandsListFileName))
-    print('    This action can take almost 10 minutes.')
+    print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a} (where XX is the')
+    print('    two letter short form of a given country). This action can take almost 10 minutes.')
     print('  -b: Crawls all bands in the generated file {} from option -a'.format(bandsListFileName))
     print('    (or -c if you specify your own file with -f).')
     print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
