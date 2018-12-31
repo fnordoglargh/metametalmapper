@@ -11,6 +11,8 @@ from metalAnalyzer import *
 import json
 from pathlib import Path
 import pprint
+import datetime
+
 
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
@@ -34,8 +36,9 @@ def print_help():
     # TODO: Move two letter country names to description section.
     print('Supported modes:')
     print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a} (where XX is the')
-    print('    two letter short form of a given country). This action can take almost 10 minutes.')
-    print('  -b: Crawls all bands in the generated file {} from option -a'.format(bandsListFileName))
+    print(f'    two letter short form of a given country). The files are put into sub-folder {FOLDER_LINKS}.')
+    print('     This action can take almost 10 minutes.')
+    print('  -b: Crawls all bands in the generated files from option -a')
     print('    (or -c if you specify your own file with -f).')
     print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
     print('    and uses the standard file name together with the ID to write a')
@@ -82,6 +85,7 @@ def main(argv):
     logger.debug('Starting up...')
     mode = CrawlMode.Error
     filename = ""
+    filenames = []
 
     # Check necessary folders exist, try to create them otherwise.
     for folder in folders:
@@ -111,7 +115,8 @@ def main(argv):
             mode = CrawlMode.CrawlBands
         elif opt == '-f':
             filename = arg
-            logger.info("Supplied file name: " + filename)
+            filenames.append(Path(arg))
+            logger.info(f"Supplied file name: '{arg}'.")
         elif opt == '-t':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
             print()
@@ -119,6 +124,11 @@ def main(argv):
             mode = CrawlMode.AnalyseDatabase
         else:
             mode = CrawlMode.Error
+
+    # No filename argument given; read all files in links folder. Results in path plus filename.
+    if len(filenames) == 0:
+        for file_link in FOLDER_LINKS.iterdir():
+            filenames.append(file_link)
 
     if mode is CrawlMode.CrawlAllCountries:
         logger.info("Crawling all countries...")
@@ -135,19 +145,27 @@ def main(argv):
         crawl_country(country_link)
         flush_queue(country)
     elif mode is CrawlMode.CrawlBands:
-        # Use standard file name if no -f has been supplied.
-        if len(filename) is 0:
-            filename = bandsListFileName
-
         database = {"artists": {}, "bands": {}, "labels": {}}
         lock = threading.Lock()
-        crawl_bands(filename, database, lock)
+
+        for path in filenames:
+            if path.is_file():
+                band_links = path.read_text(encoding="utf-8").split('\n')
+                # Remove last element from list if it's a lonely, empty string.
+                if band_links[-1] == '':
+                    del band_links[-1]
+                # TODO: Get the country from filename and pass as parameter.
+                crawl_bands(band_links, database, lock)
+            else:
+                logger.error(f"File {path} was not readable.")
+
+        date_format = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
+        db_path = FOLDER_DB / f"db-{date_format}.json"
+        band_links_file = open(db_path, "w", encoding="utf-8")
         json_database_string = json.dumps(database)
-
-        with open(filename + ".json", 'w', encoding="utf-8") as database_json_file:
-            database_json_file.write(json_database_string)
-
-        logger.info("Database is now available as {}.".format(filename + ".json"))
+        band_links_file.write(json_database_string)
+        band_links_file.close()
+        logger.info(f"Database is now available as {db_path}.")
     elif mode is CrawlMode.AnalyseDatabase:
         # Use standard file name if no -f has been supplied.
         if len(filename) is 0:
