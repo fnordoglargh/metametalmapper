@@ -167,15 +167,21 @@ def main(argv):
         band_links_file.close()
         logger.info(f"Database is now available as {db_path}.")
     elif mode is CrawlMode.AnalyseDatabase:
-        # Use standard file name if no -f has been supplied.
-        if len(filename) is 0:
-            filename = bandsListFileName
+        for path in filenames:
+            if path.is_file():
+                string_database = path.read_text(encoding="utf-8")
 
-        with open(filename + ".json", 'r', encoding="utf-8") as json_database_string:
-            string_database = json_database_string.read()
+            can_analyse = False
 
-        database = json.loads(string_database)
-        analyse_band_genres(database["bands"])
+            try:
+                database = json.loads(string_database)
+                can_analyse = True
+            except:
+                # We know that the json.load() failed. No need to log exception details.
+                logger.error("Loading the JSON database failed. Make sure you selected a valid JSON database.")
+
+            if can_analyse:
+                analyse_band_genres(database["bands"])
 
     input('...ending')
     logging.shutdown()
