@@ -13,7 +13,6 @@ from pathlib import Path
 import pprint
 import datetime
 
-
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
 bandLinkFileName = "bands-{}" + link_extension
@@ -31,23 +30,65 @@ class CrawlMode(Enum):
     AnalyseDatabase = 3
 
 
+def print_countries(columns):
+    if type(columns) is not int:
+        print("Cannot list countries with parameters type other than int.")
+        return
+    elif columns < 1:
+        print("Cannot list countries with columns count smaller than one.")
+        return
+
+    country_path = Path("countries.csv")
+    countries = {}
+    longest_country = 0
+
+    if not country_path.is_file():
+        return
+
+    country_links = crawl_countries()
+
+    with country_path.open(encoding="utf-8") as f:
+        line = f.readline().rstrip()
+        while line is not "":
+            split_line = line.split(';')
+            if split_line[0] in country_links:
+                countries[split_line[0]] = split_line[1]
+                if len(split_line[1]) > longest_country:
+                    longest_country = len(split_line[1])
+            line = f.readline().rstrip()
+
+    line_format = "[{}] {:" + str(longest_country) + "}"
+    counter = 0
+    actual_line = "    "
+
+    for key, country_name in countries.items():
+        actual_line += line_format.format(key, country_name)
+        counter += 1
+        if counter is columns:
+            counter = 0
+            actual_line += '\n    '
+
+    return actual_line
+
+
 def print_help():
     file_name_a = bandLinkFileName.format('XX')
+    countries = print_countries(4)
     # TODO: Move two letter country names to description section.
     print('Supported modes:')
-    print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a} (where XX is the')
-    print(f'    two letter short form of a given country). The files are put into sub-folder {FOLDER_LINKS}.')
-    print('     This action can take almost 10 minutes.')
+    print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a}')
+    print('    (where XX is the two letter short form of a given country). The files are put')
+    print(f'    into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.')
     print('  -b: Crawls all bands in the generated files from option -a')
     print('    (or -c if you specify your own file with -f).')
     print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
     print('    and uses the standard file name together with the ID to write a')
-    print('    file with all band links from the given country. See Wikipedia for examples:')
-    print('    https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes')
+    print('    file with all band links from the given country. See list below.')
     print('  -y: Prints a report about the genres of a database.')
     print('  -f <filename>: filename is a parameter to override the standard file name')
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
+    print(countries)
 
 
 def flush_queue(country_short):
@@ -74,6 +115,10 @@ def main(argv):
         print_help()
         sys.exit(2)
 
+    if not opts:
+        print_help()
+        sys.exit(0)
+
     with open('loggerConfig.yaml', 'r') as log_config:
         config = yaml.safe_load(log_config.read())
         logging.config.dictConfig(config)
@@ -98,9 +143,6 @@ def main(argv):
                 sys.exit(3)
         else:
             logger.debug(f"Standard directory {folder} exists.")
-
-    if not opts:
-        print_help()
 
     for opt, arg in opts:
         if opt == '-h':
@@ -135,9 +177,9 @@ def main(argv):
         # This starts bootstrapping from the actual country list as it is on EM.
         country_links = crawl_countries()
 
-        for countryLink in country_links:
-            country_short = countryLink[countryLink.rfind('/') + 1:]
-            crawl_country(countryLink)
+        for country_short in country_links:
+            country_link = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
+            crawl_country(country_link)
             flush_queue(country_short)
     elif mode is CrawlMode.CrawlCountry:
         logger.info("Crawling a single country: " + country)
