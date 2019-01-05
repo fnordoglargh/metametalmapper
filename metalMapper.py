@@ -20,6 +20,8 @@ bandLinkFileName = "bands-{}" + link_extension
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
 folders = [FOLDER_LINKS, FOLDER_DB]
+REG_NORDIC = ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"]
+REGIONS = {"Nordic countries": REG_NORDIC}
 
 
 class CrawlMode(Enum):
@@ -28,6 +30,7 @@ class CrawlMode(Enum):
     CrawlAllCountries = 1
     CrawlBands = 2
     AnalyseDatabase = 3
+    DisplayInfo = 4
 
 
 def print_countries(columns):
@@ -71,9 +74,16 @@ def print_countries(columns):
     return actual_line
 
 
+def print_regions():
+    lines = ''
+    for key, value in REGIONS.items():
+        lines += f'{key}: {value}\n'
+
+    return lines
+
+
 def print_help():
     file_name_a = bandLinkFileName.format('XX')
-    countries = print_countries(4)
     # TODO: Move two letter country names to description section.
     print('Supported modes:')
     print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a}')
@@ -88,7 +98,6 @@ def print_help():
     print('  -f <filename>: filename is a parameter to override the standard file name')
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
-    print(countries)
 
 
 def flush_queue(country_short):
@@ -110,7 +119,7 @@ def flush_queue(country_short):
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "bac:hf:ty")
+        opts, args = getopt.getopt(argv, "bac:hf:tyl")
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -164,6 +173,8 @@ def main(argv):
             print()
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
+        elif opt == '-l':
+            mode = CrawlMode.DisplayInfo
         else:
             mode = CrawlMode.Error
 
@@ -224,6 +235,11 @@ def main(argv):
 
             if can_analyse:
                 analyse_band_genres(database["bands"])
+    elif mode is CrawlMode.DisplayInfo:
+        countries = print_countries(4)
+        print(countries)
+        regions = print_regions()
+        print(regions)
 
     input('...ending')
     logging.shutdown()
