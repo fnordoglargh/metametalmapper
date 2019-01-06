@@ -315,7 +315,7 @@ def crawl_countries():
         for j in range(1, len(s[i].contents), 3):
             temp_link = s[i].contents[j].attrs["href"]
             country_short = temp_link[len(temp_link) - 2:len(temp_link)]
-            country_links.append("https://www.metal-archives.com/browse/ajax-country/c/" + country_short)
+            country_links.append(country_short)
 
     return country_links
 
@@ -488,21 +488,11 @@ def crawl_band(band_short_link):
 def crawl_bands(file_with_band_links, database, lock):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands in [{}]'.format(file_with_band_links))
-    is_file_available = os.path.isfile(file_with_band_links)
-
-    if is_file_available:
-        logger.info("  {} is available. Starting to crawl all available bands. This may take a very long time.".format(
-            file_with_band_links))
-    else:
-        logger.error("  {} is not available. Run with -c first or add links by hand".format(file_with_band_links))
-        logger.error("  (one band per line in this format: The_Gathering/797).")
-        return -1
 
     local_bands_queue = queue.Queue()
 
-    with open(file_with_band_links, "r") as bandsFile:
-        for line in bandsFile:
-            local_bands_queue.put_nowait(line.rstrip())
+    for link in file_with_band_links:
+        local_bands_queue.put_nowait(link)
 
     threads = []
 

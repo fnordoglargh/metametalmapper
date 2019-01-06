@@ -8,3 +8,5 @@
 .idea/
 venv/
 __pycache__/
+links/
+databases/
