@@ -20,8 +20,8 @@ bandLinkFileName = "bands-{}" + link_extension
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
 folders = [FOLDER_LINKS, FOLDER_DB]
-REG_NORDIC = ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"]
-REGIONS = {"Nordic countries": REG_NORDIC}
+REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
+REGIONS = {REG_NORDIC[0]: REG_NORDIC}
 
 countries = {}
 
@@ -85,10 +85,11 @@ def print_countries(columns):
 def print_regions():
     lines = ''
     for key, value in REGIONS.items():
-        lines += f'  {key}: '
-        for country_key in value:
-            lines += countries[country_key]+', '
-    lines = lines[0:lines.rfind(',')]
+        lines += f'  [{value[0]}] {value[1]}: '
+        for country_key in value[2]:
+            lines += countries[country_key] + ', '
+        lines = lines[0:lines.rfind(',')]
+        lines += '\n'
 
     return lines
 
@@ -109,6 +110,7 @@ def print_help():
     print('  -f <filename>: filename is a parameter to override the standard file name')
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
+    print('  -l: List available countries and regions.')
 
 
 def flush_queue(country_short):
