@@ -23,6 +23,8 @@ folders = [FOLDER_LINKS, FOLDER_DB]
 REG_NORDIC = ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"]
 REGIONS = {"Nordic countries": REG_NORDIC}
 
+countries = {}
+
 
 class CrawlMode(Enum):
     Error = -1
@@ -33,6 +35,23 @@ class CrawlMode(Enum):
     DisplayInfo = 4
 
 
+def load_countries():
+    if len(countries) is not 0:
+        return
+
+    country_path = Path("countries.csv")
+
+    if not country_path.is_file():
+        return
+
+    with country_path.open(encoding="utf-8") as f:
+        line = f.readline().rstrip()
+        while line is not "":
+            split_line = line.split(';')
+            countries[split_line[0]] = split_line[1]
+            line = f.readline().rstrip()
+
+
 def print_countries(columns):
     if type(columns) is not int:
         print("Cannot list countries with parameters type other than int.")
@@ -41,35 +60,24 @@ def print_countries(columns):
         print("Cannot list countries with columns count smaller than one.")
         return
 
-    country_path = Path("countries.csv")
-    countries = {}
     longest_country = 0
-
-    if not country_path.is_file():
-        return
-
     country_links = crawl_countries()
 
-    with country_path.open(encoding="utf-8") as f:
-        line = f.readline().rstrip()
-        while line is not "":
-            split_line = line.split(';')
-            if split_line[0] in country_links:
-                countries[split_line[0]] = split_line[1]
-                if len(split_line[1]) > longest_country:
-                    longest_country = len(split_line[1])
-            line = f.readline().rstrip()
+    for key, value in countries.items():
+        if len(value) > longest_country and key in country_links:
+            longest_country = len(value)
 
     line_format = "[{}] {:" + str(longest_country) + "}"
     counter = 0
     actual_line = "    "
 
     for key, country_name in countries.items():
-        actual_line += line_format.format(key, country_name)
-        counter += 1
-        if counter is columns:
-            counter = 0
-            actual_line += '\n    '
+        if key in country_links:
+            actual_line += line_format.format(key, country_name)
+            counter += 1
+            if counter is columns:
+                counter = 0
+                actual_line += '\n    '
 
     return actual_line
 
@@ -77,7 +85,10 @@ def print_countries(columns):
 def print_regions():
     lines = ''
     for key, value in REGIONS.items():
-        lines += f'{key}: {value}\n'
+        lines += f'  {key}: '
+        for country_key in value:
+            lines += countries[country_key]+', '
+    lines = lines[0:lines.rfind(',')]
 
     return lines
 
@@ -131,6 +142,8 @@ def main(argv):
     with open('loggerConfig.yaml', 'r') as log_config:
         config = yaml.safe_load(log_config.read())
         logging.config.dictConfig(config)
+
+    load_countries()
 
     # Change to a terminal size in which everything fits.
     os.system('mode con: cols=153 lines=9999')
@@ -237,8 +250,12 @@ def main(argv):
                 analyse_band_genres(database["bands"])
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
+        print()
+        print('Available countries:')
         print(countries)
         regions = print_regions()
+        print()
+        print('Available regions:')
         print(regions)
 
     input('...ending')
