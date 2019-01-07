@@ -33,6 +33,7 @@ class CrawlMode(Enum):
     CrawlBands = 2
     AnalyseDatabase = 3
     DisplayInfo = 4
+    CrawlRegion = 5
 
 
 def load_countries():
@@ -111,6 +112,7 @@ def print_help():
     print('    for -b or -c and is used either to write an output file or to read an')
     print('    input file.')
     print('  -l: List available countries and regions.')
+    print('  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NC).')
 
 
 def flush_queue(country_short):
@@ -132,7 +134,7 @@ def flush_queue(country_short):
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "bac:hf:tyl")
+        opts, args = getopt.getopt(argv, "bac:hf:tylr:")
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -190,6 +192,9 @@ def main(argv):
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-l':
             mode = CrawlMode.DisplayInfo
+        elif opt == '-r':
+            mode = CrawlMode.CrawlRegion
+            region = arg.upper()
         else:
             mode = CrawlMode.Error
 
@@ -212,6 +217,17 @@ def main(argv):
         country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
         crawl_country(country_link)
         flush_queue(country)
+    elif mode is CrawlMode.CrawlRegion:
+        if region not in REGIONS:
+            print(f'The region {region} is invalid. Try one from the following list:')
+            print()
+            print(print_regions())
+        else:
+            print(f'Crawling region: {region}')
+            for country in REGIONS[region][2]:
+                country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
+                crawl_country(country_link)
+            flush_queue(region)
     elif mode is CrawlMode.CrawlBands:
         database = {"artists": {}, "bands": {}, "labels": {}}
         lock = threading.Lock()
