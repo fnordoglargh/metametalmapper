@@ -33,7 +33,9 @@ class VisitBandThread(threading.Thread):
         self.bandLinks = band_links
         self.database = database
         self.logger = logging.getLogger('Crawler')
+        self.qsize = band_links.qsize()
         self.logger.debug("Initializing " + self.name)
+        self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
 
     def run(self):
@@ -67,11 +69,14 @@ class VisitBandThread(threading.Thread):
                     self.database["bands"][band] = temp_band_data[band]
                 for label in temp_label_data:
                     if label not in self.database["labels"]:
-                        self.database["labels"][label]=temp_label_data[label]
+                        self.database["labels"][label] = temp_label_data[label]
             except:
                 self.logger.error("Writing artists failed! This is bad.")
             finally:
                 self.lock.release()
+                progress = len(self.database["bands"]) / self.qsize
+                self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
+                    progress, self.qsize - len(self.database["bands"]), self.qsize))
 
 
 class VisitBandListThread(threading.Thread):
@@ -329,7 +334,7 @@ def crawl_band(band_short_link):
     # Needs to import rfc3986
     link_band = em_link_main + bands + band_short_link
     logger = logging.getLogger('Crawler')
-    logger.debug('>>> Crawling [' + band_short_link + ']')
+    logger.info('>>> Crawling [' + band_short_link + ']')
 
     # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
@@ -370,7 +375,7 @@ def crawl_band(band_short_link):
     # Saving the country name and link in a dict.
     country_link = country_node.attrs["href"]
     band_data[band_id]["country"] = {country_name: country_link}
-    location=s[1].contents[7].text
+    location = s[1].contents[7].text
 
     if location != "N/A":
         location = location.split("/")
@@ -487,7 +492,7 @@ def crawl_band(band_short_link):
 
 def crawl_bands(file_with_band_links, database, lock):
     logger = logging.getLogger('Crawler')
-    logger.debug('>>> Crawling all bands in [{}]'.format(file_with_band_links))
+    logger.debug('>>> Crawling all bands.')
 
     local_bands_queue = queue.Queue()
 
@@ -496,16 +501,20 @@ def crawl_bands(file_with_band_links, database, lock):
 
     threads = []
 
-    # Create threads and let them run.
+    # Create threads.
     for i in range(0, threadCount):
         thread = VisitBandThread(str(i), local_bands_queue, database, lock)
-        thread.start()
         threads.append(thread)
+
+    # If we already start the threads in above loop, the queue count at initialization will not be the same for
+    # all threads.
+    for t in threads:
+        t.start()
 
     for t in threads:
         t.join()
 
-    logger.debug('<<< Crawling all bands in [{}]'.format(file_with_band_links))
+    logger.debug('<<< Crawling all bands')
 
 
 def crawlBandsOld():
