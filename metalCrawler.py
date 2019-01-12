@@ -125,6 +125,23 @@ class VisitBandListThread(threading.Thread):
         self.logger.debug("Finished {} and added {} links.".format(self.name, str(link_counter)))
 
 
+def cook_soup(link):
+    logger = logging.getLogger('Crawler')
+
+    while True:
+        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+        web_page = http.request('GET', link)
+        web_page_string = web_page.data.decode("utf-8")
+
+        if "Forbidden." not in web_page_string:
+            break
+        else:
+            logger.debug("  trying again...")
+            time.sleep(.5)
+
+    return BeautifulSoup(web_page.data, "html.parser")
+
+
 def display_children(c):
     if c is not None:
         print(c)
@@ -481,6 +498,37 @@ def crawl_band(band_short_link):
             temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
+
+    link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
+
+
+    soup = cook_soup(link_disco)
+
+    table = soup.find('table', attrs={'class': 'display discog'})
+    table_body = table.find('tbody')
+    rows = table_body.find_all('tr')
+
+    band_data[band_id]['albums'] = []
+
+    for row in rows:
+        cells = row.findAll("td")
+        album_name = cells[0].text
+        album_type = cells[1].text
+        album_year = cells[2].text
+        album_rating = cells[3].text.rstrip().strip()
+        parenthesis_open = album_rating.find('(')
+
+        if parenthesis_open != -1:
+            parenthesis_close = album_rating.find(')')
+            album_rating = album_rating[parenthesis_open + 1:parenthesis_close]
+
+        band_data[band_id]['albums'].append({
+            'name': album_name,
+            'type': album_type,
+            'year': album_year,
+            'rating': album_rating
+        })
+
 
     # pp = pprint.PrettyPrinter(indent=2)
     # # pp.pprint(band_data)
