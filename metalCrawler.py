@@ -76,7 +76,7 @@ class VisitBandThread(threading.Thread):
                 self.lock.release()
                 progress = len(self.database["bands"]) / self.qsize
                 self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
-                    progress, self.qsize - len(self.database["bands"]), self.qsize))
+                    progress * 100, self.qsize - len(self.database["bands"]), self.qsize))
 
 
 class VisitBandListThread(threading.Thread):
