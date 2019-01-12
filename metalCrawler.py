@@ -46,7 +46,7 @@ class VisitBandThread(threading.Thread):
                 result = crawl_band(link_band_temp)
             except Exception:
                 self.logger.exception("Something bad happened while crawling.")
-
+                result = -1
             # Error case: putting the link back into circulation.
             if result == -1:
                 self.bandLinks.put(link_band_temp)
