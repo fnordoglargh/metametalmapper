@@ -129,6 +129,7 @@ def cook_soup(link):
     logger = logging.getLogger('Crawler')
 
     while True:
+        # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         web_page = http.request('GET', link)
         web_page_string = web_page.data.decode("utf-8")
@@ -327,9 +328,7 @@ def crawl_country(link_country):
 
 
 def crawl_countries():
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    countries_page = http.request('GET', "https://www.metal-archives.com/browse/country")
-    soup = BeautifulSoup(countries_page.data, "html.parser")
+    soup = cook_soup("https://www.metal-archives.com/browse/country")
     s = soup.find_all(attrs={"class": "countryCol"})
     country_links = []
 
@@ -352,21 +351,7 @@ def crawl_band(band_short_link):
     link_band = em_link_main + bands + band_short_link
     logger = logging.getLogger('Crawler')
     logger.info('>>> Crawling [' + band_short_link + ']')
-
-    # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-
-    while True:
-        band_page = http.request('GET', link_band)
-        band_data_string = band_page.data.decode("utf-8")
-
-        if "Forbidden." not in band_data_string:
-            break
-        else:
-            logger.debug("  trying again...")
-            time.sleep(.5)
-
-    soup = BeautifulSoup(band_page.data, "html.parser")
+    soup = cook_soup(link_band)
     # soup = BeautifulSoup(bandPage.data, "lxml")
     logger.debug("  Start scraping from actual band.")
     # Finds band name; needs to extract the ID later.
@@ -375,7 +360,7 @@ def crawl_band(band_short_link):
     if len(s) == 0:
         logger.fatal("  Did not find the attribute band_name for {}.".format(band_short_link))
         logger.debug("  Band page source for reference:")
-        logger.debug(band_page.data)
+        logger.debug(soup.text)
         return -1
 
     # All data of a band is collected here.  Band members are referenced and collected in their own collection.
@@ -499,15 +484,12 @@ def crawl_band(band_short_link):
             instruments = cut_instruments(temp_instruments)
             artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
+    # Crawl discography.
     link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
-
-
     soup = cook_soup(link_disco)
-
     table = soup.find('table', attrs={'class': 'display discog'})
     table_body = table.find('tbody')
     rows = table_body.find_all('tr')
-
     band_data[band_id]['albums'] = []
 
     for row in rows:
