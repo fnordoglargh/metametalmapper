@@ -157,7 +157,6 @@ def main(argv):
     logger.debug('***************************************************************')
     logger.debug('Starting up...')
     mode = CrawlMode.Error
-    filename = ""
     filenames = []
 
     # Check necessary folders exist, try to create them otherwise.
