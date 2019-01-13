@@ -21,7 +21,9 @@ FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
 folders = [FOLDER_LINKS, FOLDER_DB]
 REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
-REGIONS = {REG_NORDIC[0]: REG_NORDIC}
+REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
+REGIONS = {REG_NORDIC[0]: REG_NORDIC,
+           REG_TST[0]: REG_TST}
 
 countries = {}
 
