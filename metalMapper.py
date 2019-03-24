@@ -250,6 +250,8 @@ def main(argv):
         json_database_string = json.dumps(database)
         band_links_file.write(json_database_string)
         band_links_file.close()
+        pp = pprint.PrettyPrinter(indent=2)
+        pp.pprint(database)
         logger.info(f"Database is now available as {db_path}.")
     elif mode is CrawlMode.AnalyseDatabase:
         for path in filenames:

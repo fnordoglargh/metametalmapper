@@ -2,6 +2,7 @@
 -b -f bands-NO.lnks
 -b -f bands-IS.lnks
 -y databases\db-2019-01-02_22-32-25.json
+-y -b -f links\bands-TST.lnks
 
 # Only one 'Last known lineup'
 J.J._Glitter/3540265221
