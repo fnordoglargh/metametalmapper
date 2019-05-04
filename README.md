@@ -1,5 +1,5 @@
 # Metal Mapper
-_Metal Mapper_ is Python program and intended to be the basis to develop a toolset to access data of 
+_Metal Mapper_ is Python3 program and intended to be the basis to develop a toolset to access data of 
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (MA) and query said data. The
 _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) links to two projects showcasing
 interesting ways to visualize the _Metal Archives'_ data:
@@ -14,6 +14,17 @@ interesting ways to visualize the _Metal Archives'_ data:
 * Extracts information on bands, their band members and releases.
 * Links the information with the ME IDs of the entities.
 * Saves everything in a JSON file for further analysis. 
+
+## Installation
+
+While crawling band links I encountered a defect in `Lib/http/client.py`. 
+The percent escaped characters were not resolved correctly. The solution for
+me was to change `putrequest()` (before `self._output()` is called). The line
+looks like this:
+
+    url = rfc3986.uri_reference(url).unsplit()
+    
+Needs to import `rfc3986` to function.
 
 ## Basics
 
