@@ -36,6 +36,7 @@ class CrawlMode(Enum):
     AnalyseDatabase = 3
     DisplayInfo = 4
     CrawlRegion = 5
+    Test = 6
 
 
 def load_countries():
@@ -186,9 +187,6 @@ def main(argv):
             filename = arg
             filenames.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
-        elif opt == '-t':
-            result = cut_instruments('Drums(1988-1993, 1994-present)')
-            print()
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-l':
@@ -196,6 +194,12 @@ def main(argv):
         elif opt == '-r':
             mode = CrawlMode.CrawlRegion
             region = arg.upper()
+        elif opt == '-t':
+            mode = CrawlMode.Test
+            filenames.append(Path("testLinks.txt"))
+        elif opt == '-m':
+            result = cut_instruments('Drums(1988-1993, 1994-present)')
+            print()
         else:
             mode = CrawlMode.Error
 
@@ -229,7 +233,7 @@ def main(argv):
                 country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
                 crawl_country(country_link)
             flush_queue(region)
-    elif mode is CrawlMode.CrawlBands:
+    elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
         database = {"artists": {}, "bands": {}, "labels": {}}
         lock = threading.Lock()
 
@@ -239,8 +243,18 @@ def main(argv):
                 # Remove last element from list if it's a lonely, empty string.
                 if band_links[-1] == '':
                     del band_links[-1]
+
+                sanitized_bands = []
+                # The test mode contains hash commented lines. Here we filter for those.
+                if mode is CrawlMode.Test:
+                    for line in band_links:
+                        if not line.startswith('#'):
+                            sanitized_bands.append(line)
+                else:
+                    sanitized_bands = band_links
+
                 # TODO: Get the country from filename and pass as parameter.
-                crawl_bands(band_links, database, lock)
+                crawl_bands(sanitized_bands, database, lock)
             else:
                 logger.error(f"File {path} was not readable.")
 
