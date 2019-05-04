@@ -1,5 +1,5 @@
-# Causes infinite loop because band is put back into circulation.
-# Blaznagar/27117
+# Has no releases.
+Blaznagar/27117
 # Only one 'Last known lineup'
 J.J._Glitter/3540265221
 # Some N/A in categories.

@@ -473,7 +473,7 @@ def crawl_band(band_short_link):
             temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-            logger.debug("    Recording artist data for " + temp_artist_name)
+            logger.debug(f"    Recording artist data for {temp_artist_name}.")
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
             # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
@@ -496,6 +496,12 @@ def crawl_band(band_short_link):
 
     for row in rows:
         cells = row.findAll("td")
+
+        # Guard clause for the unlikely case if a band has no releases.
+        if len(cells) is 1:
+            logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
+            continue
+
         album_name = cells[0].text
         album_type = cells[1].text
         album_year = cells[2].text
