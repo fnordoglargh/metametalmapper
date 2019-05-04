@@ -32,6 +32,8 @@ class VisitBandThread(threading.Thread):
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
         self.database = database
+        self.logger = logging.getLogger('chardet.charsetprober')
+        self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
         self.qsize = band_links.qsize()
         self.logger.debug("Initializing " + self.name)
