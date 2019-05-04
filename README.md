@@ -20,7 +20,7 @@ interesting ways to visualize the _Metal Archives'_ data:
 ### Countries
 
 Countries on MA and this tool are represented in [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-two letter format. Whenever you read _XX_ in context with countries, a two letter country code is meant.
+two letter format. Whenever you read _NN_ in context with countries, a two letter country code is meant.
 
 A list of all countries with at least one band is shown on calling with the switch `-l`.
 
@@ -52,7 +52,7 @@ Calling with the switch `-a` will:
 1. Generate a list of all countries (from MA's [by country page](https://www.metal-archives.com/browse/country))
 with at least one band entry.
 2. Extract the link for every band in every country and save the links in a folder with the same name.
-    The name of the files follows this simple scheme: `bands-XX.lnks` where XX is the two letter short form.
+    The name of the files follows this simple scheme: `bands-NN.lnks` where NN is the two letter short form.
     The contents of an `.lnks` file looks like this:
     ```
     Akollonizer/3540362756
@@ -66,8 +66,8 @@ with at least one band entry.
 
 If you're not interested in getting the band links for all countries you can either 
 
-* start with the switch `-c XX` to crawl all bands in exactly one country **or** 
-* call with `-r XX` where XX is the key of the region you want to crawl.
+* start with the switch `-c NN` to crawl all bands in exactly one country **or** 
+* call with `-r NN` where NN is the key of the region you want to crawl.
 
 ### JSON database layout
 
@@ -136,7 +136,7 @@ If you're not interested in getting the band links for all countries you can eit
     of origin on MA. The collection may not be needed.
 * The instruments of artists are a string separated by commas. This might be
     inconvenient for any analysis on the individual instruments.
-* The order instrument structure may be in the wrong order. 
+* The hierarchy of the instrument structure for artists may be in the wrong order.
 * Crawling the whole database of almost 130.000 bands will take a very long time (one or two days). 
     You will probably run out of memory before that. There is no flushing of intermittent results. Which 
     brings us to the...
