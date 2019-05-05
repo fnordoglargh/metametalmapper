@@ -137,14 +137,6 @@ If you're not interested in getting the band links for all countries you can eit
 
 ## Known Issues
 
-* Countries for bands are saved as:
-    ```
-    "country": {
-      "Netherlands": "https://www.metal-archives.com/lists/NL"
-    }
-    ```
-    But we only need the ISO key (here it is _NL_). AFAIK there are no bands with multiple countries
-    of origin on MA. The collection may not be needed.
 * The instruments of artists are a string separated by commas. This might be
     inconvenient for any analysis on the individual instruments.
 * The hierarchy of the instrument structure for artists may be in the wrong order.

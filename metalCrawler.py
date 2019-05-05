@@ -378,7 +378,7 @@ def crawl_band(band_short_link):
     country_name = country_node.contents[0]
     # Saving the country name and link in a dict.
     country_link = country_node.attrs["href"]
-    band_data[band_id]["country"] = {country_name: country_link}
+    band_data[band_id]["country"] = country_link[-2:]
     location = s[1].contents[7].text
 
     if location != "N/A":
