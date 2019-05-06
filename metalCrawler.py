@@ -124,7 +124,7 @@ class VisitBandListThread(threading.Thread):
                     self.bandLinks.put(band_link[37:len(band_link)])
                     link_counter += 1
 
-        self.logger.debug("Finished {} and added {} links.".format(self.name, str(link_counter)))
+        self.logger.debug(f"Finished {self.name} and added {str(link_counter)} links.")
 
 
 def cook_soup(link):
@@ -378,6 +378,7 @@ def crawl_band(band_short_link):
     country_name = country_node.contents[0]
     # Saving the country name and link in a dict.
     country_link = country_node.attrs["href"]
+    # Take the last two letters of the link.
     band_data[band_id]["country"] = country_link[-2:]
     location = s[1].contents[7].text
 
