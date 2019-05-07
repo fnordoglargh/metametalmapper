@@ -127,20 +127,37 @@ class VisitBandListThread(threading.Thread):
         self.logger.debug(f"Finished {self.name} and added {str(link_counter)} links.")
 
 
-def cook_soup(link):
-    logger = logging.getLogger('Crawler')
+def cook_soup(link, retry_count=5):
+    """Wraps getting a web page for further parsing.
 
-    while True:
+    Retries several times to get the page if the request yields in a *Forbidden*.
+
+    :param link: URL to get the web page from.
+    :param retry_count: Set to any number greater than 0 (will be set internally to 1 if smaller than 1).
+    :return: Either a BeautifulSoup object of the requested page or ``None`` if the request failed.
+    """
+    logger = logging.getLogger('Crawler')
+    # Set to 1 if value is invalid.
+    if retry_count < 1:
+        retry_count = 1
+
+    logger.debug(f"  Cooking soup for {link}")
+
+    while retry_count > 0:
         # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         web_page = http.request('GET', link)
         web_page_string = web_page.data.decode("utf-8")
 
-        if "Forbidden." not in web_page_string:
-            break
-        else:
+        if "Forbidden." in web_page_string:
             logger.debug("  trying again...")
             time.sleep(.5)
+            retry_count -= 1
+        else:
+            retry_count = -1
+
+    if retry_count is 0:
+        return None
 
     return BeautifulSoup(web_page.data, "html.parser")
 
