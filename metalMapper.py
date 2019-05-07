@@ -119,6 +119,15 @@ def print_help():
 
 
 def flush_queue(country_short):
+    """Flushes the contents of ``bandsQueue`` (band addresses of a country or region) into the sub-folder named
+    ``links``.
+
+    The function effectively empties the bandsQueue and leaves it with zero items for further calls of
+    metalCrawler.crawl_country.
+
+    :param country_short: ISO country code used in the file name.
+    :return: A filename with the format links/bands-NN.lnks.
+    """
     logger = logging.getLogger('Crawler')
     country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
 
@@ -129,9 +138,11 @@ def flush_queue(country_short):
             band_links_file.write(bandsQueue.get_nowait() + '\n')
             counter += 1
         band_links_file.close()
-        logger.info("Saved {} bands of {} in file '{}'.".format(str(counter), country_short, country_filename))
+        logger.info(f"Saved {str(counter)} bands of {country_short} in file '{country_filename}'.")
     else:
-        logger.warning("No bands in country {}. To check country manually, use above link.".format(country_short))
+        logger.warning(f"No bands in country {country_short}. To check country manually, use above link.")
+
+    return country_filename
 
 
 def main(argv):
