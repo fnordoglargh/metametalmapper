@@ -308,7 +308,7 @@ def crawl_country(link_country):
         thread_count = needed_run_count
 
     logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(needed_run_count), str(thread_count)))
-    link_suffix = "json/1?sEcho=1&iDisplayStart="
+    link_suffix = "/json/1?sEcho=1&iDisplayStart="
 
     # Prepare the AJAX links for the actual run.
     for i in range(0, amount_entries, display_constant):
