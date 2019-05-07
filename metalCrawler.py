@@ -103,7 +103,7 @@ class VisitBandListThread(threading.Thread):
             json_data_string = country_json.data.decode("utf-8")
             json_data_string = json_data_string.replace("\"sEcho\": ,", '')
             json_data = None
-            self.logger.debug("  Working on:" + link_country_temp)
+            self.logger.debug(f"  Working on: {link_country_temp}")
 
             try:
                 json_data = json.loads(json_data_string)
