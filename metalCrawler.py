@@ -337,7 +337,7 @@ def crawl_countries():
     for i in range(0, len(s)):
         for j in range(1, len(s[i].contents), 3):
             temp_link = s[i].contents[j].attrs["href"]
-            country_short = temp_link[len(temp_link) - 2:len(temp_link)]
+            country_short = temp_link[-2:]
             country_links.append(country_short)
 
     return country_links
