@@ -330,6 +330,11 @@ def crawl_country(link_country):
 
 
 def crawl_countries():
+    """Crawls MA's country page for all available ISO country codes.
+
+    :return: A list of two-letter ISO country codes.
+    """
+
     soup = cook_soup("https://www.metal-archives.com/browse/country")
     s = soup.find_all(attrs={"class": "countryCol"})
     country_links = []
