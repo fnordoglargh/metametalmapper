@@ -25,9 +25,17 @@ threadCount = 8
 
 
 class VisitBandThread(threading.Thread):
-
     def __init__(self, thread_id, band_links, database, lock):
-        threading.Thread.__init__(self)
+        """Constructs an worker object which is used to get prepared data from a band page.
+        The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
+
+        :param thread_id: An integer number
+        :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
+        :param database: A dictionary used by all workers to put their data in.
+        :param lock: Secures concurrent access to ``database`` which is used by all other workers.
+        """
+
+        super(VisitBandThread, self).__init__()
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
@@ -84,7 +92,7 @@ class VisitBandThread(threading.Thread):
 class VisitBandListThread(threading.Thread):
 
     def __init__(self, thread_id, country_links, band_links):
-        threading.Thread.__init__(self)
+        super(VisitBandListThread, self).__init__()
         self.threadID = thread_id
         self.name = "BandListVisitor_" + thread_id
         self.countryLinks = country_links
@@ -288,6 +296,16 @@ def visit_band_list(country_link, start_index, band_links):
 
 
 def crawl_country(link_country):
+    """Crawls the given country page for band links and puts them into the global variable bandsQueue.
+
+    Depending on the total amount of bands in the given country, the pages will be fetched through
+    MA's AJAX API in packages of up til 500 bands. Parsing happens in eight threads.
+
+    TODO: Move global variable to smaller scope?
+
+    :param link_country: Address of a country to parse band links from.
+    """
+
     logger = logging.getLogger('Crawler')
     logger.debug(">>> Crawling Country: " + link_country)
     json_data_string = ""
@@ -366,6 +384,17 @@ def crawl_countries():
 
 
 def crawl_band(band_short_link):
+    """This is where the magic happens: A short band link is expanded, visited and parsed for data.
+
+        It still may throw an exception that must be caught and dealt with. Best by putting the link back
+        into circulation.
+
+    :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
+    :return:
+        A dictionary with band, artist and label data of the visited band or
+        -1 in an error case.
+    """
+
     # TODO: Change your environment or this won't work!
     # The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
@@ -475,7 +504,7 @@ def crawl_band(band_short_link):
         # Normal case.
         if last_found_header == "lineupHeaders":
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-            logger.debug("  Found header: {}".format(header_category))
+            logger.debug(f"  Found header: {header_category}")
         # Special case where a band only has one line-up.
         elif last_found_header == "lineupRow":
             # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
@@ -484,7 +513,7 @@ def crawl_band(band_short_link):
             if not is_lineup_diverse:
                 test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                 header_category = lineup_mapping[test_header2]
-                logger.debug("  Didn't find a header. Digging deeper: {}".format(header_category))
+                logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
         if header_category not in band_data[band_id]["lineup"]:
             band_data[band_id]["lineup"][header_category] = []
 
