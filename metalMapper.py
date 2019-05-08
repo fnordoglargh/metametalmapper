@@ -183,12 +183,15 @@ def main(argv):
         else:
             logger.debug(f"Standard directory {folder} exists.")
 
+    country_links = []
+
     for opt, arg in opts:
         if opt == '-h':
             print_help()
             sys.exit()
         elif opt == '-c':
-            country = arg.upper()
+            country_short = arg.upper()
+            country_links.append(country_short)
             mode = CrawlMode.CrawlCountry
         elif opt == '-a':
             mode = CrawlMode.CrawlAllCountries
@@ -219,20 +222,17 @@ def main(argv):
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
 
-    if mode is CrawlMode.CrawlAllCountries:
-        logger.info("Crawling all countries...")
-        # This starts bootstrapping from the actual country list as it is on EM.
-        country_links = crawl_countries()
+    if mode in (CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry):
+        logger.info("Crawling countries...")
+
+        if len(country_links) is 0:
+            # This starts bootstrapping from the actual country list as it is on EM.
+            country_links = crawl_countries()
 
         for country_short in country_links:
             country_link = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
             crawl_country(country_link)
             flush_queue(country_short)
-    elif mode is CrawlMode.CrawlCountry:
-        logger.info("Crawling a single country: " + country)
-        country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
-        crawl_country(country_link)
-        flush_queue(country)
     elif mode is CrawlMode.CrawlRegion:
         if region not in REGIONS:
             print(f'The region {region} is invalid. Try one from the following list:')
