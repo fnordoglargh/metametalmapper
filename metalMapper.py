@@ -40,13 +40,17 @@ class CrawlMode(Enum):
 
 
 def load_countries():
+    """Loads the file with ISO country codes and their names into a dictionary. The ISO code acts as the key.
+
+    :return: True of false depending on the success.
+    """
     if len(countries) is not 0:
-        return
+        return True
 
     country_path = Path("countries.csv")
 
     if not country_path.is_file():
-        return
+        return False
 
     with country_path.open(encoding="utf-8") as f:
         line = f.readline().rstrip()
@@ -55,14 +59,23 @@ def load_countries():
             countries[split_line[0]] = split_line[1]
             line = f.readline().rstrip()
 
+    return True
 
-def print_countries(columns):
-    if type(columns) is not int:
-        print("Cannot list countries with parameters type other than int.")
+
+def print_countries(columns_count):
+    """Uses ``crawl_countries`` to get a list of all available countries and their ISO codes from MA. The list is then
+    used to prepare a formatted printable string with all countries.
+
+    :param columns_count: The amount of columns for the formatted printout. The column width depends on the length
+    of the longest country name. A count of three or four should work fine.
+    :return: A string with all ISO country codes and their names neatly formatted in columns.
+    """
+    if type(columns_count) is not int:
+        print("Cannot list countries with parameter type other than int.")
         return
-    elif columns < 1:
-        print("Cannot list countries with columns count smaller than one.")
-        return
+    elif columns_count < 1:
+        print("Cannot list countries with columns count smaller than one. Defaulting to one.")
+        columns_count = 1
 
     longest_country = 0
     country_links = crawl_countries()
@@ -79,7 +92,7 @@ def print_countries(columns):
         if key in country_links:
             actual_line += line_format.format(key, country_name)
             counter += 1
-            if counter is columns:
+            if counter is columns_count:
                 counter = 0
                 actual_line += '\n    '
 
@@ -87,6 +100,10 @@ def print_countries(columns):
 
 
 def print_regions():
+    """Prepares a string with all known regions from inside this file and their countries.
+
+    :return: String with all regions and their containing countries.
+    """
     lines = ''
     for key, value in REGIONS.items():
         lines += f'  [{value[0]}] {value[1]}: '
@@ -198,7 +215,6 @@ def main(argv):
         elif opt == '-b':
             mode = CrawlMode.CrawlBands
         elif opt == '-f':
-            filename = arg
             filenames.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
         elif opt == '-y':
@@ -222,7 +238,7 @@ def main(argv):
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
 
-    if mode in (CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry):
+    if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
         logger.info("Crawling countries...")
 
         if len(country_links) is 0:
