@@ -263,6 +263,13 @@ STATUS = (
 )
 
 
+LABEL_STATUS = (
+    ('A', 'active'),
+    ('C', 'closed'),
+    ('U', 'unknown')
+)
+
+
 ALBUM_TYPES = (
     ('D', 'Demo'),
     ('F', 'Full-length'),
@@ -297,11 +304,19 @@ class Band(StructuredNode):
     albums = RelationshipFrom('Album', 'RECORDED')
 
 
+class Label(StructuredNode):
+    emid = IntegerProperty(unique_index=True)
+    name = StringProperty()
+    status = StringProperty(max_length=1, choices=LABEL_STATUS)
+
+
 class Album(StructuredNode):
+    emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     type = StringProperty(max_lenght=1, choices=ALBUM_TYPES)
     rating = IntegerProperty()
-    year = DateProperty()
+    release_date = DateProperty()
+    label = RelationshipTo("Label", "RELEASED_ON")
     # Don't forget to crawl for the label!
 
 
@@ -360,6 +375,25 @@ members = Member.create_or_update(
     {
         'emid': 2012,
         'name': 'Esa Holopainen'
+    }
+)
+
+label1 = Label.create_or_update(
+    {
+        'emid': 8,
+        'name': "Relapse Records",
+        'status': "A"
+    }
+)
+
+album1 = Album.create_or_update(
+    {
+        'emid': 295,
+        'name': "The Karelian Isthmus",
+        'type': "F",
+        'release_date': "1992-11-01",
+        'rating': 85
+
     }
 )
 
