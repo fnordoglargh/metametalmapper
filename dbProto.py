@@ -301,15 +301,15 @@ class Band(StructuredNode):
     formed = DateProperty()
 
     themes = ArrayProperty()  # Should a theme be a node?
-    current_lineup = RelationshipTo("Member", "MEMBER", model=MemberRelationship)
-    releases = RelationshipFrom('Album', 'RELEASED_ON')
+    current_lineup = RelationshipFrom("Member", "PLAYED_IN", model=MemberRelationship)
+    releases = RelationshipFrom('Album', 'RECORDED_BY')
 
 
 class Label(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     status = StringProperty(max_length=1, choices=LABEL_STATUS)
-    releases = RelationshipFrom('Album', 'RELEASED')
+    releases = RelationshipFrom('Album', 'RELEASED_ON')
 
 
 class Album(StructuredNode):
@@ -367,6 +367,11 @@ albums = Album.create_or_update(
 albums[0].released_on.connect(labels[0])
 labels[0].releases.connect(albums[0])
 
+band = Band.nodes.get(emid=1)
+band.delete()
+band = Band.nodes.get(emid=3540294014)
+band.delete()
+
 bands = Band.create_or_update(
     {
         'emid': 1,
@@ -416,14 +421,14 @@ members = Member.create_or_update(
 )
 
 # band.current_lineup.disconnect_all()
-rel1 = band.current_lineup.connect(members[0])
-rel1.instrument = 'Bass'
-rel1.pseudonym = 'Olli-Pekka Laine'
-rel1.save()
-rel2 = band.current_lineup.connect(members[1])
-rel2.instrument = 'Guitars (lead)'
-rel2.pseudonym = 'Esa Holopainen'
-rel2.save()
+# rel1 = band.current_lineup.connect(members[0])
+# rel1.instrument = 'Bass'
+# rel1.pseudonym = 'Olli-Pekka Laine'
+# rel1.save()
+# rel2 = band.current_lineup.connect(members[1])
+# rel2.instrument = 'Guitars (lead)'
+# rel2.pseudonym = 'Esa Holopainen'
+# rel2.save()
 rel1 = members[0].played_in.connect(band)
 rel1.instrument = 'Bass'
 rel1.pseudonym = 'Olli-Pekka Laine'
@@ -442,18 +447,23 @@ for i_release in band.releases:
 for i_release in labels[0].releases:
     print(f"label release: {i_release}")
 
+print(band.name)
+for i_member in band.current_lineup:
+    print(f"  member: {i_member}")
+
 band = Band.nodes.get(emid=3540294014)
 rel = members[0].played_in.connect(band)
 rel.instrument = 'Bass, Vocals (backing)'
 rel.pseudonym = 'Olli-Pekka Laine'
 rel.save()
-rel = band.current_lineup.connect(members[0])
-rel.instrument = 'Bass, Vocals (backing)'
-rel.pseudonym = 'Olli-Pekka Laine'
-rel.save()
+# rel = band.current_lineup.connect(members[0])
+# rel.instrument = 'Bass, Vocals (backing)'
+# rel.pseudonym = 'Olli-Pekka Laine'
+# rel.save()
 
+print(band.name)
 for i_member in band.current_lineup:
-    print(f"member: {i_member}")
+    print(f"  member: {i_member}")
 
 
 
