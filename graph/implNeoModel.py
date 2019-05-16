@@ -1,7 +1,7 @@
 from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, RelationshipFrom, StructuredRel, config
 from datetime import date
 from graph.choices import *
-
+from graph.metalGraph import *
 
 class MemberRelationship(StructuredRel):
     # start_date = DateProperty()
@@ -45,3 +45,21 @@ class Member(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
+
+
+class NeoModelStrategy(GraphDatabaseStrategy):
+
+    config.DATABASE_URL = 'bolt://neo4j:em2@localhost:7687'
+
+    def add_band_interface(self, band_dict):
+        bands = Band.create_or_update(band_dict)
+
+    def add_label_interface(self, label_dict):
+        labels = Label.create_or_update(label_dict)
+
+    def add_album_interface(self, album_dict):
+        albums = Album.create_or_update(album_dict)
+
+
+    # label = Label.nodes.get(emid=8)
+    # label.delete()
