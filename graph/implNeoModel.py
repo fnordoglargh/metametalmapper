@@ -60,6 +60,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def add_release_interface(self, release_dict):
         albums = Release.create_or_update(release_dict)
 
+    def add_member_interface(self, member_dict):
+        members = Member.create_or_update(member_dict)
+
     def band_recorded_release_interface(self, band_id, release_id):
         band = Band.nodes.get(emid=band_id)
         release = Release.nodes.get(emid=release_id)

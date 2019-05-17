@@ -15,6 +15,9 @@ class GraphDatabaseContext:
     def add_release(self, release_dict):
         self._strategy.add_release_interface(release_dict)
 
+    def add_member(self, member_dict):
+        self._strategy.add_member_interface(member_dict)
+
     def band_recorded_release(self, band, release):
         self._strategy.band_recorded_release_interface(band, release)
 
@@ -31,6 +34,10 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def add_release_interface(self, release_dict):
+        pass
+
+    @abstractmethod
+    def add_member_interface(self, member_dict):
         pass
 
     @abstractmethod

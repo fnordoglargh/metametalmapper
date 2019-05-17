@@ -32,6 +32,18 @@ db.add_release(actual_album)
 band_id = actual_band['emid']
 db.band_recorded_release(actual_band['emid'], actual_album['emid'])
 
+actual_member = {'emid': 2042,
+                 'name': 'Olli-Pekka Laine'
+                 }
+
+db.add_member(actual_member)
+
+actual_member = {'emid': 2012,
+                 'name': 'Esa Holopainen'
+                 }
+
+db.add_member(actual_member)
+
 # config.DATABASE_URL = 'bolt://neo4j:em1@localhost:7687'
 #
 # class Book(StructuredNode):
