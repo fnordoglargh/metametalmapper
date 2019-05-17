@@ -28,7 +28,9 @@ actual_album = {'emid': 295,
                 'rating': 85
                 }
 
-db.add_album(actual_album)
+db.add_release(actual_album)
+band_id = actual_band['emid']
+db.band_recorded_release(actual_band['emid'], actual_album['emid'])
 
 # config.DATABASE_URL = 'bolt://neo4j:em1@localhost:7687'
 #

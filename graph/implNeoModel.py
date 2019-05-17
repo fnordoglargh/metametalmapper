@@ -20,14 +20,14 @@ class Band(StructuredNode):
 
     themes = ArrayProperty()  # Should a theme be a node?
     current_lineup = RelationshipFrom("Member", "PLAYED_IN", model=MemberRelationship)
-    releases = RelationshipTo('Album', 'RECORDED')
+    releases = RelationshipTo('Release', 'RECORDED')
 
 
 class Label(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     status = StringProperty(max_length=1, choices=LABEL_STATUS)
-    releases = RelationshipFrom('Album', 'RELEASED_ON')
+    releases = RelationshipFrom('Release', 'RELEASED_ON')
 
 
 class Release(StructuredNode):
@@ -57,9 +57,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def add_label_interface(self, label_dict):
         labels = Label.create_or_update(label_dict)
 
-    def add_album_interface(self, release_dict):
+    def add_release_interface(self, release_dict):
         albums = Release.create_or_update(release_dict)
 
+    def band_recorded_release_interface(self, band_id, release_id):
+        band = Band.nodes.get(emid=band_id)
+        release = Release.nodes.get(emid=release_id)
+        band.releases.connect(release)
+        release.recorded_by.connect(band)
 
     # label = Label.nodes.get(emid=8)
     # label.delete()
