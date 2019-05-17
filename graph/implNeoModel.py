@@ -30,10 +30,10 @@ class Label(StructuredNode):
     releases = RelationshipFrom('Album', 'RELEASED_ON')
 
 
-class Album(StructuredNode):
+class Release(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
-    type = StringProperty(max_lenght=1, choices=ALBUM_TYPES)
+    type = StringProperty(max_lenght=1, choices=RELEASE_TYPES)
     rating = IntegerProperty()
     release_date = DateProperty()
     released_on = RelationshipTo('Label', 'RELEASED_ON')
@@ -57,8 +57,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def add_label_interface(self, label_dict):
         labels = Label.create_or_update(label_dict)
 
-    def add_album_interface(self, album_dict):
-        albums = Album.create_or_update(album_dict)
+    def add_album_interface(self, release_dict):
+        albums = Release.create_or_update(release_dict)
 
 
     # label = Label.nodes.get(emid=8)

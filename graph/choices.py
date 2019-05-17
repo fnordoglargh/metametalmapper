@@ -265,7 +265,7 @@ LABEL_STATUS = (
     ('U', 'unknown')
 )
 
-ALBUM_TYPES = (
+RELEASE_TYPES = (
     ('D', 'Demo'),
     ('F', 'Full-length'),
     ('S', 'Single'),

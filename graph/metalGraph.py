@@ -12,8 +12,8 @@ class GraphDatabaseContext:
     def add_label(self, label_dict):
         self._strategy.add_label_interface(label_dict)
 
-    def add_album(self, album_dict):
-        self._strategy.add_album_interface(album_dict)
+    def add_release(self, release_dict):
+        self._strategy.add_release_interface(release_dict)
 
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
@@ -27,5 +27,5 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def add_album_interface(self, album_dict):
+    def add_release_interface(self, release_dict):
         pass
