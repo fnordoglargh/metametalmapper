@@ -43,6 +43,9 @@ actual_member = {'emid': 2012,
                  }
 
 db.add_member(actual_member)
+db.member_played_in_band(2042, 1, 'Bass', 'Olli-Pekka Laine')
+db.member_played_in_band(2012, 1, 'Guitars (lead)', 'Esa Holopainen')
+
 
 # config.DATABASE_URL = 'bolt://neo4j:em1@localhost:7687'
 #

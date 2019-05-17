@@ -18,8 +18,11 @@ class GraphDatabaseContext:
     def add_member(self, member_dict):
         self._strategy.add_member_interface(member_dict)
 
-    def band_recorded_release(self, band, release):
-        self._strategy.band_recorded_release_interface(band, release)
+    def band_recorded_release(self, band_id, release_id):
+        self._strategy.band_recorded_release_interface(band_id, release_id)
+
+    def member_played_in_band(self, member_id, band_id, instrument, pseudonym):
+        self._strategy.member_played_in_band_interface(member_id, band_id, instrument, pseudonym)
 
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
@@ -41,5 +44,10 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def band_recorded_release_interface(self, band, release):
+    def band_recorded_release_interface(self, band_id, release_id):
         pass
+
+    @abstractmethod
+    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
+        pass
+
