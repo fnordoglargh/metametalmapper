@@ -10,7 +10,9 @@ actual_band = {'emid': 3540294014,
                'country': 'FI',
                'locations': ['Helsinki, Uusimaa'],
                'status': 'A',
-               'themes': ['Progressive Melodic Death', 'Doom Metal']
+               'themes': ['Darkness', 'Loss', 'Despair', 'Death'],
+               'genres': ['Progressive Melodic Death', 'Doom Metal'],
+               'formed': date(2007, 1, 1)
                }
 
 db.add_band(actual_band)
@@ -20,7 +22,9 @@ actual_band = {'emid': 1,
                'country': 'FI',
                'locations': ['Helsinki'],
                'status': 'A',
-               'themes': ['War (early)', 'Death', 'Finnish legends', 'Kalevala']
+               'themes': ['War (early)', 'Death', 'Finnish legends', 'Kalevala'],
+               'genres': ['Progressive/Death/Doom Metal (early)', 'Melodic Heavy Metal/Rock (later)'],
+               'formed': date(1990, 1, 1)
                }
 
 db.add_band(actual_band)
