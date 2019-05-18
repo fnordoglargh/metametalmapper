@@ -36,16 +36,21 @@ class CrawlMode(Enum):
     AnalyseDatabase = 3
     DisplayInfo = 4
     CrawlRegion = 5
+    Test = 6
 
 
 def load_countries():
+    """Loads the file with ISO country codes and their names into a dictionary. The ISO code acts as the key.
+
+    :return: True of false depending on the success.
+    """
     if len(countries) is not 0:
-        return
+        return True
 
     country_path = Path("countries.csv")
 
     if not country_path.is_file():
-        return
+        return False
 
     with country_path.open(encoding="utf-8") as f:
         line = f.readline().rstrip()
@@ -54,14 +59,23 @@ def load_countries():
             countries[split_line[0]] = split_line[1]
             line = f.readline().rstrip()
 
+    return True
 
-def print_countries(columns):
-    if type(columns) is not int:
-        print("Cannot list countries with parameters type other than int.")
+
+def print_countries(columns_count):
+    """Uses ``crawl_countries`` to get a list of all available countries and their ISO codes from MA. The list is then
+    used to prepare a formatted printable string with all countries.
+
+    :param columns_count: The amount of columns for the formatted printout. The column width depends on the length
+    of the longest country name. A count of three or four should work fine.
+    :return: A string with all ISO country codes and their names neatly formatted in columns.
+    """
+    if type(columns_count) is not int:
+        print("Cannot list countries with parameter type other than int.")
         return
-    elif columns < 1:
-        print("Cannot list countries with columns count smaller than one.")
-        return
+    elif columns_count < 1:
+        print("Cannot list countries with columns count smaller than one. Defaulting to one.")
+        columns_count = 1
 
     longest_country = 0
     country_links = crawl_countries()
@@ -78,7 +92,7 @@ def print_countries(columns):
         if key in country_links:
             actual_line += line_format.format(key, country_name)
             counter += 1
-            if counter is columns:
+            if counter is columns_count:
                 counter = 0
                 actual_line += '\n    '
 
@@ -86,6 +100,10 @@ def print_countries(columns):
 
 
 def print_regions():
+    """Prepares a string with all known regions from inside this file and their countries.
+
+    :return: String with all regions and their containing countries.
+    """
     lines = ''
     for key, value in REGIONS.items():
         lines += f'  [{value[0]}] {value[1]}: '
@@ -118,6 +136,15 @@ def print_help():
 
 
 def flush_queue(country_short):
+    """Flushes the contents of ``bandsQueue`` (band addresses of a country or region) into the sub-folder named
+    ``links``.
+
+    The function effectively empties the bandsQueue and leaves it with zero items for further calls of
+    metalCrawler.crawl_country.
+
+    :param country_short: ISO country code used in the file name.
+    :return: A filename with the format links/bands-NN.lnks.
+    """
     logger = logging.getLogger('Crawler')
     country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
 
@@ -128,9 +155,11 @@ def flush_queue(country_short):
             band_links_file.write(bandsQueue.get_nowait() + '\n')
             counter += 1
         band_links_file.close()
-        logger.info("Saved {} bands of {} in file '{}'.".format(str(counter), country_short, country_filename))
+        logger.info(f"Saved {str(counter)} bands of {country_short} in file '{country_filename}'.")
     else:
-        logger.warning("No bands in country {}. To check country manually, use above link.".format(country_short))
+        logger.warning(f"No bands in country {country_short}. To check country manually, use above link.")
+
+    return country_filename
 
 
 def main(argv):
@@ -171,24 +200,23 @@ def main(argv):
         else:
             logger.debug(f"Standard directory {folder} exists.")
 
+    country_links = []
+
     for opt, arg in opts:
         if opt == '-h':
             print_help()
             sys.exit()
         elif opt == '-c':
-            country = arg.upper()
+            country_short = arg.upper()
+            country_links.append(country_short)
             mode = CrawlMode.CrawlCountry
         elif opt == '-a':
             mode = CrawlMode.CrawlAllCountries
         elif opt == '-b':
             mode = CrawlMode.CrawlBands
         elif opt == '-f':
-            filename = arg
             filenames.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
-        elif opt == '-t':
-            result = cut_instruments('Drums(1988-1993, 1994-present)')
-            print()
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-l':
@@ -196,6 +224,12 @@ def main(argv):
         elif opt == '-r':
             mode = CrawlMode.CrawlRegion
             region = arg.upper()
+        elif opt == '-t':
+            mode = CrawlMode.Test
+            filenames.append(Path("testLinks.txt"))
+        elif opt == '-m':
+            result = cut_instruments('Drums(1988-1993, 1994-present)')
+            print()
         else:
             mode = CrawlMode.Error
 
@@ -204,20 +238,17 @@ def main(argv):
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
 
-    if mode is CrawlMode.CrawlAllCountries:
-        logger.info("Crawling all countries...")
-        # This starts bootstrapping from the actual country list as it is on EM.
-        country_links = crawl_countries()
+    if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
+        logger.info("Crawling countries...")
+
+        if len(country_links) is 0:
+            # This starts bootstrapping from the actual country list as it is on EM.
+            country_links = crawl_countries()
 
         for country_short in country_links:
             country_link = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
             crawl_country(country_link)
             flush_queue(country_short)
-    elif mode is CrawlMode.CrawlCountry:
-        logger.info("Crawling a single country: " + country)
-        country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
-        crawl_country(country_link)
-        flush_queue(country)
     elif mode is CrawlMode.CrawlRegion:
         if region not in REGIONS:
             print(f'The region {region} is invalid. Try one from the following list:')
@@ -229,7 +260,7 @@ def main(argv):
                 country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
                 crawl_country(country_link)
             flush_queue(region)
-    elif mode is CrawlMode.CrawlBands:
+    elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
         database = {"artists": {}, "bands": {}, "labels": {}}
         lock = threading.Lock()
 
@@ -239,8 +270,18 @@ def main(argv):
                 # Remove last element from list if it's a lonely, empty string.
                 if band_links[-1] == '':
                     del band_links[-1]
+
+                sanitized_bands = []
+                # The test mode contains hash commented lines. Here we filter for those.
+                if mode is CrawlMode.Test:
+                    for line in band_links:
+                        if not line.startswith('#'):
+                            sanitized_bands.append(line)
+                else:
+                    sanitized_bands = band_links
+
                 # TODO: Get the country from filename and pass as parameter.
-                crawl_bands(band_links, database, lock)
+                crawl_bands(sanitized_bands, database, lock)
             else:
                 logger.error(f"File {path} was not readable.")
 

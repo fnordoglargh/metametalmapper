@@ -1,16 +1,12 @@
--b -f bandLinksTest.txt
--b -f bands-NO.lnks
--b -f bands-IS.lnks
--y databases\db-2019-01-02_22-32-25.json
--y -b -f links\bands-TST.lnks
-
+# Instruments with question marks
+Brainwashed/3540290599
+# Has no releases.
+Blaznagar/27117
 # Only one 'Last known lineup'
 J.J._Glitter/3540265221
-
 # Some N/A in categories.
 J._Hiltunen's_Wings_of_Destiny/27564
-
-Linked by band member and label.
+# Linked by band member and label.
 Old_Funeral/3969
 Burzum/88
 Mayhem/67

@@ -25,13 +25,23 @@ threadCount = 8
 
 
 class VisitBandThread(threading.Thread):
-
     def __init__(self, thread_id, band_links, database, lock):
-        threading.Thread.__init__(self)
+        """Constructs an worker object which is used to get prepared data from a band page.
+        The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
+
+        :param thread_id: An integer number
+        :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
+        :param database: A dictionary used by all workers to put their data in.
+        :param lock: Secures concurrent access to ``database`` which is used by all other workers.
+        """
+
+        super(VisitBandThread, self).__init__()
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
         self.database = database
+        self.logger = logging.getLogger('chardet.charsetprober')
+        self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
         self.qsize = band_links.qsize()
         self.logger.debug("Initializing " + self.name)
@@ -82,7 +92,7 @@ class VisitBandThread(threading.Thread):
 class VisitBandListThread(threading.Thread):
 
     def __init__(self, thread_id, country_links, band_links):
-        threading.Thread.__init__(self)
+        super(VisitBandListThread, self).__init__()
         self.threadID = thread_id
         self.name = "BandListVisitor_" + thread_id
         self.countryLinks = country_links
@@ -101,7 +111,7 @@ class VisitBandListThread(threading.Thread):
             json_data_string = country_json.data.decode("utf-8")
             json_data_string = json_data_string.replace("\"sEcho\": ,", '')
             json_data = None
-            self.logger.debug("  Working on:" + link_country_temp)
+            self.logger.debug(f"  Working on: {link_country_temp}")
 
             try:
                 json_data = json.loads(json_data_string)
@@ -122,23 +132,40 @@ class VisitBandListThread(threading.Thread):
                     self.bandLinks.put(band_link[37:len(band_link)])
                     link_counter += 1
 
-        self.logger.debug("Finished {} and added {} links.".format(self.name, str(link_counter)))
+        self.logger.debug(f"Finished {self.name} and added {str(link_counter)} links.")
 
 
-def cook_soup(link):
+def cook_soup(link, retry_count=5):
+    """Wraps getting a web page for further parsing.
+
+    Retries several times to get the page if the request yields in a *Forbidden*.
+
+    :param link: URL to get the web page from.
+    :param retry_count: Set to any number greater than 0 (will be set internally to 1 if smaller than 1).
+    :return: Either a BeautifulSoup object of the requested page or ``None`` if the request failed.
+    """
     logger = logging.getLogger('Crawler')
+    # Set to 1 if value is invalid.
+    if retry_count < 1:
+        retry_count = 1
 
-    while True:
+    logger.debug(f"  Cooking soup for {link}")
+
+    while retry_count > 0:
         # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         web_page = http.request('GET', link)
         web_page_string = web_page.data.decode("utf-8")
 
-        if "Forbidden." not in web_page_string:
-            break
-        else:
+        if "Forbidden." in web_page_string:
             logger.debug("  trying again...")
             time.sleep(.5)
+            retry_count -= 1
+        else:
+            retry_count = -1
+
+    if retry_count is 0:
+        return None
 
     return BeautifulSoup(web_page.data, "html.parser")
 
@@ -247,30 +274,19 @@ def cut_instruments(instrument_string):
     return collection
 
 
-def visit_band_list(country_link, start_index, band_links):
-    logger = logging.getLogger('Crawler')
-    link_country_temp = country_link + str(start_index)
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-    country_json = http.request('GET', link_country_temp)
-    json_data_string = country_json.data.decode("utf-8")
-    json_data_string = json_data_string.replace("\"sEcho\": ,", '')
-    json_data = json.loads(json_data_string)
-
-    for band in json_data["aaData"]:
-        index_first_apostrophe = band[0].find("'")
-        index_second_apostrophe = band[0].find("'", index_first_apostrophe + 1)
-        band_link = band[0][index_first_apostrophe + 1:index_second_apostrophe]
-        logger.debug("  link: " + band_link)
-        index_first_closing_bracket = band[0].find(">")
-        index_second_opening_bracket = band[0].find("<", index_first_closing_bracket)
-        band_name = band[0][index_first_closing_bracket + 1:index_second_opening_bracket]
-        logger.debug("  name: " + band_name)
-        band_links[band_name] = band_link
-
-
 def crawl_country(link_country):
+    """Crawls the given country page for band links and puts them into the global variable bandsQueue.
+
+    Depending on the total amount of bands in the given country, the pages will be fetched through
+    MA's AJAX API in packages of up til 500 bands. Parsing happens in eight threads.
+
+    TODO: Move global variable to smaller scope?
+
+    :param link_country: Address of a country to parse band links from.
+    """
+
     logger = logging.getLogger('Crawler')
-    logger.debug(">>> Crawling Country: " + link_country)
+    logger.debug(f">>> Crawling Country: {link_country}")
     json_data_string = ""
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
@@ -305,13 +321,13 @@ def crawl_country(link_country):
     if needed_run_count < thread_count:
         thread_count = needed_run_count
 
-    logger.debug("  Setting up to do [{}] runs with [{}] threads.".format(str(needed_run_count), str(thread_count)))
-    link_suffix = "json/1?sEcho=1&iDisplayStart="
+    logger.debug(f"  Setting up to do [{str(needed_run_count)}] runs with [{str(thread_count)}] threads.")
+    link_suffix = "/json/1?sEcho=1&iDisplayStart="
 
     # Prepare the AJAX links for the actual run.
     for i in range(0, amount_entries, display_constant):
         ajaxLinks.put_nowait(link_country + link_suffix + str(i))
-        logger.debug("    Prepping link: " + str(i))
+        logger.debug(f"    Prepping link: {str(i)}")
 
     threads = []
 
@@ -328,6 +344,11 @@ def crawl_country(link_country):
 
 
 def crawl_countries():
+    """Crawls MA's country page for all available ISO country codes.
+
+    :return: A list of two-letter ISO country codes.
+    """
+
     soup = cook_soup("https://www.metal-archives.com/browse/country")
     s = soup.find_all(attrs={"class": "countryCol"})
     country_links = []
@@ -335,13 +356,24 @@ def crawl_countries():
     for i in range(0, len(s)):
         for j in range(1, len(s[i].contents), 3):
             temp_link = s[i].contents[j].attrs["href"]
-            country_short = temp_link[len(temp_link) - 2:len(temp_link)]
+            country_short = temp_link[-2:]
             country_links.append(country_short)
 
     return country_links
 
 
 def crawl_band(band_short_link):
+    """This is where the magic happens: A short band link is expanded, visited and parsed for data.
+
+        It still may throw an exception that must be caught and dealt with. Best by putting the link back
+        into circulation.
+
+    :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
+    :return:
+        A dictionary with band, artist and label data of the visited band or
+        -1 in an error case.
+    """
+
     # TODO: Change your environment or this won't work!
     # The % escaped glyphs only work if the client.py in http
     # is changed in putrequest() before self._output() is called.
@@ -350,7 +382,7 @@ def crawl_band(band_short_link):
     # Needs to import rfc3986
     link_band = em_link_main + bands + band_short_link
     logger = logging.getLogger('Crawler')
-    logger.info('>>> Crawling [' + band_short_link + ']')
+    logger.info(f'>>> Crawling [{band_short_link}]')
     soup = cook_soup(link_band)
     # soup = BeautifulSoup(bandPage.data, "lxml")
     logger.debug("  Start scraping from actual band.")
@@ -358,7 +390,7 @@ def crawl_band(band_short_link):
     s = soup.find_all(attrs={"class": "band_name"})
 
     if len(s) == 0:
-        logger.fatal("  Did not find the attribute band_name for {}.".format(band_short_link))
+        logger.fatal(f"  Did not find the attribute band_name for {band_short_link}.")
         logger.debug("  Band page source for reference:")
         logger.debug(soup.text)
         return -1
@@ -376,7 +408,8 @@ def crawl_band(band_short_link):
     country_name = country_node.contents[0]
     # Saving the country name and link in a dict.
     country_link = country_node.attrs["href"]
-    band_data[band_id]["country"] = {country_name: country_link}
+    # Take the last two letters of the link.
+    band_data[band_id]["country"] = country_link[-2:]
     location = s[1].contents[7].text
 
     if location != "N/A":
@@ -408,7 +441,7 @@ def crawl_band(band_short_link):
             last_position = len(band_data[band_id]["active"]) - 1
             band_data[band_id]["active"][last_position] += previous_name + ")"
         else:
-            logger.warning("  Found an element of type {}. This should not happen.".format(type(active)))
+            logger.warning(f"  Found an element of type {type(active)}. This should not happen.")
 
     s = soup.find_all(attrs={"class": "float_right"})
     band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
@@ -450,7 +483,7 @@ def crawl_band(band_short_link):
         # Normal case.
         if last_found_header == "lineupHeaders":
             header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-            logger.debug("  Found header: {}".format(header_category))
+            logger.debug(f"  Found header: {header_category}")
         # Special case where a band only has one line-up.
         elif last_found_header == "lineupRow":
             # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
@@ -459,23 +492,46 @@ def crawl_band(band_short_link):
             if not is_lineup_diverse:
                 test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                 header_category = lineup_mapping[test_header2]
-                logger.debug("  Didn't find a header. Digging deeper: {}".format(header_category))
+                logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
         if header_category not in band_data[band_id]["lineup"]:
             band_data[band_id]["lineup"][header_category] = []
 
         # Five elements for artists.
         if len(actual_row) is 5:
-            # The leading part ist not needed and stripped
-            # (https://www.metal-archives.com/artists/).  It's always 39
-            # letters long.
+            temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
+            artist_soup = cook_soup(temp_artist_soup_link)
+
+            name = ""
+            gender = ""
+            age = ""
+
+            if artist_soup is not None:
+                #artist_soup.contents[2].contents[3].contents[1]
+                member_info = artist_soup.find('div', attrs={'id': 'member_info'})
+                name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
+                gender = str(member_info.contents[9].contents[7].contents[0])
+                age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
+
+                if age.find("N/A") < 0:
+                    age = age[:age.find(" ")]
+            else:
+                # Error case. This will break if a band member has no MA entry.
+                # return -1
+                pass
+
+            # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
+            # It's always 39 letters long.
             temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-            logger.debug("    Recording artist data for " + temp_artist_name)
+            logger.debug(f"    Recording artist data for {temp_artist_name}.")
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
             # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
+            artist_data[temp_artist_id]["name"] = name
+            artist_data[temp_artist_id]["gender"] = gender
+            artist_data[temp_artist_id]["age"] = age
             artist_data[temp_artist_id]["bands"] = {}
             artist_data[temp_artist_id]["bands"][band_id] = {}
             artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
@@ -494,6 +550,12 @@ def crawl_band(band_short_link):
 
     for row in rows:
         cells = row.findAll("td")
+
+        # Guard clause for the unlikely case if a band has no releases.
+        if len(cells) is 1:
+            logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
+            continue
+
         album_name = cells[0].text
         album_type = cells[1].text
         album_year = cells[2].text
@@ -510,7 +572,6 @@ def crawl_band(band_short_link):
             'year': album_year,
             'rating': album_rating
         })
-
 
     # pp = pprint.PrettyPrinter(indent=2)
     # # pp.pprint(band_data)
@@ -545,101 +606,3 @@ def crawl_bands(file_with_band_links, database, lock):
         t.join()
 
     logger.debug('<<< Crawling all bands')
-
-
-def crawlBandsOld():
-    bandsToVisit = set()
-    # bandsToVisit.add('http://www.metal-archives.com/bands/Bathory')
-    bandsToVisit.add('https://www.metal-archives.com/bands/Obituary/165')
-    # bandsToVisit.add('https://www.metal-archives.com/bands/Metallica')
-    # bandsToVisit.add('http://www.metal-archives.com/bands/Haystack/116128')
-    # bandsToVisit.add('http://www.metal-archives.com/bands/Entombed/7')
-    bandsToVisitInNextRound = set()
-    bandsVisited = set()
-    searchDepth = 1
-    searchLevel = 0
-    graphBandToBands = dict()
-
-    while searchLevel < searchDepth:
-        # Initialize the pool manager with certificates.  There will be nasty warnings for every call if you don't.
-        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-
-        # Pop a band from the "to visit" collection and add to visited collection.
-        bandCurrentlyVisiting = bandsToVisit.pop()
-        bandsVisited.add(bandCurrentlyVisiting)
-
-        website = http.request('GET', bandCurrentlyVisiting)
-        soup = BeautifulSoup(website.data, "html.parser")
-
-        # Finds band name; needs to extract link.
-        s = soup.find_all(attrs={"class": "band_name"})
-        actualBandName = s[0].next_element.next_element  # .encode('utf-8')
-        print('Visiting [' + actualBandName + ']...')
-
-        # Takes all bands which belong to a person.
-        bandLinks = soup.find_all(attrs={"class": "lineupBandsRow"})
-
-        print("  Found [" + str(len(bandLinks) // 2) + "] persons with connected bands in lineup.")
-        graphBandNames = set()
-        # print(bandLinks)
-
-        lineup = soup.find_all(attrs={"id": "band_tab_members_all"})
-        lineup2 = soup.find(attrs={"id": "band_tab_members_all"})
-
-        #    displayChildren(lineup)
-
-        for bandLink in bandLinks:
-            link = bandLink.a
-
-            # print(bandLink.text.strip())
-
-            if link is None:
-                # TODO: Find solution for multiple bands with no link.
-                graphBandNames.add(bandLink.text.split(':')[1].rstrip().lstrip().replace("ex-", ""))
-                continue
-            elif "ex-" in str(bandLink.a.previous_sibling):
-                firstBandIsEx = True
-            else:
-                firstBandIsEx = False
-
-            # Loop through all bands in person lineup.
-            while link != None:
-                if "," in link:  # Bands without DB entries have no links.
-                    bandsLoop = link.split(",")
-                    for s in bandsLoop:
-                        # This can be anything (e.g.  "ex-" "(live)" or whitespaces).
-                        # We want everything starting with "ex-" follwed by a band name.
-                        # Or a band name followed by "(live)".
-                        loopingBand = s.lstrip().rstrip()
-
-                        # TODO: Make this better: Handle live better.
-                        # This will return true for legitimate bands followed by "(live)".
-                        if is_not_empty_string_or_live(loopingBand):
-                            print(loopingBand)
-                            if loopingBand != "ex-":  # Test for "-ex" here.  Handle flag later for different diagram.
-                                loopingBand = loopingBand.replace("ex-", "")
-                                loopingBand = loopingBand.replace("(live)", "")
-                                graphBandNames.add(loopingBand)
-                else:  # This is the actual link and text.
-                    if str(link).rstrip() != "" and "live" not in link:
-                        refLink = link.get('href')
-                        bandsToVisitInNextRound.add(refLink)
-                        graphBandNames.add(link.next_element)
-                        # print " Found: [" + link.next_element + "] and added [" + link.get('href') + "] to list."
-
-                link = link.next_sibling
-
-        if not bandsToVisit:
-            bandsToVisit = bandsToVisitInNextRound
-            bandsToVisitInNextRound = set()
-            searchLevel += 1
-
-        print("  Found [" + str(len(graphBandNames)) + "] connected bands.")
-        graphBandToBands.update({actualBandName: graphBandNames})
-
-    #    for e in graphBandNames:
-    #        print e
-
-    bandGraph = prepareGraph(graphBandToBands)
-    writeGraphAndCallGraphviz(bandGraph)
-    print('Visited [' + str(len(bandsVisited)) + '] bands.')
