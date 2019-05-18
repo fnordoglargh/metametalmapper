@@ -498,9 +498,29 @@ def crawl_band(band_short_link):
 
         # Five elements for artists.
         if len(actual_row) is 5:
-            # The leading part ist not needed and stripped
-            # (https://www.metal-archives.com/artists/).  It's always 39
-            # letters long.
+            temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
+            artist_soup = cook_soup(temp_artist_soup_link)
+
+            name = ""
+            gender = ""
+            age = ""
+
+            if artist_soup is not None:
+                #artist_soup.contents[2].contents[3].contents[1]
+                member_info = artist_soup.find('div', attrs={'id': 'member_info'})
+                name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
+                gender = str(member_info.contents[9].contents[7].contents[0])
+                age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
+
+                if age.find("N/A") < 0:
+                    age = age[:age.find(" ")]
+            else:
+                # Error case. This will break if a band member has no MA entry.
+                # return -1
+                pass
+
+            # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
+            # It's always 39 letters long.
             temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
@@ -509,6 +529,9 @@ def crawl_band(band_short_link):
             # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
+            artist_data[temp_artist_id]["name"] = name
+            artist_data[temp_artist_id]["gender"] = gender
+            artist_data[temp_artist_id]["age"] = age
             artist_data[temp_artist_id]["bands"] = {}
             artist_data[temp_artist_id]["bands"][band_id] = {}
             artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
