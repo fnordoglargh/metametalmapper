@@ -58,9 +58,9 @@ actual_member = {'emid': 2012,
                  }
 
 db.add_member(actual_member)
-db.member_played_in_band(2042, 1, 'Bass', 'Olli-Pekka Laine')
-db.member_played_in_band(2042, 3540294014, 'Bass, Vocals (backing)', 'Olli-Pekka Laine')
-db.member_played_in_band(2012, 1, 'Guitars (lead)', 'Esa Holopainen')
+db.member_played_in_band(2042, 1, 'Bass', 'Olli-Pekka Laine', [date(1990, 1, 1), date(2000, 1, 1), date(2017, 1, 1), date.today()])
+db.member_played_in_band(2042, 3540294014, 'Bass, Vocals (backing)', 'Olli-Pekka Laine', [])
+db.member_played_in_band(2012, 1, 'Guitars (lead)', 'Esa Holopainen', [])
 db.label_issued_release(8, 295)
 
 # config.DATABASE_URL = 'bolt://neo4j:em1@localhost:7687'

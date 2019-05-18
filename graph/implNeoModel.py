@@ -4,6 +4,8 @@ from graph.choices import *
 from graph.metalGraph import *
 
 class MemberRelationship(StructuredRel):
+    # TODO: Try to use multiple connections for each stint.
+    time_frame = ArrayProperty()
     # start_date = DateProperty()
     # end_date = DateProperty()
     pseudonym = StringProperty()
@@ -69,13 +71,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # TODO: Add error handling.
         band.releases.connect(release)
 
-    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
+    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym, time_frame):
         member = Member.nodes.get(emid=member_id)
         band = Band.nodes.get(emid=band_id)
         member.played_in.disconnect(band)
         relation = member.played_in.connect(band)
         relation.instrument = instrument
         relation.pseudonym = pseudonym
+        relation.time_frame = time_frame
         relation.save()
 
     def label_issued_release_interface(self, label_id, release_id):

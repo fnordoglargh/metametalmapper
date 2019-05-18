@@ -21,8 +21,10 @@ class GraphDatabaseContext:
     def band_recorded_release(self, band_id, release_id):
         self._strategy.band_recorded_release_interface(band_id, release_id)
 
-    def member_played_in_band(self, member_id, band_id, instrument, pseudonym):
-        self._strategy.member_played_in_band_interface(member_id, band_id, instrument, pseudonym)
+    def member_played_in_band(self, member_id, band_id, instrument, pseudonym, time_frame):
+        # time_frame: Pairs of two are treated as start and end dates. If someone was only in for a year you still
+        # need the same date twice.
+        self._strategy.member_played_in_band_interface(member_id, band_id, instrument, pseudonym, time_frame)
 
     def label_issued_release(self, label_id, release_id):
         self._strategy.label_issued_release_interface(label_id, release_id)
@@ -51,7 +53,7 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
+    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym, time_frame):
         pass
 
     @abstractmethod
