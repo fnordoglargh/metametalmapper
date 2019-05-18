@@ -24,6 +24,9 @@ class GraphDatabaseContext:
     def member_played_in_band(self, member_id, band_id, instrument, pseudonym):
         self._strategy.member_played_in_band_interface(member_id, band_id, instrument, pseudonym)
 
+    def label_issued_release(self, label_id, release_id):
+        self._strategy.label_issued_release_interface(label_id, release_id)
+
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
 
@@ -51,3 +54,6 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
     def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
         pass
 
+    @abstractmethod
+    def label_issued_release_interface(self, label_id, release_id):
+        pass

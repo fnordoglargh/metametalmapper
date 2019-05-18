@@ -78,6 +78,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         relation.pseudonym = pseudonym
         relation.save()
 
+    def label_issued_release_interface(self, label_id, release_id):
+        label = Label.nodes.get(emid=label_id)
+        release = Release.nodes.get(emid=release_id)
+        label.releases.connect(release)
+
 
 
     # label = Label.nodes.get(emid=8)
