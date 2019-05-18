@@ -68,7 +68,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         release = Release.nodes.get(emid=release_id)
         # TODO: Add error handling.
         band.releases.connect(release)
-        release.recorded_by.connect(band)
 
     def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
         member = Member.nodes.get(emid=member_id)
