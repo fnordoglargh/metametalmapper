@@ -72,7 +72,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym):
         member = Member.nodes.get(emid=member_id)
         band = Band.nodes.get(emid=band_id)
-        relation = band.current_lineup.connect(member)
+        member.played_in.disconnect(band)
+        relation = member.played_in.connect(band)
         relation.instrument = instrument
         relation.pseudonym = pseudonym
         relation.save()

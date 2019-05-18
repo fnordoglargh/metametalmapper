@@ -4,6 +4,17 @@ from graph.implNeoModel import *
 from graph.metalGraph import *
 
 db = GraphDatabaseContext(NeoModelStrategy())
+
+actual_band = {'emid': 3540294014,
+               'name': 'Barren Earth',
+               'country': 'FI',
+               'locations': ['Helsinki, Uusimaa'],
+               'status': 'A',
+               'themes': ['Progressive Melodic Death', 'Doom Metal']
+               }
+
+db.add_band(actual_band)
+
 actual_band = {'emid': 1,
                'name': 'Amorphis',
                'country': 'FI',
@@ -44,6 +55,7 @@ actual_member = {'emid': 2012,
 
 db.add_member(actual_member)
 db.member_played_in_band(2042, 1, 'Bass', 'Olli-Pekka Laine')
+db.member_played_in_band(2042, 3540294014, 'Bass, Vocals (backing)', 'Olli-Pekka Laine')
 db.member_played_in_band(2012, 1, 'Guitars (lead)', 'Esa Holopainen')
 
 
