@@ -251,13 +251,13 @@ COUNTRIES = (
     ('XX', 'International')
 )
 
-BAND_STATUS = (
-    ('A', 'Active'),
-    ('H', 'On hold'),
-    ('C', 'Changed name'),
-    ('S', 'Split-up'),
-    ('U', 'Unknown')
-)
+BAND_STATUS = {
+    'A': 'Active',
+    'H': 'On hold',
+    'C': 'Changed name',
+    'S': 'Split-up',
+    'U': 'Unknown'
+}
 
 LABEL_STATUS = (
     ('A', 'active'),
