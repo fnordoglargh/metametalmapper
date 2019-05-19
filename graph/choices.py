@@ -265,14 +265,14 @@ LABEL_STATUS = (
     ('U', 'unknown')
 )
 
-RELEASE_TYPES = (
-    ('D', 'Demo'),
-    ('F', 'Full-length'),
-    ('S', 'Single'),
-    ('T', 'Split'),
-    ('L', 'Live album'),
-    ('C', 'Compilation'),
-    ('E', 'EP'),
-    ('V', 'Video'),
-    ('B', 'Boxed set')
-)
+RELEASE_TYPES = {
+    'D': 'Demo',
+    'F': 'Full-length',
+    'S': 'Single',
+    'T': 'Split',
+    'L': 'Live album',
+    'C': 'Compilation',
+    'E': 'EP',
+    'V': 'Video',
+    'B': 'Boxed set'
+}
