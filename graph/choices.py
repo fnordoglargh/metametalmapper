@@ -251,7 +251,7 @@ COUNTRIES = (
     ('XX', 'International')
 )
 
-STATUS = (
+BAND_STATUS = (
     ('A', 'Active'),
     ('H', 'On hold'),
     ('C', 'Changed name'),

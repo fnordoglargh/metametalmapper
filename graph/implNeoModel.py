@@ -17,7 +17,7 @@ class Band(StructuredNode):
     name = StringProperty()
     country = StringProperty(max_length=2, choices=COUNTRIES)
     locations = ArrayProperty()
-    status = StringProperty(max_length=1, choices=STATUS)
+    status = StringProperty(max_length=1, choices=BAND_STATUS)
     formed = DateProperty()
     themes = ArrayProperty()  # Should a theme be a node?
     genres = ArrayProperty()
