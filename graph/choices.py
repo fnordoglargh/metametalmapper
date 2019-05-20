@@ -284,3 +284,9 @@ RELEASE_TYPES = {
     'V': 'Video',
     'B': 'Boxed set'
 }
+
+GENDER = {
+    'M': 'Male',
+    'F': 'Female',
+    'U': 'Unknown/other'
+}

@@ -150,6 +150,16 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
     temp_artist_data = ma_dict['artists']
     temp_label_data = ma_dict['labels']
 
+    for member in temp_artist_data:
+        inner_data = temp_artist_data[member]
+
+        temp_member_dict = {'emid': member,
+                            'name': inner_data['name'],
+                            'age': int(inner_data['age']),
+                            'gender': inner_data['gender']
+                            }
+
+        db_handle.add_member(temp_member_dict)
     for band in temp_band_data:
 
         active_time = temp_band_data[band]['active']
@@ -567,11 +577,13 @@ def crawl_band(band_short_link):
                 #artist_soup.contents[2].contents[3].contents[1]
                 member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                 name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
-                gender = str(member_info.contents[9].contents[7].contents[0])
+                gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
                 age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
 
                 if age.find("N/A") < 0:
                     age = age[:age.find(" ")]
+                else:
+                    age = -1
             else:
                 # Error case. This will break if a band member has no MA entry.
                 # return -1

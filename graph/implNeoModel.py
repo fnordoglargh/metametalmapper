@@ -46,6 +46,8 @@ class Release(StructuredNode):
 class Member(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
+    age = IntegerProperty()
+    gender = StringProperty(max_length=1, choices=GENDER)
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
 
 
