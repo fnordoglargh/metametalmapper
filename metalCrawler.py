@@ -10,6 +10,7 @@ import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
 import re
+from graph.choices import *
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -421,7 +422,7 @@ def crawl_band(band_short_link):
 
     band_data[band_id]["location"] = location
     # band_data[band_id]["location"] = s[1].contents[7].contents[0].split("/")
-    band_data[band_id]["status"] = s[1].contents[11].text
+    band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
     band_data[band_id]["formed"] = s[1].contents[15].text
     band_data[band_id]["active"] = []
     artist_data = {}
