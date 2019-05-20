@@ -459,6 +459,8 @@ def crawl_band(band_short_link):
     band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
     label_node = s[3].contents[11].contents[0]
 
+    # The label from band page is only the active one. All others will only be available through the individual
+    # releases. TODO: Visit all releases and get more detailed info.
     if type(label_node) is NavigableString:
         label_name = str(s[3].contents[11].contents[0])
         if label_name is "Unsigned/independent":
@@ -537,7 +539,6 @@ def crawl_band(band_short_link):
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
             logger.debug(f"    Recording artist data for {temp_artist_name}.")
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
-            # TODO: Take care of pseudonyms.
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
             artist_data[temp_artist_id]["name"] = name
