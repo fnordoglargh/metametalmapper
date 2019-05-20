@@ -448,6 +448,12 @@ def crawl_band(band_short_link):
         else:
             logger.warning(f"  Found an element of type {type(active)}. This should not happen.")
 
+    # This removes all earlier (or later) incarnations of the band. It would be better to change the above block
+    # but I'm too lazy to do it right now.
+    for time_span in band_data[band_id]["active"]:
+        if time_span.find('(as') > 0:
+            band_data[band_id]["active"].remove(time_span)
+
     s = soup.find_all(attrs={"class": "float_right"})
     band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
     band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
