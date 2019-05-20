@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from diagramCreator import *
 import re
 from graph.choices import *
+from datetime import date
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -30,7 +31,7 @@ def get_dict_key(source_dict, value):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, database, lock):
+    def __init__(self, thread_id, band_links, database, lock, db_handle, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
@@ -52,6 +53,8 @@ class VisitBandThread(threading.Thread):
         self.logger.debug("Initializing " + self.name)
         self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
+        self.db_handle = db_handle
+        self.is_detailed = is_detailed
 
     def run(self):
         self.logger.debug("Running " + self.name)
@@ -67,11 +70,13 @@ class VisitBandThread(threading.Thread):
                 self.bandLinks.put(link_band_temp)
                 continue
 
-            temp_band_data = result[0]
-            temp_artist_data = result[1]
-            temp_label_data = result[2]
-
+            temp_band_data = result['bands']
+            temp_artist_data = result['artists']
+            temp_label_data = result['labels']
             self.lock.acquire()
+
+            apply_to_db(result, self.db_handle, self.is_detailed)
+
             try:
                 for artist in temp_artist_data:
                     if artist in self.database["artists"]:
@@ -139,6 +144,46 @@ class VisitBandListThread(threading.Thread):
 
         self.logger.debug(f"Finished {self.name} and added {str(link_counter)} links.")
 
+
+def apply_to_db(ma_dict, db_handle, is_detailed):
+    temp_band_data = ma_dict['bands']
+    temp_artist_data = ma_dict['artists']
+    temp_label_data = ma_dict['labels']
+
+    for band in temp_band_data:
+
+        active_time = temp_band_data[band]['active']
+        active_list = []
+
+        for time_slot in active_time:
+            temp_slots = time_slot.split('-')
+            time_slot_1 = date(int(temp_slots[0]), 1, 1)
+            if len(temp_slots) is 1:
+                time_slot_2 = time_slot_1
+            else:
+                if temp_slots[1] == 'present':
+                    time_slot_2 = date.today()
+                else:
+                    time_slot_2 = date(int(temp_slots[1]), 1, 1)
+
+            active_list.append(time_slot_1)
+            active_list.append(time_slot_2)
+
+        temp_band_dict = {'emid': band,
+                          'name': temp_band_data[band]['name'],
+                          'country': temp_band_data[band]['country'],
+                          'status': temp_band_data[band]['status'],
+                          'themes': temp_band_data[band]['theme'],
+                          'genres': temp_band_data[band]['genre'],
+                          'locations': temp_band_data[band]['location'],
+                          'formed': date(int(temp_band_data[band]['formed']), 1, 1),
+                          }
+
+        db_handle.add_band(temp_band_dict)
+
+    # Add labels if mode is detailed.
+    if is_detailed:
+        pass
 
 def cook_soup(link, retry_count=5):
     """Wraps getting a web page for further parsing.
@@ -590,10 +635,10 @@ def crawl_band(band_short_link):
     # # pp.pprint(artist_data)
     # # pp.pprint(label_data)
     logger.debug('<<< Crawling [' + band_short_link + ']')
-    return [band_data, artist_data, label_data]
+    return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
-def crawl_bands(file_with_band_links, database, lock):
+def crawl_bands(file_with_band_links, database, lock, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
 
@@ -606,7 +651,7 @@ def crawl_bands(file_with_band_links, database, lock):
 
     # Create threads.
     for i in range(0, threadCount):
-        thread = VisitBandThread(str(i), local_bands_queue, database, lock)
+        thread = VisitBandThread(str(i), local_bands_queue, database, lock, db_handle, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for

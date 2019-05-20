@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 import pprint
 import datetime
+from graph.implNeoModel import *
+from graph.metalGraph import *
 
 link_extension = ".lnks"
 bandsListFileName = "bands" + link_extension
@@ -165,7 +167,7 @@ def flush_queue(country_short):
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "bac:hf:tylr:")
+        opts, args = getopt.getopt(argv, "dbac:hf:tylr:")
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -201,6 +203,7 @@ def main(argv):
             logger.debug(f"Standard directory {folder} exists.")
 
     country_links = []
+    is_detailed = False
 
     for opt, arg in opts:
         if opt == '-h':
@@ -230,6 +233,8 @@ def main(argv):
         elif opt == '-m':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
             print()
+        elif opt == '-d':
+            is_detailed = True
         else:
             mode = CrawlMode.Error
 
@@ -237,6 +242,8 @@ def main(argv):
     if len(filenames) == 0:
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
+
+    db_handle = GraphDatabaseContext(NeoModelStrategy())
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
         logger.info("Crawling countries...")
@@ -281,7 +288,7 @@ def main(argv):
                     sanitized_bands = band_links
 
                 # TODO: Get the country from filename and pass as parameter.
-                crawl_bands(sanitized_bands, database, lock)
+                crawl_bands(sanitized_bands, database, lock, db_handle, is_detailed)
             else:
                 logger.error(f"File {path} was not readable.")
 
