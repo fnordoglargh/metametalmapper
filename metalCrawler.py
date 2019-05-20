@@ -24,6 +24,10 @@ lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known"
 threadCount = 8
 
 
+def get_dict_key(source_dict, value):
+    return list(source_dict.keys())[list(source_dict.values()).index(value)]
+
+
 class VisitBandThread(threading.Thread):
     def __init__(self, thread_id, band_links, database, lock):
         """Constructs an worker object which is used to get prepared data from a band page.
