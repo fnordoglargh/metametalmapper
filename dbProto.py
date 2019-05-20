@@ -1,5 +1,5 @@
 from neomodel import StructuredNode, StringProperty, RelationshipTo, RelationshipFrom, config
-from datetime import date
+
 from graph.implNeoModel import *
 from graph.metalGraph import *
 
@@ -36,6 +36,12 @@ actual_label = {'emid': 8,
 
 db.add_label(actual_label)
 
+actual_label = {'emid': 2,
+                'name': "Nuclear Blast",
+                'status': "A"}
+
+db.add_label(actual_label)
+
 actual_album = {'emid': 295,
                 'name': "The Karelian Isthmus",
                 'type': "F",
@@ -46,6 +52,18 @@ actual_album = {'emid': 295,
 db.add_release(actual_album)
 band_id = actual_band['emid']
 db.band_recorded_release(actual_band['emid'], actual_album['emid'])
+
+actual_album = {'emid': 226394,
+                'name': "Skyforger",
+                'type': "F",
+                'release_date': date(2009, 5, 29),
+                'rating': 87
+                }
+
+db.add_release(actual_album)
+band_id = actual_band['emid']
+db.band_recorded_release(actual_band['emid'], actual_album['emid'])
+
 
 actual_member = {'emid': 2042,
                  'name': 'Olli-Pekka Laine'
@@ -62,6 +80,7 @@ db.member_played_in_band(2042, 1, 'Bass', 'Olli-Pekka Laine', [date(1990, 1, 1),
 db.member_played_in_band(2042, 3540294014, 'Bass, Vocals (backing)', 'Olli-Pekka Laine', [])
 db.member_played_in_band(2012, 1, 'Guitars (lead)', 'Esa Holopainen', [])
 db.label_issued_release(8, 295)
+db.label_issued_release(2, 226394)
 
 # config.DATABASE_URL = 'bolt://neo4j:em1@localhost:7687'
 #
