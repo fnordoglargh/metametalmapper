@@ -249,6 +249,55 @@ def is_not_empty_string_or_live(s):
         return True
 
 
+def cut_instruments2(instrument_string):
+    collection = []
+
+    # First split along the '),'.
+    temp_instruments = instrument_string.split('),')
+
+    # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
+    for index in range(0, len(temp_instruments) - 1):
+        temp_instruments[index] += ')'
+
+    for temp_instrument in temp_instruments:
+        temp_instrument = temp_instrument.lstrip()
+        # Test if there are any numerals in instrument_string.
+        if not bool(re.search(r'\d', temp_instrument)):
+            collection.append((temp_instrument, []))
+        # We have at least one year.
+        else:
+            split_more = temp_instrument.split('(')
+            back_together = split_more[0]
+            ready_spans = []
+            for inner in range(1, len(split_more)):
+                if bool(re.search(r'\d', split_more[inner])):
+                    # First split by commas.
+                    time_spans = split_more[inner].split(',')
+                    # Then we have one of three types of strings. (1) two years separated by a '-', (2) a single
+                    # year or (3) a year followed by a '-' and 'present'.
+                    for time_span in time_spans:
+                        time_span = time_span.lstrip().rstrip()
+                        # There still is a trailing ')' in the end.
+                        if time_span[len(time_span) - 1] == ')':
+                            time_span = time_span[:-1]
+                        # (2)
+                        if len(time_span) is 4:
+                            years = (int(time_span), int(time_span))
+                        # (1)
+                        elif len(time_span) is 9:
+                            years = (int(time_span[0:4]), int(time_span[5:]))
+                        # (3)
+                        else:
+                            years = (int(time_span[0:4]), 'present')
+
+                        ready_spans.append(years)
+                # Strings in brackets, part of the instrument we're looking for.
+                else:
+                    back_together += '(' + split_more[inner]
+            collection.append((back_together.rstrip(), ready_spans))
+    return collection
+
+
 def cut_instruments(instrument_string):
     collection = {}
 
