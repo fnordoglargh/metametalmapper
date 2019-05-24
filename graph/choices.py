@@ -262,7 +262,9 @@ BAND_STATUS = {
     'H': 'On hold',
     'C': 'Changed name',
     'S': 'Split-up',
-    'U': 'Unknown'
+    'U': 'Unknown',
+    'D': 'Disputed'
+
 }
 
 MEMBER_STATUS = {
