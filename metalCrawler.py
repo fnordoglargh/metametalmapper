@@ -165,6 +165,9 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
         active_list = []
 
         for time_slot in active_time:
+            if '?' in time_slot or 'N/A' in time_slot:
+                continue
+
             temp_slots = time_slot.split('-')
             time_slot_1 = date(int(temp_slots[0]), 1, 1)
             if len(temp_slots) is 1:
@@ -187,6 +190,9 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                           'locations': temp_band_data[band]['location'],
                           'formed': date(int(temp_band_data[band]['formed']), 1, 1),
                           }
+
+        if temp_band_data[band]['formed'] != 'N/A':
+            temp_band_dict['formed'] = date(int(temp_band_data[band]['formed']), 1, 1)
 
         db_handle.add_band(temp_band_dict)
 
@@ -271,8 +277,8 @@ def cut_instruments(instrument_string):
                 if bool(re.search(r'\d', split_more[inner])):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
-                    # Then we have one of three types of strings. (1) two years separated by a '-', (2) a single
-                    # year or (3) a year followed by a '-' and 'present'.
+                    # Then we have one of four types of strings. (1) two years separated by a '-', (2) a single
+                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'.
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
                         # There still is a trailing ')' in the end.
@@ -284,6 +290,16 @@ def cut_instruments(instrument_string):
                         # (1)
                         elif len(time_span) is 9:
                             years = (int(time_span[0:4]), int(time_span[5:]))
+                        # (4) Nasty special case.
+                        elif '?' in time_span:
+                            if time_span[0] == '?' and time_span[:-1] == '?':
+                                years = ('?', '?')
+                            elif time_span[0] == '?':
+                                years = ('?', int(time_span[2:]))
+                            elif time_span[-1:] == '?':
+                                years = (int(time_span[0:4]), '?')
+                            else:
+                                years = ()
                         # (3)
                         else:
                             years = (int(time_span[0:4]), 'present')
