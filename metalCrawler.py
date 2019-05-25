@@ -75,9 +75,8 @@ class VisitBandThread(threading.Thread):
             temp_label_data = result['labels']
             self.lock.acquire()
 
-            apply_to_db(result, self.db_handle, self.is_detailed)
-
             try:
+                apply_to_db(result, self.db_handle, self.is_detailed)
                 for artist in temp_artist_data:
                     if artist in self.database["artists"]:
                         for band in temp_artist_data[artist]["bands"]:
