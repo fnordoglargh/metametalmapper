@@ -149,16 +149,6 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
     temp_artist_data = ma_dict['artists']
     temp_label_data = ma_dict['labels']
 
-    for member in temp_artist_data:
-        inner_data = temp_artist_data[member]
-
-        temp_member_dict = {'emid': member,
-                            'name': inner_data['name'],
-                            'age': int(inner_data['age']),
-                            'gender': inner_data['gender']
-                            }
-
-        db_handle.add_member(temp_member_dict)
     for band in temp_band_data:
 
         active_time = temp_band_data[band]['active']
@@ -170,10 +160,11 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
 
             temp_slots = time_slot.split('-')
             time_slot_1 = date(int(temp_slots[0]), 1, 1)
+
             if len(temp_slots) is 1:
                 time_slot_2 = time_slot_1
             else:
-                if temp_slots[1] == 'present':
+                if 'present' in temp_slots[1]:
                     time_slot_2 = date.today()
                 else:
                     time_slot_2 = date(int(temp_slots[1]), 1, 1)
@@ -188,7 +179,6 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                           'themes': temp_band_data[band]['theme'],
                           'genres': temp_band_data[band]['genre'],
                           'locations': temp_band_data[band]['location'],
-                          'formed': date(int(temp_band_data[band]['formed']), 1, 1),
                           }
 
         if temp_band_data[band]['formed'] != 'N/A':
@@ -196,6 +186,44 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
 
         db_handle.add_band(temp_band_dict)
 
+    for member in temp_artist_data:
+        inner_data = temp_artist_data[member]
+
+        temp_member_dict = {'emid': member,
+                            'name': inner_data['name'],
+                            'age': int(inner_data['age']),
+                            'gender': inner_data['gender']
+                            }
+
+        db_handle.add_member(temp_member_dict)
+
+        for band_relation in inner_data['bands']:
+            inner_relation = inner_data['bands'][band_relation]
+            for status in MEMBER_STATUS.values():
+                if status in inner_relation:
+                    for instruments in inner_relation[status]:
+                        time_spans = []
+                        for time_span_tuple in instruments[1]:
+                            if time_span_tuple[0] != '?':
+                                d0 = date(time_span_tuple[0], 1, 1)
+                            else:
+                                continue
+                            t1 = time_span_tuple[1]
+                            if t1 == 'present':
+                                d1 = date.today()
+                            elif t1 == '?':
+                                continue
+                            else:
+                                d1 = date(time_span_tuple[1], 12, 31)
+                            time_spans.append(d0)
+                            time_spans.append(d1)
+                        try:
+                            db_handle.member_played_in_band(member,
+                                                            band_relation,
+                                                            instruments[0],
+                                                            inner_relation['pseudonym'],
+                                                            time_spans
+                                                            )
     # Add labels if mode is detailed.
     if is_detailed:
         pass
