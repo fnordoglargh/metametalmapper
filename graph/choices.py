@@ -264,7 +264,6 @@ BAND_STATUS = {
     'S': 'Split-up',
     'U': 'Unknown',
     'D': 'Disputed'
-
 }
 
 MEMBER_STATUS = {
@@ -272,7 +271,7 @@ MEMBER_STATUS = {
     'L': 'Last known',
     'P': 'Past',
     'CL': 'Current (Live)',
-    'PL': 'Past (live)'
+    'PL': 'Past (Live)'
 }
 
 RELEASE_TYPES = {
