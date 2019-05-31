@@ -89,8 +89,12 @@ class VisitBandThread(threading.Thread):
                 for label in temp_label_data:
                     if label not in self.database["labels"]:
                         self.database["labels"][label] = temp_label_data[label]
-            except:
-                self.logger.error("Writing artists failed! This is bad.")
+            except Exception:
+                # TODO: Save all visited entity short links to files.
+                self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
+                self.logger.error(temp_band_data)
+                self.logger.error(temp_artist_data)
+                self.logger.error(temp_label_data)
             finally:
                 self.lock.release()
                 progress = len(self.database["bands"]) / self.qsize
@@ -124,8 +128,8 @@ class VisitBandListThread(threading.Thread):
 
             try:
                 json_data = json.loads(json_data_string)
-            except:
-                self.logger.error("  JSON error for [" + link_country_temp + "]. Putting it back in circulation...")
+            except Exception:
+                self.logger.exception(f"  JSON error for [{link_country_temp}]. Putting it back in circulation...")
                 self.countryLinks.put(link_country_temp)
 
             if json_data is not None:
@@ -224,6 +228,14 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                                             inner_relation['pseudonym'],
                                                             time_spans
                                                             )
+                        except Exception:
+                            logging.getLogger('Crawler').exception("Making member connection failed.")
+                            logging.getLogger('Crawler').error(member)
+                            logging.getLogger('Crawler').error(band_relation)
+                            logging.getLogger('Crawler').error(instruments[0])
+                            logging.getLogger('Crawler').error(inner_relation['pseudonym'])
+                            logging.getLogger('Crawler').error(time_spans)
+
     # Add labels if mode is detailed.
     if is_detailed:
         pass
