@@ -1,7 +1,8 @@
-from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, RelationshipFrom, StructuredRel, config
-from datetime import date
+from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
+    RelationshipFrom, StructuredRel, config, core
 from graph.choices import *
 from graph.metalGraph import *
+import logging
 
 class MemberRelationship(StructuredRel):
     # TODO: Try to use multiple connections for each stint.
@@ -54,6 +55,18 @@ class Member(StructuredNode):
 class NeoModelStrategy(GraphDatabaseStrategy):
 
     config.DATABASE_URL = 'bolt://neo4j:em2@localhost:7687'
+
+    def __init__(self):
+        # Cheap test to test if the DB is available.
+        try:
+            Label.nodes.get(emid=-1)
+        # No node with 'emid' of -1 available means the DB is up and running.
+        except core.DoesNotExist:
+            pass
+        # Other exceptions: DB is not running.
+        except Exception:
+            logging.getLogger('NeoModel').error("Cannot connect to Neo4j database.")
+            raise
 
     def add_band_interface(self, band_dict):
         bands = Band.create_or_update(band_dict)

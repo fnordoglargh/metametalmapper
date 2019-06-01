@@ -243,7 +243,11 @@ def main(argv):
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
 
-    db_handle = GraphDatabaseContext(NeoModelStrategy())
+    try:
+        db_handle = GraphDatabaseContext(NeoModelStrategy())
+    except Exception:
+        logger.error("  DB not available. Don't know what to do...")
+        exit(7)
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
         logger.info("Crawling countries...")
