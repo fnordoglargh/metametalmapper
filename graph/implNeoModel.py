@@ -3,6 +3,8 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from graph.choices import *
 from graph.metalGraph import *
 import logging
+import settings
+
 
 class MemberRelationship(StructuredRel):
     # TODO: Try to use multiple connections for each stint.
@@ -54,7 +56,7 @@ class Member(StructuredNode):
 
 class NeoModelStrategy(GraphDatabaseStrategy):
 
-    config.DATABASE_URL = 'bolt://neo4j:em2@localhost:7687'
+    config.DATABASE_URL = f'bolt://{settings.NEO4J_USERNAME}:{settings.NEO4J_PASSWORD}@{settings.NEO4J_IP_ADDRESS}:7687'
 
     def __init__(self):
         # Cheap test to test if the DB is available.
