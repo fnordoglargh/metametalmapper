@@ -13,9 +13,16 @@ interesting ways to visualize the _Metal Archives'_ data:
 * Generates lists for bands to crawl based on countries, regions or the entire database.
 * Extracts information on bands, their band members and releases.
 * Links the information with the ME IDs of the entities.
-* Saves everything in a JSON file for further analysis. 
+* Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis. 
 
 ## Installation
+
+### Neo4j
+
+Data is stored in a [Neo4j database](https://neo4j.com/product/).
+Download and install the [desktop page](https://neo4j.com/download/). 
+
+### Library Hack
 
 While crawling band links I encountered a defect in `Lib/http/client.py`. 
 The percent escaped characters were not resolved correctly. The solution for
@@ -43,6 +50,12 @@ with the switch `-l`.
 A popular region is are the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
 Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
 
+### Graph Databases
+
+A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from MA for
+further analysis. Bands and their members are nodes. They are connected through edges storing e.g. data
+like what pseudonym a member used in a certain band or what instruments were played.   
+
 ## How to use
 
 `metalMaper.py`, when called without switches, shows a list of compiler switches and some hints
@@ -52,9 +65,7 @@ how to use them.
 
 1. Get all Norwegian bands: `metalMaper.py -c NO`
 2. Crawl all bands in Norway: `metalMaper.py -b -f bands-NO.lnks`
-3. Do a rudimentary of all distinct music styles in the resulting database: 
-`metalMaper.py -y databases\db-2019-01-02_22-32-25.json`. (Make sure you use the the name of your generated
-JSON file.)
+3. Open Neo4j Desktop and look at the graph.
 
 ### Bootstrapping: Crawl _all_ available countries
 
@@ -80,60 +91,92 @@ If you're not interested in getting the band links for all countries you can eit
 * start with the switch `-c NN` to crawl all bands in exactly one country **or** 
 * call with `-r NN` where NN is the key of the region you want to crawl.
 
-### JSON database layout
+### Neo4j database
 
-```
-.
-├── artists
-│  └── id
-│     ├── bands
-│     │  └── id
-│     │     ├── Current
-│     │     │  ├── [list]
-│     │     │  └── instrument
-│     │     │     └── [list]
-│     │     ├── Current (Live)
-│     │     │  ├── [list]
-│     │     │  └── instrument
-│     │     │     └── [list]
-│     │     ├── Past
-│     │     │  ├── [list]
-│     │     │  └── instrument
-│     │     │     └── [list]
-│     │     ├── Past (Live)
-│     │     │  ├── [list]
-│     │     │  └── instrument
-│     │     │     └── [list]
-│     │     └── pseudonym
-│     └── link
-├── bands
-│  └── id
-│     ├── active
-│     │  └── [list]
-│     ├── country
-│     ├── formed
-│     ├── genre
-│     │  └── [list]
-│     ├── lineup
-│     │  ├── Current
-│     │  │  └── [list]
-│     │  ├── Current (Live)
-│     │  │  └── [list]
-│     │  ├── Past
-│     │  │  └── [list]
-│     │  └── Past (Live)
-│     │     └── [list]
-│     ├── link
-│     ├── location
-│     ├── name
-│     ├── status
-│     └── theme
-│        └── [list]
-└── labels
-   └── id
-      ├── link
-      └── name
-```
+#### Settings file
+
+Use `settings.py` to set the following properties:
+
+    NEO4J_USERNAME = "neo4j"
+    NEO4J_PASSWORD = "CHANGEME"
+    NEO4J_IP_ADDRESS = "localhost"
+
+#### Nodes
+
+##### Band
+
+A _band_ is a node connected to members through a `played_in` relationship and has the 
+following properties:
+
+* `emid`: The band id used on MA.
+* `name`: Name of the band.
+* `country`: The country of origin as a two letter ISO code. Uses `COUNTRIES`.
+* `locations`: Locations where the bands was active in.
+* `status`: Short form of the `BAND_STATUS`. One of six possible values.
+* `formed`: MA only uses years in for dates on teh band page. To get it somehow right,
+    we use Jan 1st and Dec 31st for as start and end dates.
+* `themes`: Themes used in the lyrics.
+* `genres`: Genres the band played. This could be a relationship or a collection.
+    Need to learn a bit more about the string and how to cut it up.
+* `current_lineup`: Relationship (PLAYED_IN) from a Member.
+
+##### Member
+
+A _member_ is a node connected to bands through a `played_in` relationship and has the 
+following properties:
+
+* `emid`:  The artist id used on MA.
+* `name`: Name of the band member. Note that pseudonyms or instruments are part of the 
+    `MemberRelationship`.
+* `age`: Age of the member at the time of crawling. It might contain -1 as a value if the age is
+    unknown.
+* `gender`: Gender from `GENDER` dictionary.
+* `played_in`: Relationship to a band.
+
+#### Relationships
+
+##### PLAYED_IN
+
+Is directed from a Member to a Band and uses the model `MemberRelationship`. 
+
+#### Abbreviations/Lookup Dictionaries
+
+The Keys are used inside the database and line up with the value which is used in MA.
+
+##### GENDER
+
+    'M': 'Male',
+    'F': 'Female',
+    'U': 'Unknown/other'
+    
+##### COUNTRIES
+
+    ...
+    'NF': 'Norfolk Island',
+    'MP': 'Northern Mariana Islands',
+    'NO': 'Norway',
+    ...
+    
+##### BAND_STATUS
+
+    'A': 'Active',
+    'H': 'On hold',
+    'C': 'Changed name',
+    'S': 'Split-up',
+    'U': 'Unknown',
+    'D': 'Disputed'
+
+#### Screenshots
+
+Connection between some Norwegian black metal bands through their band members. A lot of band members
+are not connected to anything else because only the shown bands were visited.
+
+![Connection between some Norwegian black metal bands](img/intro_graph_1.png)
+
+One of the next milestones will be adding details like releases and which labels they were releases on.
+The screenshot shows a few nodes from prototyping.
+
+![Prototype including labels and Albums](img/intro_graph_2.png)
 
 ## Known Issues
 
@@ -146,5 +189,4 @@ If you're not interested in getting the band links for all countries you can eit
 
 ## Backlog
 
-* Save intermittent results into a database.
 * Memorize which bands wre already visited (e.g. for long runs or when it crashes). 
