@@ -120,21 +120,23 @@ def print_regions():
 def print_help():
     file_name_a = bandLinkFileName.format('XX')
     # TODO: Move two letter country names to description section.
-    print('Supported modes:')
-    print(f'  -a: Crawls all countries for bands and saves them in files named {file_name_a}')
-    print('    (where XX is the two letter short form of a given country). The files are put')
-    print(f'    into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.')
-    print('  -b: Crawls all bands in the generated files from option -a')
-    print('    (or -c if you specify your own file with -f).')
-    print('  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)')
-    print('    and uses the standard file name together with the ID to write a')
-    print('    file with all band links from the given country. See list below.')
-    print('  -y: Prints a report about the genres of a database.')
-    print('  -f <filename>: filename is a parameter to override the standard file name')
-    print('    for -b or -c and is used either to write an output file or to read an')
-    print('    input file.')
-    print('  -l: List available countries and regions.')
-    print('  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NC).')
+    print(
+        f'Supported modes:\n'
+        f'  -a: Crawls all countries for bands and saves them in files named {file_name_a}\n'
+        f'    (where XX is the two letter short form of a given country). The files are put\n'
+        f'    into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.\n'
+        f'  -b: Crawls all bands in the generated files from option -a\n'
+        f'    (or -c if you specify your own file with -f).\n'
+        f'  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)\n'
+        f'    and uses the standard file name together with the ID to write a\n'
+        f'    file with all band links from the given country. See list below.\n'
+        # f'  -y: Prints a report about the genres of a database.\n'
+        f'  -f <filename>: filename is a parameter to override the standard file name\n'
+        f'    for -b or -c and is used either to write an output file or to read an\n'
+        f'    input file.\n'
+        f'  -l: List available countries and regions.\n'
+        f'  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NC).\n'
+    )
 
 
 def flush_queue(country_short):
@@ -306,21 +308,7 @@ def main(argv):
         # pp.pprint(database)
         logger.info(f"Database is now available as {db_path}.")
     elif mode is CrawlMode.AnalyseDatabase:
-        for path in filenames:
-            if path.is_file():
-                string_database = path.read_text(encoding="utf-8")
-
-            can_analyse = False
-
-            try:
-                database = json.loads(string_database)
-                can_analyse = True
-            except:
-                # We know that the json.load() failed. No need to log exception details.
-                logger.error("Loading the JSON database failed. Make sure you selected a valid JSON database.")
-
-            if can_analyse:
-                analyse_band_genres(database["bands"])
+        print('Currently not implemented.')
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()
