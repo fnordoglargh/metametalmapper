@@ -1,5 +1,5 @@
 from neomodel import StructuredNode, StringProperty, RelationshipTo, RelationshipFrom, config
-
+from datetime import date
 from graph.implNeoModel import *
 from graph.metalGraph import *
 
