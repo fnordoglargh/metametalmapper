@@ -179,8 +179,8 @@ def main(argv):
         sys.exit(0)
 
     with open('loggerConfig.yaml', 'r') as log_config:
-        config = yaml.safe_load(log_config.read())
-        logging.config.dictConfig(config)
+        log_config = yaml.safe_load(log_config.read())
+        logging.config.dictConfig(log_config)
 
     load_countries()
 
@@ -274,8 +274,7 @@ def main(argv):
                 crawl_country(country_link)
             flush_queue(region)
     elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
-        database = {"artists": {}, "bands": {}, "labels": {}}
-        lock = threading.Lock()
+        sanitized_bands = []
 
         for path in filenames:
             if path.is_file():
@@ -284,7 +283,6 @@ def main(argv):
                 if band_links[-1] == '':
                     del band_links[-1]
 
-                sanitized_bands = []
                 # The test mode contains hash commented lines. Here we filter for those.
                 if mode is CrawlMode.Test:
                     for line in band_links:
@@ -292,21 +290,12 @@ def main(argv):
                             sanitized_bands.append(line)
                 else:
                     sanitized_bands = band_links
-
-                # TODO: Get the country from filename and pass as parameter.
-                crawl_bands(sanitized_bands, database, lock, db_handle, is_detailed)
             else:
                 logger.error(f"File {path} was not readable.")
 
-        date_format = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
-        db_path = FOLDER_DB / f"db-{date_format}.json"
-        band_links_file = open(db_path, "w", encoding="utf-8")
-        json_database_string = json.dumps(database)
-        band_links_file.write(json_database_string)
-        band_links_file.close()
-        # pp = pprint.PrettyPrinter(indent=2)
-        # pp.pprint(database)
-        logger.info(f"Database is now available as {db_path}.")
+        if len(sanitized_bands) is not 0:
+            # TODO: Get the country from filename and pass as parameter.
+            crawl_bands(sanitized_bands, db_handle, is_detailed)
     elif mode is CrawlMode.AnalyseDatabase:
         print('Currently not implemented.')
     elif mode is CrawlMode.DisplayInfo:

@@ -12,6 +12,7 @@ from diagramCreator import *
 import re
 from graph.choices import *
 from datetime import date
+from pathlib import Path
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -31,13 +32,13 @@ def get_dict_key(source_dict, value):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, database, lock, db_handle, is_detailed=False):
+    def __init__(self, thread_id, band_links, visited_bands, lock, db_handle, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
         :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
-        :param database: A dictionary used by all workers to put their data in.
+        :param visited_bands: A dictionary used by all workers to put their data in.
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
         """
 
@@ -45,7 +46,7 @@ class VisitBandThread(threading.Thread):
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
-        self.database = database
+        self.visited_bands = visited_bands
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
@@ -61,34 +62,25 @@ class VisitBandThread(threading.Thread):
         while self.bandLinks.qsize() != 0:
             link_band_temp = self.bandLinks.get_nowait()
             try:
-                result = crawl_band(link_band_temp)
+                crawl_result = crawl_band(link_band_temp)
             except Exception:
                 self.logger.exception("Something bad happened while crawling.")
-                result = -1
+                crawl_result = -1
             # Error case: putting the link back into circulation.
-            if result == -1:
+            if crawl_result == -1:
                 self.bandLinks.put(link_band_temp)
                 continue
+            else:
+                self.visited_bands.append(link_band_temp)
 
-            temp_band_data = result['bands']
-            temp_artist_data = result['artists']
-            temp_label_data = result['labels']
+            temp_band_data = crawl_result['bands']
+            temp_artist_data = crawl_result['artists']
+            temp_label_data = crawl_result['labels']
             self.lock.acquire()
 
             try:
-                apply_to_db(result, self.db_handle, self.is_detailed)
-                for artist in temp_artist_data:
-                    if artist in self.database["artists"]:
-                        for band in temp_artist_data[artist]["bands"]:
-                            self.database["artists"][artist]["bands"][band] = temp_artist_data[artist]["bands"][band]
-                    else:
-                        self.database["artists"][artist] = temp_artist_data[artist]
+                apply_to_db(crawl_result, self.db_handle, self.is_detailed)
 
-                for band in temp_band_data:
-                    self.database["bands"][band] = temp_band_data[band]
-                for label in temp_label_data:
-                    if label not in self.database["labels"]:
-                        self.database["labels"][label] = temp_label_data[label]
             except Exception:
                 # TODO: Save all visited entity short links to files.
                 self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
@@ -97,9 +89,22 @@ class VisitBandThread(threading.Thread):
                 self.logger.error(temp_label_data)
             finally:
                 self.lock.release()
-                progress = len(self.database["bands"]) / self.qsize
-                self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
-                    progress * 100, self.qsize - len(self.database["bands"]), self.qsize))
+                # TODO: Refactor progress output.
+                # progress = len(self.database["bands"]) / self.qsize
+                # self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
+                #     progress * 100, self.qsize - len(self.database["bands"]), self.qsize))
+
+            for iband in temp_band_data:
+                band = temp_band_data[iband]
+                actual_band_path = f"databases/{band['country']}"
+                os.makedirs(actual_band_path, exist_ok=True)
+                db_path = Path(f"{actual_band_path}/{band['name']}_{iband}.json")
+                actual_band_file = open(db_path, "w", encoding="utf-8")
+                json_database_string = json.dumps(crawl_result)
+                actual_band_file.write(json_database_string)
+                actual_band_file.close()
+
+            # db_path = f"visited_bands.json"
 
 
 class VisitBandListThread(threading.Thread):
@@ -668,20 +673,22 @@ def crawl_band(band_short_link):
     return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
-def crawl_bands(file_with_band_links, database, lock, db_handle, is_detailed=False):
+def crawl_bands(file_with_band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
-
+    database = {"artists": {}, "bands": {}, "labels": {}}
     local_bands_queue = queue.Queue()
 
     for link in file_with_band_links:
         local_bands_queue.put_nowait(link)
 
     threads = []
+    visited_bands = []
+    lock = threading.Lock()
 
     # Create threads.
     for i in range(0, threadCount):
-        thread = VisitBandThread(str(i), local_bands_queue, database, lock, db_handle, is_detailed)
+        thread = VisitBandThread(str(i), local_bands_queue, visited_bands, lock, db_handle, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
@@ -691,5 +698,8 @@ def crawl_bands(file_with_band_links, database, lock, db_handle, is_detailed=Fal
 
     for t in threads:
         t.join()
+
+    # pp = pprint.PrettyPrinter(indent=2)
+    # pp.pprint(database)
 
     logger.debug('<<< Crawling all bands')
