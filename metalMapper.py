@@ -147,7 +147,7 @@ def flush_queue(country_short):
     metalCrawler.crawl_country.
 
     :param country_short: ISO country code used in the file name.
-    :return: A filename with the format links/bands-NN.lnks.
+    :return: A filename with the format ``links/bands-NN.lnks``.
     """
     logger = logging.getLogger('Crawler')
     country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
@@ -248,7 +248,7 @@ def main(argv):
     try:
         db_handle = GraphDatabaseContext(NeoModelStrategy())
     except Exception:
-        logger.error("  DB not available. Don't know what to do...")
+        logger.error("  DB not available. Make sure it is started.")
         exit(7)
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:

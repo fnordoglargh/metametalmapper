@@ -245,6 +245,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
     if is_detailed:
         pass
 
+
 def cook_soup(link, retry_count=5):
     """Wraps getting a web page for further parsing.
 
