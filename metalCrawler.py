@@ -32,13 +32,14 @@ def get_dict_key(source_dict, value):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, visited_bands, lock, db_handle, is_detailed=False):
+    def __init__(self, thread_id, band_links, visited_bands_list, visited_bands_file, lock, db_handle, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
         :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
-        :param visited_bands: A dictionary used by all workers to put their data in.
+        :param visited_bands_list: A list used by all workers to check if the actual band was visited before.
+        :param visited_bands_file: A file handle to save visited bands.
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
         """
 
@@ -46,7 +47,8 @@ class VisitBandThread(threading.Thread):
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
-        self.visited_bands = visited_bands
+        self.visited_bands_list = visited_bands_list
+        self.visited_bands_file = visited_bands_file
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
@@ -61,6 +63,12 @@ class VisitBandThread(threading.Thread):
         self.logger.debug("Running " + self.name)
         while self.bandLinks.qsize() != 0:
             link_band_temp = self.bandLinks.get_nowait()
+
+            # TODO: Implement revisiting mechanism based on date.
+            # No need to visit if the band is already in the database.
+            if link_band_temp in self.visited_bands_list:
+                continue
+
             try:
                 crawl_result = crawl_band(link_band_temp)
             except Exception:
@@ -71,7 +79,7 @@ class VisitBandThread(threading.Thread):
                 self.bandLinks.put(link_band_temp)
                 continue
             else:
-                self.visited_bands.append(link_band_temp)
+                self.visited_bands_list.append(link_band_temp)
 
             temp_band_data = crawl_result['bands']
             temp_artist_data = crawl_result['artists']
@@ -88,23 +96,24 @@ class VisitBandThread(threading.Thread):
                 self.logger.error(temp_artist_data)
                 self.logger.error(temp_label_data)
             finally:
+                # Only write to the file if addition to the database was successful.
+                self.visited_bands_file.write(link_band_temp + '\n')
                 self.lock.release()
                 # TODO: Refactor progress output.
                 # progress = len(self.database["bands"]) / self.qsize
                 # self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
                 #     progress * 100, self.qsize - len(self.database["bands"]), self.qsize))
 
-            for iband in temp_band_data:
-                band = temp_band_data[iband]
+            # Saving the data to disk will later enable us to limit getting live data if it is not needed.
+            for i_band in temp_band_data:
+                band = temp_band_data[i_band]
                 actual_band_path = f"databases/{band['country']}"
                 os.makedirs(actual_band_path, exist_ok=True)
-                db_path = Path(f"{actual_band_path}/{band['name']}_{iband}.json")
+                db_path = Path(f"{actual_band_path}/{band['name']}_{i_band}.json")
                 actual_band_file = open(db_path, "w", encoding="utf-8")
                 json_database_string = json.dumps(crawl_result)
                 actual_band_file.write(json_database_string)
                 actual_band_file.close()
-
-            # db_path = f"visited_bands.json"
 
 
 class VisitBandListThread(threading.Thread):
@@ -674,22 +683,35 @@ def crawl_band(band_short_link):
     return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
-def crawl_bands(file_with_band_links, db_handle, is_detailed=False):
+def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
-    database = {"artists": {}, "bands": {}, "labels": {}}
     local_bands_queue = queue.Queue()
 
-    for link in file_with_band_links:
+    # Put links from list into queue.
+    for link in band_links:
         local_bands_queue.put_nowait(link)
 
+    # Open the file with links if bands visited in earlier runs. File closed afterwards by the read_text.
+    visited_bands_path = Path('visited_bands.txt')
+    if visited_bands_path.exists():
+        visited_bands_list = visited_bands_path.read_text(encoding="utf-8").split('\n')
+        # Remove last element from list if it's a lonely, empty string.
+        if visited_bands_list[-1] == '':
+            del visited_bands_list[-1]
+
+    # Creates a file for visited bands if it does not exist or opens it otherwise.
+    # 'a': Open for writing, append data if it exists.
+    # 1: Line buffered.
+    visited_bands_file = open(visited_bands_path, 'a', buffering=1, encoding='utf-8')
+
     threads = []
-    visited_bands = []
     lock = threading.Lock()
 
     # Create threads.
     for i in range(0, threadCount):
-        thread = VisitBandThread(str(i), local_bands_queue, visited_bands, lock, db_handle, is_detailed)
+        thread = VisitBandThread(
+            str(i), local_bands_queue, visited_bands_list, visited_bands_file, lock, db_handle, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
