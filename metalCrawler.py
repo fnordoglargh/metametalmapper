@@ -693,12 +693,14 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
         local_bands_queue.put_nowait(link)
 
     # Open the file with links if bands visited in earlier runs. File closed afterwards by the read_text.
-    visited_bands_path = Path('visited_bands.txt')
+    visited_bands_path = Path('databases/visited_bands.txt')
     if visited_bands_path.exists():
         visited_bands_list = visited_bands_path.read_text(encoding="utf-8").split('\n')
         # Remove last element from list if it's a lonely, empty string.
         if visited_bands_list[-1] == '':
             del visited_bands_list[-1]
+    else:
+        visited_bands_list = []
 
     # Creates a file for visited bands if it does not exist or opens it otherwise.
     # 'a': Open for writing, append data if it exists.
