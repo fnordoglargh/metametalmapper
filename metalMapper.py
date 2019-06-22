@@ -247,8 +247,8 @@ def main(argv):
 
     try:
         db_handle = GraphDatabaseContext(NeoModelStrategy())
-    except Exception:
-        logger.error("  DB not available. Make sure it is started.")
+    except:
+        logger.error("  Need database to function properly. Exiting...")
         exit(7)
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:

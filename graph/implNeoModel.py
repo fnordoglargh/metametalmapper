@@ -1,5 +1,6 @@
 from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
     RelationshipFrom, StructuredRel, config, core
+from neo4j import exceptions
 from graph.choices import *
 from graph.metalGraph import *
 import logging
@@ -59,15 +60,22 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     config.DATABASE_URL = f'bolt://{settings.NEO4J_USERNAME}:{settings.NEO4J_PASSWORD}@{settings.NEO4J_IP_ADDRESS}:7687'
 
     def __init__(self):
+        logger = logging.getLogger('NeoModel')
+        error_text = "Cannot connect to Neo4j database."
         # Cheap test to test if the DB is available.
         try:
             Label.nodes.get(emid=-1)
         # No node with 'emid' of -1 available means the DB is up and running.
         except core.DoesNotExist:
             pass
-        # Other exceptions: DB is not running.
+        except exceptions.AuthError:
+            logger.error(f"{error_text} Check the credentials in the settings.py.")
+            raise
+        except exceptions.ServiceUnavailable:
+            logger.error(f"{error_text} Make sure the database is up and running.")
+            raise
         except Exception:
-            logging.getLogger('NeoModel').error("Cannot connect to Neo4j database.")
+            logger.error(f"{error_text}")
             raise
 
     def add_band_interface(self, band_dict):
