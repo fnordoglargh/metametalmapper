@@ -109,7 +109,9 @@ class VisitBandThread(threading.Thread):
                 band = temp_band_data[i_band]
                 actual_band_path = f"databases/{band['country']}"
                 os.makedirs(actual_band_path, exist_ok=True)
-                db_path = Path(f"{actual_band_path}/{band['name']}_{i_band}.json")
+                # We take the band link because it always uses escaped sequences. This way we have the highest
+                # compatibility for writing files in underlying filesystems. The slash must be replaced of course.
+                db_path = Path(f"{actual_band_path}/{band['link'].replace('/', '_')}.json")
                 actual_band_file = open(db_path, "w", encoding="utf-8")
                 json_database_string = json.dumps(crawl_result)
                 actual_band_file.write(json_database_string)
