@@ -500,7 +500,6 @@ def crawl_band(band_short_link):
     s = soup.find_all(attrs={"class": "float_left"})
     band_data[band_id]["country"] = s[1].contents[3].contents[0]
     country_node = s[1].contents[3].contents[0]
-    country_name = country_node.contents[0]
     # Saving the country name and link in a dict.
     country_link = country_node.attrs["href"]
     # Take the last two letters of the link.
@@ -511,7 +510,6 @@ def crawl_band(band_short_link):
         location = location.split("/")
 
     band_data[band_id]["location"] = location
-    # band_data[band_id]["location"] = s[1].contents[7].contents[0].split("/")
     band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
     band_data[band_id]["formed"] = s[1].contents[15].text
     band_data[band_id]["active"] = []
@@ -609,7 +607,6 @@ def crawl_band(band_short_link):
             age = ""
 
             if artist_soup is not None:
-                #artist_soup.contents[2].contents[3].contents[1]
                 member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                 name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                 gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
