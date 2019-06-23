@@ -630,6 +630,12 @@ def crawl_band(band_short_link):
             temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
             temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
             logger.debug(f"    Recording artist data for {temp_artist_name}.")
+
+            # If the band member does not have a name in the database we simply use the pseudonym. This unfortunately
+            # overwrites the name with whatever pseudonym we found last.
+            if name.find("N/A") >= 0:
+                name = temp_artist_name
+
             band_data[band_id]["lineup"][header_category].append(temp_artist_id)
             artist_data[temp_artist_id] = {}
             artist_data[temp_artist_id]["link"] = temp_artist_link
