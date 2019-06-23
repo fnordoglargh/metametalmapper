@@ -688,6 +688,20 @@ def crawl_band(band_short_link):
     return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
+def load_visited_entities(file_name: str) -> list:
+    # Open the file with links of entities visited in earlier runs. File is closed automatically by the read_text.
+    visited_entity_path = Path(file_name)
+    if visited_entity_path.exists():
+        visited_entity_list = visited_entity_path.read_text(encoding="utf-8").split('\n')
+        # Remove last element from list if it's a lonely, empty string.
+        if visited_entity_list[-1] == '':
+            del visited_entity_list[-1]
+    else:
+        visited_entity_list = []
+
+    return visited_entity_list
+
+
 def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
@@ -697,20 +711,13 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    # Open the file with links if bands visited in earlier runs. File closed afterwards by the read_text.
-    visited_bands_path = Path('databases/visited_bands.txt')
-    if visited_bands_path.exists():
-        visited_bands_list = visited_bands_path.read_text(encoding="utf-8").split('\n')
-        # Remove last element from list if it's a lonely, empty string.
-        if visited_bands_list[-1] == '':
-            del visited_bands_list[-1]
-    else:
-        visited_bands_list = []
+    entity_paths = ['databases/visited_bands.txt', 'databases/visited_members.txt']
+    visited_bands_list = load_visited_entities('databases/visited_bands.txt')
 
     # Creates a file for visited bands if it does not exist or opens it otherwise.
     # 'a': Open for writing, append data if it exists.
-    # 1: Line buffered.
-    visited_bands_file = open(visited_bands_path, 'a', buffering=1, encoding='utf-8')
+    # 1  : Line buffered.
+    visited_bands_file = open(entity_paths[0], 'a', buffering=1, encoding='utf-8')
 
     threads = []
     lock = threading.Lock()
