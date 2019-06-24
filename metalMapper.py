@@ -245,12 +245,6 @@ def main(argv):
         for file_link in FOLDER_LINKS.iterdir():
             filenames.append(file_link)
 
-    try:
-        db_handle = GraphDatabaseContext(NeoModelStrategy())
-    except:
-        logger.error("  Need database to function properly. Exiting...")
-        exit(7)
-
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
         logger.info("Crawling countries...")
 
@@ -294,6 +288,11 @@ def main(argv):
                 logger.error(f"File {path} was not readable.")
 
         if len(sanitized_bands) is not 0:
+            try:
+                db_handle = GraphDatabaseContext(NeoModelStrategy())
+            except:
+                logger.error("  Need database to function properly. Exiting...")
+                exit(7)
             # TODO: Get the country from filename and pass as parameter.
             crawl_bands(sanitized_bands, db_handle, is_detailed)
     elif mode is CrawlMode.AnalyseDatabase:
