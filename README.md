@@ -64,7 +64,7 @@ how to use them.
 ### Use Case: Crawl Norway
 
 1. Get all Norwegian bands: `metalMaper.py -c NO`
-2. Crawl all bands in Norway: `metalMaper.py -b -f bands-NO.lnks`
+2. Crawl all bands in Norway: `metalMaper.py -b -f links/bands-NO.lnks`
 3. Open Neo4j Desktop and look at the graph.
 
 ### Bootstrapping: Crawl _all_ available countries
