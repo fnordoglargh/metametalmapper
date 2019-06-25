@@ -19,7 +19,7 @@ em_link_label = em_link_main + 'labels/'
 bands = 'bands/'
 bandsQueue = queue.Queue()
 ajaxLinks = queue.Queue()
-
+entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
 lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
 
 # 8 might be a bit high (leaves some forbidden messages on getting the JSON
@@ -32,28 +32,30 @@ def get_dict_key(source_dict, value):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, visited_bands_list, visited_bands_file, lock, db_handle, is_detailed=False):
+    def __init__(self, thread_id, band_links, visited_entities, lock, db_handle, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
         :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
-        :param visited_bands_list: A list used by all workers to check if the actual band was visited before.
-        :param visited_bands_file: A file handle to save visited bands.
+        :param visited_entities: A dictionary which encapsulates both a list (entities) and a file handle (file_handle)
+            of bands and members.
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
+        :param db_handle: The database handle is used to add all entities directly into the database with the strategy
+            defined on the outside.
         """
 
         super(VisitBandThread, self).__init__()
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
-        self.visited_bands_list = visited_bands_list
-        self.visited_bands_file = visited_bands_file
+        self.visited_bands_list = visited_entities['bands']['entities']
+        self.visited_bands_file = visited_entities['bands']['file_handle']
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
         self.qsize = band_links.qsize()
-        self.logger.debug("Initializing " + self.name)
+        self.logger.debug(f"Initializing {self.name}.")
         self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
         self.db_handle = db_handle
@@ -688,7 +690,8 @@ def crawl_band(band_short_link):
     return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
-def load_visited_entities(file_name: str) -> list:
+def load_visited_entities_and_file(entity_name: str) -> dict:
+    file_name = entity_paths[entity_name]
     # Open the file with links of entities visited in earlier runs. File is closed automatically by the read_text.
     visited_entity_path = Path(file_name)
     if visited_entity_path.exists():
@@ -699,7 +702,12 @@ def load_visited_entities(file_name: str) -> list:
     else:
         visited_entity_list = []
 
-    return visited_entity_list
+    # Creates a file for visited bands if it does not exist or opens it otherwise.
+    # 'a': Open for writing, append data if it exists.
+    # 1  : Line buffered.
+    visited_entity_file = open(file_name, 'a', buffering=1, encoding='utf-8')
+
+    return {'entities': visited_entity_list, 'file_handle': visited_entity_file}
 
 
 def crawl_bands(band_links, db_handle, is_detailed=False):
@@ -711,13 +719,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    entity_paths = ['databases/visited_bands.txt', 'databases/visited_members.txt']
-    visited_bands_list = load_visited_entities('databases/visited_bands.txt')
-
-    # Creates a file for visited bands if it does not exist or opens it otherwise.
-    # 'a': Open for writing, append data if it exists.
-    # 1  : Line buffered.
-    visited_bands_file = open(entity_paths[0], 'a', buffering=1, encoding='utf-8')
+    visited_entities = dict()
+    visited_entities['bands'] = load_visited_entities_and_file('bands')
 
     threads = []
     lock = threading.Lock()
@@ -725,7 +728,7 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     # Create threads.
     for i in range(0, threadCount):
         thread = VisitBandThread(
-            str(i), local_bands_queue, visited_bands_list, visited_bands_file, lock, db_handle, is_detailed)
+            str(i), local_bands_queue, visited_entities, lock, db_handle, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
