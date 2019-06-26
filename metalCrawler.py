@@ -147,7 +147,7 @@ class VisitBandListThread(threading.Thread):
             try:
                 json_data = json.loads(json_data_string)
             except Exception:
-                self.logger.exception(f"  JSON error for [{link_country_temp}]. Putting it back in circulation...")
+                self.logger.error(f"  JSON error for [{link_country_temp}]. Putting it back in circulation...")
                 self.countryLinks.put(link_country_temp)
 
             if json_data is not None:
