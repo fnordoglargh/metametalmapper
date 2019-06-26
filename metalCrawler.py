@@ -71,6 +71,7 @@ class VisitBandThread(threading.Thread):
             # TODO: Implement revisiting mechanism based on date.
             # No need to visit if the band is already in the database.
             if link_band_temp in self.visited_bands_list:
+                self.logger.debug(f"  Skipping {link_band_temp}.")
                 continue
 
             try:
@@ -266,7 +267,18 @@ class VisitBandThread(threading.Thread):
             if len(actual_row) is 5:
                 temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
 
-                artist_soup = cook_soup(temp_artist_soup_link)
+                # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
+                # It's always 39 letters long.
+                temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
+                temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
+                temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
+                logger.debug(f"    Recording artist data for {temp_artist_name}.")
+
+                if temp_artist_link in self.visited_members_list:
+                    logger.debug(f"      Skipping band member {temp_artist_link}.")
+                    continue
+                else:
+                    artist_soup = cook_soup(temp_artist_soup_link)
 
                 name = ""
                 gender = ""
@@ -287,13 +299,6 @@ class VisitBandThread(threading.Thread):
                     # return -1
                     pass
 
-                # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
-                # It's always 39 letters long.
-                temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
-                temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
-                temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-                logger.debug(f"    Recording artist data for {temp_artist_name}.")
-
                 # If the band member does not have a name in the database we simply use the pseudonym. This
                 # unfortunately overwrites the name with whatever pseudonym we found last.
                 if name.find("N/A") >= 0:
@@ -313,6 +318,9 @@ class VisitBandThread(threading.Thread):
                                                                                                                   '')
                 instruments = cut_instruments(temp_instruments)
                 artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
+
+                self.visited_members_list.append(temp_artist_link)
+                self.visited_members_file.write(temp_artist_link + '\n')
 
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
