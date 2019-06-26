@@ -51,6 +51,8 @@ class VisitBandThread(threading.Thread):
         self.bandLinks = band_links
         self.visited_bands_list = visited_entities['bands']['entities']
         self.visited_bands_file = visited_entities['bands']['file_handle']
+        self.visited_members_list = visited_entities['members']['entities']
+        self.visited_members_file = visited_entities['members']['file_handle']
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
@@ -72,7 +74,7 @@ class VisitBandThread(threading.Thread):
                 continue
 
             try:
-                crawl_result = crawl_band(link_band_temp)
+                crawl_result = self.crawl_band(link_band_temp)
             except Exception:
                 self.logger.exception("Something bad happened while crawling.")
                 crawl_result = -1
@@ -119,6 +121,238 @@ class VisitBandThread(threading.Thread):
                 actual_band_file.write(json_database_string)
                 actual_band_file.close()
 
+    def crawl_band(self, band_short_link):
+        """This is where the magic happens: A short band link is expanded, visited and parsed for data.
+
+            It still may throw an exception that must be caught and dealt with. Best by putting the link back
+            into circulation.
+
+        :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
+        :return:
+            A dictionary with band, artist and label data of the visited band or
+            -1 in an error case.
+        """
+
+        # TODO: Change your environment or this won't work!
+        # The % escaped glyphs only work if the client.py in http
+        # is changed in putrequest() before self._output() is called.
+        # The line looks like this:
+        # url = rfc3986.uri_reference(url).unsplit()
+        # Needs to import rfc3986
+        link_band = em_link_main + bands + band_short_link
+        logger = logging.getLogger('Crawler')
+        logger.info(f'>>> Crawling [{band_short_link}]')
+        soup = cook_soup(link_band)
+        # soup = BeautifulSoup(bandPage.data, "lxml")
+        logger.debug("  Start scraping from actual band.")
+        # Finds band name; needs to extract the ID later.
+        s = soup.find_all(attrs={"class": "band_name"})
+
+        if len(s) == 0:
+            logger.fatal(f"  Did not find the attribute band_name for {band_short_link}.")
+            logger.debug("  Band page source for reference:")
+            logger.debug(soup.text)
+            return -1
+
+        # All data of a band is collected here.  Band members are referenced and collected in their own collection.
+        band_data = {}
+        band_id = band_short_link[band_short_link.rfind('/') + 1:]
+        band_data[band_id] = {}
+        band_data[band_id]["link"] = band_short_link
+        band_data[band_id]["name"] = str(s[0].next_element.text)
+
+        s = soup.find_all(attrs={"class": "float_left"})
+        band_data[band_id]["country"] = s[1].contents[3].contents[0]
+        country_node = s[1].contents[3].contents[0]
+        # Saving the country name and link in a dict.
+        country_link = country_node.attrs["href"]
+        # Take the last two letters of the link.
+        band_data[band_id]["country"] = country_link[-2:]
+        location = s[1].contents[7].text
+
+        if location != "N/A":
+            location = location.split("/")
+
+        band_data[band_id]["location"] = location
+        band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
+        band_data[band_id]["formed"] = s[1].contents[15].text
+        band_data[band_id]["active"] = []
+        artist_data = {}
+        s = soup.find_all(attrs={"class": "clear"})
+
+        # Iterate over all time spans the band was (or is) active.
+        for element in s[3].contents[3].contents:
+            active = element
+            if type(active) is NavigableString:
+                active = active.replace('\t', '')
+                active = active.replace('),', '')
+                active = active.replace('\n', '')
+                active = active.replace(' ', '')
+                year_tokens = active.split(',')
+                for yearToken in year_tokens:
+                    # TODO: Very strange case for bands which changed their name. Maybe we want to pass that time span.
+                    if yearToken != ')':
+                        band_data[band_id]["active"].append(yearToken)
+            elif type(active) is Tag:
+                previous_name = " " + active.contents[0]
+                last_position = len(band_data[band_id]["active"]) - 1
+                band_data[band_id]["active"][last_position] += previous_name + ")"
+            else:
+                logger.warning(f"  Found an element of type {type(active)}. This should not happen.")
+
+        # This removes all earlier (or later) incarnations of the band. It would be better to change the above block
+        # but I'm too lazy to do it right now.
+        for time_span in band_data[band_id]["active"]:
+            if time_span.find('(as') > 0:
+                band_data[band_id]["active"].remove(time_span)
+
+        s = soup.find_all(attrs={"class": "float_right"})
+        band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
+        band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
+        label_node = s[3].contents[11].contents[0]
+
+        # The label from band page is only the active one. All others will only be available through the individual
+        # releases. TODO: Visit all releases and get more detailed info.
+        if type(label_node) is NavigableString:
+            label_name = str(s[3].contents[11].contents[0])
+            if label_name is "Unsigned/independent":
+                label_id = -1
+            else:
+                label_id = label_name
+            label_link = ""
+        else:
+            label_name = label_node.contents[0]
+            label_link = label_node.attrs["href"][len(em_link_label):]
+            label_id = label_link[label_link.find('/') + 1:]
+
+        band_data[band_id]["label"] = label_id
+        label_data = {label_id: {"name": label_name, "link": label_link}}
+        artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
+        artists_and_band_element = artists_and_bands[0]
+        logger.debug("  Scraping artists from actual band.")
+        actual_category = artists_and_band_element.contents[1].contents
+        band_data[band_id]["lineup"] = {}
+        lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
+        is_lineup_diverse = True
+
+        if len(lineup_finder) == 0:
+            is_lineup_diverse = False
+
+        # The elements alternate from a band member to bands or member to
+        # member if it's the only band for the latter.
+        # Category (like current or past) are found at index.
+        for i in range(1, len(actual_category), 2):
+            actual_row = actual_category[i]
+            last_found_header = actual_row.attrs["class"][0]
+
+            # Normal case.
+            if last_found_header == "lineupHeaders":
+                header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
+                logger.debug(f"  Found header: {header_category}")
+            # Special case where a band only has one line-up.
+            elif last_found_header == "lineupRow":
+                # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the
+                # page. For active bands with changing lineup we get 'Current'. For a band with no lineup changes it
+                # will be empty.
+                if not is_lineup_diverse:
+                    test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
+                    header_category = lineup_mapping[test_header2]
+                    logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
+
+            if header_category not in band_data[band_id]["lineup"]:
+                band_data[band_id]["lineup"][header_category] = []
+
+            # Five elements for artists.
+            if len(actual_row) is 5:
+                temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
+
+                artist_soup = cook_soup(temp_artist_soup_link)
+
+                name = ""
+                gender = ""
+                age = ""
+
+                if artist_soup is not None:
+                    member_info = artist_soup.find('div', attrs={'id': 'member_info'})
+                    name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
+                    gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
+                    age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
+
+                    if age.find("N/A") < 0:
+                        age = age[:age.find(" ")]
+                    else:
+                        age = -1
+                else:
+                    # Error case. This will break if a band member has no MA entry.
+                    # return -1
+                    pass
+
+                # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
+                # It's always 39 letters long.
+                temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
+                temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
+                temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
+                logger.debug(f"    Recording artist data for {temp_artist_name}.")
+
+                # If the band member does not have a name in the database we simply use the pseudonym. This
+                # unfortunately overwrites the name with whatever pseudonym we found last.
+                if name.find("N/A") >= 0:
+                    name = temp_artist_name
+
+                band_data[band_id]["lineup"][header_category].append(temp_artist_id)
+                artist_data[temp_artist_id] = {}
+                artist_data[temp_artist_id]["link"] = temp_artist_link
+                artist_data[temp_artist_id]["name"] = name
+                artist_data[temp_artist_id]["gender"] = gender
+                artist_data[temp_artist_id]["age"] = age
+                artist_data[temp_artist_id]["bands"] = {}
+                artist_data[temp_artist_id]["bands"][band_id] = {}
+                artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
+                # Last replace is not a normal white space (\xa0).
+                temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ',
+                                                                                                                  '')
+                instruments = cut_instruments(temp_instruments)
+                artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
+
+        # Crawl discography.
+        link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
+        soup = cook_soup(link_disco)
+        table = soup.find('table', attrs={'class': 'display discog'})
+        table_body = table.find('tbody')
+        rows = table_body.find_all('tr')
+        band_data[band_id]['albums'] = []
+
+        for row in rows:
+            cells = row.findAll("td")
+
+            # Guard clause for the unlikely case if a band has no releases.
+            if len(cells) is 1:
+                logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
+                continue
+
+            album_name = cells[0].text
+            album_type = cells[1].text
+            album_year = cells[2].text
+            album_rating = cells[3].text.rstrip().strip()
+            parenthesis_open = album_rating.find('(')
+
+            if parenthesis_open != -1:
+                parenthesis_close = album_rating.find(')')
+                album_rating = album_rating[parenthesis_open + 1:parenthesis_close]
+
+            band_data[band_id]['albums'].append({
+                'name': album_name,
+                'type': album_type,
+                'year': album_year,
+                'rating': album_rating
+            })
+
+        # pp = pprint.PrettyPrinter(indent=2)
+        # # pp.pprint(band_data)
+        # # pp.pprint(artist_data)
+        # # pp.pprint(label_data)
+        logger.debug('<<< Crawling [' + band_short_link + ']')
+        return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 class VisitBandListThread(threading.Thread):
 
@@ -459,237 +693,6 @@ def crawl_countries():
     return country_links
 
 
-def crawl_band(band_short_link):
-    """This is where the magic happens: A short band link is expanded, visited and parsed for data.
-
-        It still may throw an exception that must be caught and dealt with. Best by putting the link back
-        into circulation.
-
-    :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
-    :return:
-        A dictionary with band, artist and label data of the visited band or
-        -1 in an error case.
-    """
-
-    # TODO: Change your environment or this won't work!
-    # The % escaped glyphs only work if the client.py in http
-    # is changed in putrequest() before self._output() is called.
-    # The line looks like this:
-    # url = rfc3986.uri_reference(url).unsplit()
-    # Needs to import rfc3986
-    link_band = em_link_main + bands + band_short_link
-    logger = logging.getLogger('Crawler')
-    logger.info(f'>>> Crawling [{band_short_link}]')
-    soup = cook_soup(link_band)
-    # soup = BeautifulSoup(bandPage.data, "lxml")
-    logger.debug("  Start scraping from actual band.")
-    # Finds band name; needs to extract the ID later.
-    s = soup.find_all(attrs={"class": "band_name"})
-
-    if len(s) == 0:
-        logger.fatal(f"  Did not find the attribute band_name for {band_short_link}.")
-        logger.debug("  Band page source for reference:")
-        logger.debug(soup.text)
-        return -1
-
-    # All data of a band is collected here.  Band members are referenced and collected in their own collection.
-    band_data = {}
-    band_id = band_short_link[band_short_link.rfind('/') + 1:]
-    band_data[band_id] = {}
-    band_data[band_id]["link"] = band_short_link
-    band_data[band_id]["name"] = str(s[0].next_element.text)
-
-    s = soup.find_all(attrs={"class": "float_left"})
-    band_data[band_id]["country"] = s[1].contents[3].contents[0]
-    country_node = s[1].contents[3].contents[0]
-    # Saving the country name and link in a dict.
-    country_link = country_node.attrs["href"]
-    # Take the last two letters of the link.
-    band_data[band_id]["country"] = country_link[-2:]
-    location = s[1].contents[7].text
-
-    if location != "N/A":
-        location = location.split("/")
-
-    band_data[band_id]["location"] = location
-    band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
-    band_data[band_id]["formed"] = s[1].contents[15].text
-    band_data[band_id]["active"] = []
-    artist_data = {}
-    s = soup.find_all(attrs={"class": "clear"})
-
-    # Iterate over all time spans the band was (or is) active.
-    for element in s[3].contents[3].contents:
-        active = element
-        if type(active) is NavigableString:
-            active = active.replace('\t', '')
-            active = active.replace('),', '')
-            active = active.replace('\n', '')
-            active = active.replace(' ', '')
-            year_tokens = active.split(',')
-            for yearToken in year_tokens:
-                # TODO: Very strange case for bands which changed their name. Maybe we want to pass on that time span.
-                if yearToken != ')':
-                    band_data[band_id]["active"].append(yearToken)
-        elif type(active) is Tag:
-            previous_name = " " + active.contents[0]
-            last_position = len(band_data[band_id]["active"]) - 1
-            band_data[band_id]["active"][last_position] += previous_name + ")"
-        else:
-            logger.warning(f"  Found an element of type {type(active)}. This should not happen.")
-
-    # This removes all earlier (or later) incarnations of the band. It would be better to change the above block
-    # but I'm too lazy to do it right now.
-    for time_span in band_data[band_id]["active"]:
-        if time_span.find('(as') > 0:
-            band_data[band_id]["active"].remove(time_span)
-
-    s = soup.find_all(attrs={"class": "float_right"})
-    band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
-    band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
-    label_node = s[3].contents[11].contents[0]
-
-    # The label from band page is only the active one. All others will only be available through the individual
-    # releases. TODO: Visit all releases and get more detailed info.
-    if type(label_node) is NavigableString:
-        label_name = str(s[3].contents[11].contents[0])
-        if label_name is "Unsigned/independent":
-            label_id = -1
-        else:
-            label_id = label_name
-        label_link = ""
-    else:
-        label_name = label_node.contents[0]
-        label_link = label_node.attrs["href"][len(em_link_label):]
-        label_id = label_link[label_link.find('/') + 1:]
-
-    band_data[band_id]["label"] = label_id
-    label_data = {label_id: {"name": label_name, "link": label_link}}
-    artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
-    artists_and_band_element = artists_and_bands[0]
-    logger.debug("  Scraping artists from actual band.")
-    actual_category = artists_and_band_element.contents[1].contents
-    band_data[band_id]["lineup"] = {}
-    lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
-    is_lineup_diverse = True
-
-    if len(lineup_finder) == 0:
-        is_lineup_diverse = False
-
-    # The elements alternate from a band member to bands or member to
-    # member if it's the only band for the latter.
-    # Category (like current or past) are found at index.
-    for i in range(1, len(actual_category), 2):
-        actual_row = actual_category[i]
-        last_found_header = actual_row.attrs["class"][0]
-
-        # Normal case.
-        if last_found_header == "lineupHeaders":
-            header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-            logger.debug(f"  Found header: {header_category}")
-        # Special case where a band only has one line-up.
-        elif last_found_header == "lineupRow":
-            # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the page.
-            # For active bands with changing lineup we get 'Current'.
-            # For a band with no lineup changes it will be empty.
-            if not is_lineup_diverse:
-                test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
-                header_category = lineup_mapping[test_header2]
-                logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
-        if header_category not in band_data[band_id]["lineup"]:
-            band_data[band_id]["lineup"][header_category] = []
-
-        # Five elements for artists.
-        if len(actual_row) is 5:
-            temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
-            artist_soup = cook_soup(temp_artist_soup_link)
-
-            name = ""
-            gender = ""
-            age = ""
-
-            if artist_soup is not None:
-                member_info = artist_soup.find('div', attrs={'id': 'member_info'})
-                name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
-                gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
-                age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
-
-                if age.find("N/A") < 0:
-                    age = age[:age.find(" ")]
-                else:
-                    age = -1
-            else:
-                # Error case. This will break if a band member has no MA entry.
-                # return -1
-                pass
-
-            # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
-            # It's always 39 letters long.
-            temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
-            temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
-            temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-            logger.debug(f"    Recording artist data for {temp_artist_name}.")
-
-            # If the band member does not have a name in the database we simply use the pseudonym. This unfortunately
-            # overwrites the name with whatever pseudonym we found last.
-            if name.find("N/A") >= 0:
-                name = temp_artist_name
-
-            band_data[band_id]["lineup"][header_category].append(temp_artist_id)
-            artist_data[temp_artist_id] = {}
-            artist_data[temp_artist_id]["link"] = temp_artist_link
-            artist_data[temp_artist_id]["name"] = name
-            artist_data[temp_artist_id]["gender"] = gender
-            artist_data[temp_artist_id]["age"] = age
-            artist_data[temp_artist_id]["bands"] = {}
-            artist_data[temp_artist_id]["bands"][band_id] = {}
-            artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
-            # Last replace is not a normal white space (\xa0).
-            temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ', '')
-            instruments = cut_instruments(temp_instruments)
-            artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
-
-    # Crawl discography.
-    link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
-    soup = cook_soup(link_disco)
-    table = soup.find('table', attrs={'class': 'display discog'})
-    table_body = table.find('tbody')
-    rows = table_body.find_all('tr')
-    band_data[band_id]['albums'] = []
-
-    for row in rows:
-        cells = row.findAll("td")
-
-        # Guard clause for the unlikely case if a band has no releases.
-        if len(cells) is 1:
-            logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
-            continue
-
-        album_name = cells[0].text
-        album_type = cells[1].text
-        album_year = cells[2].text
-        album_rating = cells[3].text.rstrip().strip()
-        parenthesis_open = album_rating.find('(')
-
-        if parenthesis_open != -1:
-            parenthesis_close = album_rating.find(')')
-            album_rating = album_rating[parenthesis_open + 1:parenthesis_close]
-
-        band_data[band_id]['albums'].append({
-            'name': album_name,
-            'type': album_type,
-            'year': album_year,
-            'rating': album_rating
-        })
-
-    # pp = pprint.PrettyPrinter(indent=2)
-    # # pp.pprint(band_data)
-    # # pp.pprint(artist_data)
-    # # pp.pprint(label_data)
-    logger.debug('<<< Crawling [' + band_short_link + ']')
-    return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
-
-
 def load_visited_entities_and_file(entity_name: str) -> dict:
     file_name = entity_paths[entity_name]
     # Open the file with links of entities visited in earlier runs. File is closed automatically by the read_text.
@@ -721,6 +724,7 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
 
     visited_entities = dict()
     visited_entities['bands'] = load_visited_entities_and_file('bands')
+    visited_entities['members'] = load_visited_entities_and_file('members')
 
     threads = []
     lock = threading.Lock()
