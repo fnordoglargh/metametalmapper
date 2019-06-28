@@ -362,6 +362,7 @@ class VisitBandThread(threading.Thread):
         logger.debug('<<< Crawling [' + band_short_link + ']')
         return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
+
 class VisitBandListThread(threading.Thread):
 
     def __init__(self, thread_id, country_links, band_links):
@@ -486,7 +487,8 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                                             band_relation,
                                                             instruments[0],
                                                             inner_relation['pseudonym'],
-                                                            time_spans
+                                                            time_spans,
+                                                            get_dict_key(MEMBER_STATUS, status)
                                                             )
                         except Exception:
                             logging.getLogger('Crawler').exception("Making member connection failed.")

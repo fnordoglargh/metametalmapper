@@ -14,6 +14,7 @@ class MemberRelationship(StructuredRel):
     # end_date = DateProperty()
     pseudonym = StringProperty()
     instrument = StringProperty()
+    status = StringProperty(max_length=2, choices=MEMBER_STATUS)
 
 
 class Band(StructuredNode):
@@ -96,7 +97,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # TODO: Add error handling.
         band.releases.connect(release)
 
-    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym, time_frame):
+    def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym, time_frame, status):
         member = Member.nodes.get(emid=member_id)
         band = Band.nodes.get(emid=band_id)
         member.played_in.disconnect(band)
@@ -104,6 +105,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         relation.instrument = instrument
         relation.pseudonym = pseudonym
         relation.time_frame = time_frame
+        relation.status = status
         relation.save()
 
     def label_issued_release_interface(self, label_id, release_id):
