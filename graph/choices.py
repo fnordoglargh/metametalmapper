@@ -271,7 +271,8 @@ MEMBER_STATUS = {
     'L': 'Last known',
     'P': 'Past',
     'CL': 'Current (Live)',
-    'PL': 'Past (Live)'
+    'PL': 'Past (Live)',
+    'LL': 'Last known (Live)'
 }
 
 RELEASE_TYPES = {
