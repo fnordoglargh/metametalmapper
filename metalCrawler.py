@@ -144,7 +144,7 @@ class VisitBandThread(threading.Thread):
         logger = logging.getLogger('Crawler')
         logger.info(f'>>> Crawling [{band_short_link}]')
         soup = cook_soup(link_band)
-        # soup = BeautifulSoup(bandPage.data, "lxml")
+        # TODO: Add evaluation of cooked soup.
         logger.debug("  Start scraping from actual band.")
         # Finds band name; needs to extract the ID later.
         s = soup.find_all(attrs={"class": "band_name"})
@@ -228,11 +228,14 @@ class VisitBandThread(threading.Thread):
 
         band_data[band_id]["label"] = label_id
         label_data = {label_id: {"name": label_name, "link": label_link}}
+
+        logger.debug("  Scraping artists from actual band.")
         artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
         artists_and_band_element = artists_and_bands[0]
-        logger.debug("  Scraping artists from actual band.")
         actual_category = artists_and_band_element.contents[1].contents
         band_data[band_id]["lineup"] = {}
+
+        # This check sets a flag if a band e.g. only has a "last known" lineup. In that case it is not "diverse".
         lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
         is_lineup_diverse = True
 
