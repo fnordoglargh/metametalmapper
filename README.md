@@ -113,7 +113,7 @@ following properties:
 * `country`: The country of origin as a two letter ISO code. Uses `COUNTRIES`.
 * `locations`: Locations where the bands was active in.
 * `status`: Short form of the `BAND_STATUS`. One of six possible values.
-* `formed`: MA only uses years in for dates on teh band page. To get it somehow right,
+* `formed`: MA only uses years in for dates on the band page. To get it somehow right,
     we use Jan 1st and Dec 31st for as start and end dates.
 * `themes`: Themes used in the lyrics.
 * `genres`: Genres the band played. This could be a relationship or a collection.
