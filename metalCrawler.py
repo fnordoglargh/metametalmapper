@@ -442,6 +442,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
 
         temp_band_dict = {'emid': band,
                           'name': temp_band_data[band]['name'],
+                          'link': temp_band_data[band]['link'],
                           'country': temp_band_data[band]['country'],
                           'status': temp_band_data[band]['status'],
                           'themes': temp_band_data[band]['theme'],
@@ -459,6 +460,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
 
         temp_member_dict = {'emid': member,
                             'name': inner_data['name'],
+                            'link': inner_data['link'],
                             'age': int(inner_data['age']),
                             'gender': inner_data['gender']
                             }
