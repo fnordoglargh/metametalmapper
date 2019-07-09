@@ -20,6 +20,7 @@ class MemberRelationship(StructuredRel):
 class Band(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     link = StringProperty()
+    visited = DateProperty()
     name = StringProperty()
     country = StringProperty(max_length=2, choices=COUNTRIES)
     locations = ArrayProperty()
@@ -52,6 +53,7 @@ class Release(StructuredNode):
 class Member(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     link = StringProperty()
+    visited = DateProperty()
     name = StringProperty()
     age = IntegerProperty()
     gender = StringProperty(max_length=1, choices=GENDER)
@@ -115,7 +117,19 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         release = Release.nodes.get(emid=release_id)
         label.releases.connect(release)
 
+    def get_all_links_interface(self) -> dict:
+        all_links = {'bands': {}, 'artists': {}}
+        all_bands = Band.nodes.all()
 
+        for band in all_bands:
+            all_links['bands'][band.link] = band.visited
+
+        all_artists = Member.nodes.all()
+
+        for artist in all_artists:
+            all_links['artists'][artist.link] = artist.visited
+
+        return all_links
 
     # label = Label.nodes.get(emid=8)
     # label.delete()

@@ -61,6 +61,8 @@ class VisitBandThread(threading.Thread):
         self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
         self.db_handle = db_handle
+        self.visited_entities = self.db_handle.get_all_links()
+        self.today = date.today()
         self.is_detailed = is_detailed
 
     def run(self):
@@ -160,7 +162,8 @@ class VisitBandThread(threading.Thread):
         band_id = band_short_link[band_short_link.rfind('/') + 1:]
         band_data[band_id] = {}
         band_data[band_id]["link"] = band_short_link
-        band_data[band_id]["name"] = str(s[0].next_element.text)
+        band_data[band_id]["visited"] = self.today
+        band_data[band_id]["name"] = str(s[0].next_element.text)                
 
         s = soup.find_all(attrs={"class": "float_left"})
         band_data[band_id]["country"] = s[1].contents[3].contents[0]
@@ -310,6 +313,7 @@ class VisitBandThread(threading.Thread):
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
+                artist_data[temp_artist_id]["visited"] = self.today
                 artist_data[temp_artist_id]["name"] = name
                 artist_data[temp_artist_id]["gender"] = gender
                 artist_data[temp_artist_id]["age"] = age

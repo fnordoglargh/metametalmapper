@@ -29,6 +29,9 @@ class GraphDatabaseContext:
     def label_issued_release(self, label_id, release_id):
         self._strategy.label_issued_release_interface(label_id, release_id)
 
+    def get_all_links(self) -> dict:
+        return self._strategy.get_all_links_interface()
+
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
 
@@ -58,4 +61,8 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def label_issued_release_interface(self, label_id, release_id):
+        pass
+
+    @abstractmethod
+    def get_all_links_interface(self) -> dict:
         pass
