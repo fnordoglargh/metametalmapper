@@ -32,14 +32,12 @@ def get_dict_key(source_dict, value):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, visited_entities, lock, db_handle, is_detailed=False):
+    def __init__(self, thread_id, band_links, lock, db_handle, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
         :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
-        :param visited_entities: A dictionary which encapsulates both a list (entities) and a file handle (file_handle)
-            of bands and members.
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
         :param db_handle: The database handle is used to add all entities directly into the database with the strategy
             defined on the outside.
@@ -49,10 +47,6 @@ class VisitBandThread(threading.Thread):
         self.threadID = thread_id
         self.name = "BandVisitor_" + thread_id
         self.bandLinks = band_links
-        self.visited_bands_list = visited_entities['bands']['entities']
-        self.visited_bands_file = visited_entities['bands']['file_handle']
-        self.visited_members_list = visited_entities['members']['entities']
-        self.visited_members_file = visited_entities['members']['file_handle']
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
@@ -72,7 +66,7 @@ class VisitBandThread(threading.Thread):
 
             # TODO: Implement revisiting mechanism based on date.
             # No need to visit if the band is already in the database.
-            if link_band_temp in self.visited_bands_list:
+            if link_band_temp in self.visited_entities['bands']:
                 self.logger.debug(f"  Skipping {link_band_temp}.")
                 continue
 
@@ -163,7 +157,7 @@ class VisitBandThread(threading.Thread):
         band_data[band_id] = {}
         band_data[band_id]["link"] = band_short_link
         band_data[band_id]["visited"] = self.today
-        band_data[band_id]["name"] = str(s[0].next_element.text)                
+        band_data[band_id]["name"] = str(s[0].next_element.text)
 
         s = soup.find_all(attrs={"class": "float_left"})
         band_data[band_id]["country"] = s[1].contents[3].contents[0]
@@ -280,7 +274,7 @@ class VisitBandThread(threading.Thread):
                 temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
                 logger.debug(f"    Recording artist data for {temp_artist_name}.")
 
-                if temp_artist_link in self.visited_members_list:
+                if temp_artist_link in self.visited_entities['artists']:
                     logger.debug(f"      Skipping band member {temp_artist_link}.")
                     continue
                 else:
@@ -712,26 +706,6 @@ def crawl_countries():
     return country_links
 
 
-def load_visited_entities_and_file(entity_name: str) -> dict:
-    file_name = entity_paths[entity_name]
-    # Open the file with links of entities visited in earlier runs. File is closed automatically by the read_text.
-    visited_entity_path = Path(file_name)
-    if visited_entity_path.exists():
-        visited_entity_list = visited_entity_path.read_text(encoding="utf-8").split('\n')
-        # Remove last element from list if it's a lonely, empty string.
-        if visited_entity_list[-1] == '':
-            del visited_entity_list[-1]
-    else:
-        visited_entity_list = []
-
-    # Creates a file for visited bands if it does not exist or opens it otherwise.
-    # 'a': Open for writing, append data if it exists.
-    # 1  : Line buffered.
-    visited_entity_file = open(file_name, 'a', buffering=1, encoding='utf-8')
-
-    return {'entities': visited_entity_list, 'file_handle': visited_entity_file}
-
-
 def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
@@ -741,17 +715,13 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    visited_entities = dict()
-    visited_entities['bands'] = load_visited_entities_and_file('bands')
-    visited_entities['members'] = load_visited_entities_and_file('members')
-
     threads = []
     lock = threading.Lock()
 
     # Create threads.
     for i in range(0, threadCount):
         thread = VisitBandThread(
-            str(i), local_bands_queue, visited_entities, lock, db_handle, is_detailed)
+            str(i), local_bands_queue, lock, db_handle, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
