@@ -80,7 +80,7 @@ class VisitBandThread(threading.Thread):
                 self.bandLinks.put(link_band_temp)
                 continue
             else:
-                self.visited_bands_list.append(link_band_temp)
+                self.visited_entities['bands'][link_band_temp] = ""
 
             temp_band_data = crawl_result['bands']
             temp_artist_data = crawl_result['artists']
@@ -89,16 +89,12 @@ class VisitBandThread(threading.Thread):
 
             try:
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
-
             except Exception:
-                # TODO: Save all visited entity short links to files.
                 self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
                 self.logger.error(temp_band_data)
                 self.logger.error(temp_artist_data)
                 self.logger.error(temp_label_data)
             finally:
-                # Only write to the file if addition to the database was successful.
-                self.visited_bands_file.write(link_band_temp + '\n')
                 self.lock.release()
                 # TODO: Refactor progress output.
                 # progress = len(self.database["bands"]) / self.qsize
@@ -156,7 +152,7 @@ class VisitBandThread(threading.Thread):
         band_id = band_short_link[band_short_link.rfind('/') + 1:]
         band_data[band_id] = {}
         band_data[band_id]["link"] = band_short_link
-        band_data[band_id]["visited"] = self.today
+        band_data[band_id]["visited"] = str(self.today)
         band_data[band_id]["name"] = str(s[0].next_element.text)
 
         s = soup.find_all(attrs={"class": "float_left"})
@@ -276,13 +272,15 @@ class VisitBandThread(threading.Thread):
 
                 if temp_artist_link in self.visited_entities['artists']:
                     logger.debug(f"      Skipping band member {temp_artist_link}.")
-                    continue
+                    artist_soup = None
+                    artist_exists = True
                 else:
                     artist_soup = cook_soup(temp_artist_soup_link)
+                    artist_exists = False
 
                 name = ""
                 gender = ""
-                age = ""
+                age = -1
 
                 if artist_soup is not None:
                     member_info = artist_soup.find('div', attrs={'id': 'member_info'})
@@ -290,10 +288,9 @@ class VisitBandThread(threading.Thread):
                     gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
                     age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
 
+                    # Age strings contain either an N/A or are YY (born ...).
                     if age.find("N/A") < 0:
                         age = age[:age.find(" ")]
-                    else:
-                        age = -1
                 else:
                     # Error case. This will break if a band member has no MA entry.
                     # return -1
@@ -307,7 +304,8 @@ class VisitBandThread(threading.Thread):
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
-                artist_data[temp_artist_id]["visited"] = self.today
+                artist_data[temp_artist_id]["exists"] = artist_exists
+                artist_data[temp_artist_id]["visited"] = str(self.today)
                 artist_data[temp_artist_id]["name"] = name
                 artist_data[temp_artist_id]["gender"] = gender
                 artist_data[temp_artist_id]["age"] = age
@@ -319,9 +317,6 @@ class VisitBandThread(threading.Thread):
                                                                                                                   '')
                 instruments = cut_instruments(temp_instruments)
                 artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
-
-                self.visited_members_list.append(temp_artist_link)
-                self.visited_members_file.write(temp_artist_link + '\n')
 
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
@@ -456,14 +451,15 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
     for member in temp_artist_data:
         inner_data = temp_artist_data[member]
 
-        temp_member_dict = {'emid': member,
-                            'name': inner_data['name'],
-                            'link': inner_data['link'],
-                            'age': int(inner_data['age']),
-                            'gender': inner_data['gender']
-                            }
+        if not inner_data['exists']:
+            temp_member_dict = {'emid': member,
+                                'name': inner_data['name'],
+                                'link': inner_data['link'],
+                                'age': int(inner_data['age']),
+                                'gender': inner_data['gender']
+                                }
 
-        db_handle.add_member(temp_member_dict)
+            db_handle.add_member(temp_member_dict)
 
         for band_relation in inner_data['bands']:
             inner_relation = inner_data['bands'][band_relation]
