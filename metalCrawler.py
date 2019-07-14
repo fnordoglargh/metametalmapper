@@ -324,7 +324,7 @@ class VisitBandThread(threading.Thread):
         table = soup.find('table', attrs={'class': 'display discog'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
-        band_data[band_id]['albums'] = []
+        band_data[band_id]['releases'] = []
 
         for row in rows:
             cells = row.findAll("td")
@@ -334,20 +334,27 @@ class VisitBandThread(threading.Thread):
                 logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
                 continue
 
+            # TODO: Visit release page to get details like the actual release date instead of only the year.
+            album_id = cells[0].contents[0].attrs['href']
+            album_id = album_id[album_id.rfind('/') + 1:]
             album_name = cells[0].text
-            album_type = cells[1].text
+            album_type = get_dict_key(RELEASE_TYPES, cells[1].text)
             album_year = cells[2].text
             album_rating = cells[3].text.rstrip().strip()
             parenthesis_open = album_rating.find('(')
 
             if parenthesis_open != -1:
                 parenthesis_close = album_rating.find(')')
-                album_rating = album_rating[parenthesis_open + 1:parenthesis_close]
+                # Get int value from a string looking like this: '8 (64%)'
+                album_rating = int(album_rating[parenthesis_open + 1:parenthesis_close - 1])
+            else:
+                album_rating = -1
 
-            band_data[band_id]['albums'].append({
+            band_data[band_id]['releases'].append({
+                'emid': album_id,
                 'name': album_name,
                 'type': album_type,
-                'year': album_year,
+                'release_date': album_year,
                 'rating': album_rating
             })
 
@@ -447,6 +454,14 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
             temp_band_dict['formed'] = date(int(temp_band_data[band]['formed']), 1, 1)
 
         db_handle.add_band(temp_band_dict)
+
+        for release in temp_band_data[band]['releases']:
+            # We need to copy the dict first because we need to make a date object for the release date.
+            release_copy = dict(release)
+            # This is not the accurate date, only the year.
+            release_copy['release_date'] = date(int(release_copy['release_date']), 1, 1)
+            db_handle.add_release(release_copy)
+            db_handle.band_recorded_release(band, release['emid'])
 
     for member in temp_artist_data:
         inner_data = temp_artist_data[member]

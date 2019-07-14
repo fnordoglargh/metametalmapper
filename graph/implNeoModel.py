@@ -45,8 +45,8 @@ class Release(StructuredNode):
     type = StringProperty(max_lenght=1, choices=RELEASE_TYPES)
     rating = IntegerProperty()
     release_date = DateProperty()
-    released_on = RelationshipTo('Label', 'RELEASED_ON')
     recorded_by = RelationshipFrom('Band', 'RECORDED')
+    # released_on = RelationshipTo('Label', 'RELEASED_ON')
     # Don't forget to crawl for the label!
 
 
@@ -90,7 +90,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         labels = Label.create_or_update(label_dict)
 
     def add_release_interface(self, release_dict):
-        albums = Release.create_or_update(release_dict)
+        releases = Release.create_or_update(release_dict)
 
     def add_member_interface(self, member_dict):
         members = Member.create_or_update(member_dict)
@@ -98,7 +98,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def band_recorded_release_interface(self, band_id, release_id):
         band = Band.nodes.get(emid=band_id)
         release = Release.nodes.get(emid=release_id)
-        # TODO: Add error handling.
+        band.releases.disconnect(release)
         band.releases.connect(release)
 
     def member_played_in_band_interface(self, member_id, band_id, instrument, pseudonym, time_frame, status):
