@@ -286,11 +286,11 @@ class VisitBandThread(threading.Thread):
                     member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                     gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
-                    age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
+                    temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
 
                     # Age strings contain either an N/A or are YY (born ...).
-                    if age.find("N/A") < 0:
-                        age = age[:age.find(" ")]
+                    if temp_age.find("N/A") < 0:
+                        age = temp_age[:temp_age.find(" ")]
                 else:
                     # Error case. This will break if a band member has no MA entry.
                     # return -1
