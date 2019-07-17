@@ -17,3 +17,18 @@ class TestGenreCutting(unittest.TestCase):
         expected_cut = ['Death', 'Black', 'Heavy', 'Speed']
         self.assertEqual(expected_cut, result)
 
+        result = genre.split_genres('Symphonic Black/Death Metal (early), Melodic Death Metal (later)')
+        expected_cut = ['Symphonic Black', 'Death', 'Melodic Death']
+        self.assertEqual(expected_cut, result)
+
+        result = genre.split_genres('Experimental Black Metal/Dark Ambient')
+        expected_cut = ['Experimental Black', 'Dark Ambient']
+        self.assertEqual(expected_cut, result)
+
+        result = genre.split_genres('Melodic Power/Speed Metal/Rock')
+        expected_cut = ['Melodic Power', 'Speed', 'Rock']
+        self.assertEqual(expected_cut, result)
+
+
+
+
