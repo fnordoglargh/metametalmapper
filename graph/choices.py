@@ -285,7 +285,8 @@ RELEASE_TYPES = {
     'E': 'EP',
     'V': 'Video',
     'B': 'Boxed set',
-    'P': 'Split video'
+    'P': 'Split video',
+    'O': 'Collaboration'
 }
 
 GENDER = {
