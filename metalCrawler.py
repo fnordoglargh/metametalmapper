@@ -175,15 +175,14 @@ class VisitBandThread(threading.Thread):
         s = soup.find_all(attrs={"class": "clear"})
 
         # Get years into a list. Earlier incarnations of a band are ignored.
-        years_raw = s[3].contents[3].contents
-        element_count = len(years_raw)
-        year_token = years_raw[element_count - 1].lstrip().rstrip()
-        year_token = year_token.replace('\t', '')
-        year_token = year_token.replace('\n', '')
-        year_token = year_token.replace(' ', '')
-        year_token = year_token.replace('),', '')
-        year_tokens = year_token.split(',')
-        band_data[band_id]["active"] = year_tokens
+        years_raw = s[3].contents[3].text.lstrip().rstrip()
+        years_raw = years_raw.replace('\t', '')
+        years_raw = years_raw.replace('\n', '')
+        year_tokens = years_raw.split(',')
+
+        for year_token in year_tokens:
+            if '(as' not in year_token:
+                band_data[band_id]["active"].append(year_token.lstrip())
 
         s = soup.find_all(attrs={"class": "float_right"})
         band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
@@ -417,10 +416,10 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
             if len(temp_slots) is 1:
                 time_slot_2 = time_slot_1
             else:
-                if 'present' in temp_slots[1]:
+                if 'present' in temp_slots[1] or '?' in temp_slots[1]:
                     time_slot_2 = date.today()
                 else:
-                    time_slot_2 = date(int(temp_slots[1]), 1, 1)
+                    time_slot_2 = date(int(temp_slots[1]), 12, 31)
 
             active_list.append(time_slot_1)
             active_list.append(time_slot_2)
@@ -433,6 +432,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                           'themes': temp_band_data[band]['theme'],
                           'genres': temp_band_data[band]['genre'],
                           'locations': temp_band_data[band]['location'],
+                          # 'active': active_list
                           }
 
         if temp_band_data[band]['formed'] != 'N/A':
