@@ -1,6 +1,7 @@
 import unittest
 import genre
 
+
 class TestGenreCutting(unittest.TestCase):
 
     def test_cutting(self):
