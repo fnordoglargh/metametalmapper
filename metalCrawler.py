@@ -174,31 +174,16 @@ class VisitBandThread(threading.Thread):
         artist_data = {}
         s = soup.find_all(attrs={"class": "clear"})
 
-        # Iterate over all time spans the band was (or is) active.
-        for element in s[3].contents[3].contents:
-            active = element
-            if type(active) is NavigableString:
-                active = active.replace('\t', '')
-                active = active.replace('),', '')
-                active = active.replace('\n', '')
-                active = active.replace(' ', '')
-                year_tokens = active.split(',')
-                for yearToken in year_tokens:
-                    # TODO: Very strange case for bands which changed their name. Maybe we want to pass that time span.
-                    if yearToken != ')':
-                        band_data[band_id]["active"].append(yearToken)
-            elif type(active) is Tag:
-                previous_name = " " + active.contents[0]
-                last_position = len(band_data[band_id]["active"]) - 1
-                band_data[band_id]["active"][last_position] += previous_name + ")"
-            else:
-                logger.warning(f"  Found an element of type {type(active)}. This should not happen.")
-
-        # This removes all earlier (or later) incarnations of the band. It would be better to change the above block
-        # but I'm too lazy to do it right now.
-        for time_span in band_data[band_id]["active"]:
-            if time_span.find('(as') > 0:
-                band_data[band_id]["active"].remove(time_span)
+        # Get years into a list. Earlier incarnations of a band are ignored.
+        years_raw = s[3].contents[3].contents
+        element_count = len(years_raw)
+        year_token = years_raw[element_count - 1].lstrip().rstrip()
+        year_token = year_token.replace('\t', '')
+        year_token = year_token.replace('\n', '')
+        year_token = year_token.replace(' ', '')
+        year_token = year_token.replace('),', '')
+        year_tokens = year_token.split(',')
+        band_data[band_id]["active"] = year_tokens
 
         s = soup.find_all(attrs={"class": "float_right"})
         band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
