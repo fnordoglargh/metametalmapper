@@ -24,7 +24,7 @@ lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known"
 
 # 8 might be a bit high (leaves some forbidden messages on getting the JSON
 # data or the bands).
-threadCount = 8
+THREAD_COUNT = 8
 
 
 def get_dict_key(source_dict, value):
@@ -728,9 +728,13 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
 
     threads = []
     lock = threading.Lock()
+    thread_count = THREAD_COUNT
+
+    if len(band_links) < THREAD_COUNT:
+        thread_count = len(band_links)
 
     # Create threads.
-    for i in range(0, threadCount):
+    for i in range(0, thread_count):
         thread = VisitBandThread(
             str(i), local_bands_queue, lock, db_handle, is_detailed)
         threads.append(thread)
