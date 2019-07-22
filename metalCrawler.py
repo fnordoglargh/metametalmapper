@@ -8,11 +8,11 @@ import queue
 import time
 import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
-from diagramCreator import *
 import re
 from graph.choices import *
 from datetime import date
 from pathlib import Path
+from genre import split_genres
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -201,7 +201,7 @@ class VisitBandThread(threading.Thread):
                 band_data[band_id]["active"].remove(time_span)
 
         s = soup.find_all(attrs={"class": "float_right"})
-        band_data[band_id]["genre"] = s[3].contents[3].contents[0].split(', ')
+        band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
         band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
         label_node = s[3].contents[11].contents[0]
 
