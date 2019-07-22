@@ -284,7 +284,8 @@ RELEASE_TYPES = {
     'C': 'Compilation',
     'E': 'EP',
     'V': 'Video',
-    'B': 'Boxed set'
+    'B': 'Boxed set',
+    'P': 'Split video'
 }
 
 GENDER = {
