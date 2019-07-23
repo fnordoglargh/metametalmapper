@@ -135,16 +135,19 @@ class VisitBandThread(threading.Thread):
         link_band = em_link_main + bands + band_short_link
         logger = logging.getLogger('Crawler')
         logger.info(f'>>> Crawling [{band_short_link}]')
-        soup = cook_soup(link_band)
-        # TODO: Add evaluation of cooked soup.
+        band_soup = cook_soup(link_band)
+
+        if band_soup is None:
+            return -1
+
         logger.debug("  Start scraping from actual band.")
         # Finds band name; needs to extract the ID later.
-        s = soup.find_all(attrs={"class": "band_name"})
+        s = band_soup.find_all(attrs={"class": "band_name"})
 
         if len(s) == 0:
             logger.fatal(f"  Did not find the attribute band_name for {band_short_link}.")
             logger.debug("  Band page source for reference:")
-            logger.debug(soup.text)
+            logger.debug(band_soup.text)
             return -1
 
         # All data of a band is collected here.  Band members are referenced and collected in their own collection.
@@ -155,7 +158,7 @@ class VisitBandThread(threading.Thread):
         band_data[band_id]["visited"] = str(self.today)
         band_data[band_id]["name"] = str(s[0].next_element.text)
 
-        s = soup.find_all(attrs={"class": "float_left"})
+        s = band_soup.find_all(attrs={"class": "float_left"})
         band_data[band_id]["country"] = s[1].contents[3].contents[0]
         country_node = s[1].contents[3].contents[0]
         # Saving the country name and link in a dict.
@@ -172,7 +175,7 @@ class VisitBandThread(threading.Thread):
         band_data[band_id]["formed"] = s[1].contents[15].text
         band_data[band_id]["active"] = []
         artist_data = {}
-        s = soup.find_all(attrs={"class": "clear"})
+        s = band_soup.find_all(attrs={"class": "clear"})
 
         # Get years into a list. Earlier incarnations of a band are ignored.
         years_raw = s[3].contents[3].text.lstrip().rstrip()
@@ -184,7 +187,7 @@ class VisitBandThread(threading.Thread):
             if '(as' not in year_token:
                 band_data[band_id]["active"].append(year_token.lstrip())
 
-        s = soup.find_all(attrs={"class": "float_right"})
+        s = band_soup.find_all(attrs={"class": "float_right"})
         band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
         band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
         label_node = s[3].contents[11].contents[0]
@@ -207,13 +210,13 @@ class VisitBandThread(threading.Thread):
         label_data = {label_id: {"name": label_name, "link": label_link}}
 
         logger.debug("  Scraping artists from actual band.")
-        artists_and_bands = soup.find_all(attrs={"class": "ui-tabs-panel-content"})
+        artists_and_bands = band_soup.find_all(attrs={"class": "ui-tabs-panel-content"})
         artists_and_band_element = artists_and_bands[0]
         actual_category = artists_and_band_element.contents[1].contents
         band_data[band_id]["lineup"] = {}
 
         # This check sets a flag if a band e.g. only has a "last known" lineup. In that case it is not "diverse".
-        lineup_finder = soup.find_all(attrs={"href": "#band_tab_members_all"})
+        lineup_finder = band_soup.find_all(attrs={"href": "#band_tab_members_all"})
         is_lineup_diverse = True
 
         if len(lineup_finder) == 0:
@@ -236,7 +239,7 @@ class VisitBandThread(threading.Thread):
                 # page. For active bands with changing lineup we get 'Current'. For a band with no lineup changes it
                 # will be empty.
                 if not is_lineup_diverse:
-                    test_header2 = str(soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
+                    test_header2 = str(band_soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                     header_category = lineup_mapping[test_header2]
                     logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
 
@@ -276,9 +279,9 @@ class VisitBandThread(threading.Thread):
                     if temp_age.find("N/A") < 0:
                         age = temp_age[:temp_age.find(" ")]
                 else:
-                    # Error case. This will break if a band member has no MA entry.
-                    # return -1
-                    pass
+                    # Error case. artist_soup is invalid and the artist does not exist.
+                    if not artist_exists:
+                        return -1
 
                 # If the band member does not have a name in the database we simply use the pseudonym. This
                 # unfortunately overwrites the name with whatever pseudonym we found last.
@@ -304,8 +307,12 @@ class VisitBandThread(threading.Thread):
 
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
-        soup = cook_soup(link_disco)
-        table = soup.find('table', attrs={'class': 'display discog'})
+        disco_soup = cook_soup(link_disco)
+        if disco_soup is None:
+            logger.error(f"  Unable to get the discography for {band_short_link}.")
+            # We have to throw everything away and start anew.
+            return -1
+        table = disco_soup.find('table', attrs={'class': 'display discog'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
         band_data[band_id]['releases'] = []
@@ -346,7 +353,7 @@ class VisitBandThread(threading.Thread):
         # # pp.pprint(band_data)
         # # pp.pprint(artist_data)
         # # pp.pprint(label_data)
-        logger.debug('<<< Crawling [' + band_short_link + ']')
+        logger.debug(f'<<< Crawling [{band_short_link}]')
         return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
@@ -397,9 +404,11 @@ class VisitBandListThread(threading.Thread):
 
 
 def apply_to_db(ma_dict, db_handle, is_detailed):
+    logger = logging.getLogger('Crawler')
     temp_band_data = ma_dict['bands']
     temp_artist_data = ma_dict['artists']
     temp_label_data = ma_dict['labels']
+    logger.debug("Apply to DB...")
 
     for band in temp_band_data:
 
@@ -438,6 +447,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
         if temp_band_data[band]['formed'] != 'N/A':
             temp_band_dict['formed'] = date(int(temp_band_data[band]['formed']), 1, 1)
 
+        logger.debug(f"  Writing data for band {temp_band_dict['link']}.")
         db_handle.add_band(temp_band_dict)
 
         for release in temp_band_data[band]['releases']:
@@ -445,6 +455,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
             release_copy = dict(release)
             # This is not the accurate date, only the year.
             release_copy['release_date'] = date(int(release_copy['release_date']), 1, 1)
+            logger.debug(f"  Writing data for release {release_copy['name']}.")
             db_handle.add_release(release_copy)
             db_handle.band_recorded_release(band, release['emid'])
 
@@ -459,6 +470,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                 'gender': inner_data['gender']
                                 }
 
+            logger.debug(f"  Writing data for artist {temp_member_dict['link']}.")
             db_handle.add_member(temp_member_dict)
 
         for band_relation in inner_data['bands']:
@@ -525,9 +537,9 @@ def cook_soup(link, retry_count=5):
         web_page_string = web_page.data.decode("utf-8")
 
         if "Forbidden." in web_page_string:
-            logger.debug("  trying again...")
             time.sleep(.5)
             retry_count -= 1
+            logger.debug(f"  Trying again... ({retry_count} to go)")
         else:
             retry_count = -1
 
@@ -589,6 +601,8 @@ def cut_instruments(instrument_string):
                         # (2)
                         if len(time_span) is 4:
                             years = (int(time_span), int(time_span))
+                        elif time_span[0] == '?':
+                            pass
                         # (1)
                         elif len(time_span) is 9:
                             years = (int(time_span[0:4]), int(time_span[5:]))
@@ -689,15 +703,17 @@ def crawl_countries():
     :return: A list of two-letter ISO country codes.
     """
 
-    soup = cook_soup("https://www.metal-archives.com/browse/country")
-    s = soup.find_all(attrs={"class": "countryCol"})
     country_links = []
+    country_soup = cook_soup("https://www.metal-archives.com/browse/country", retry_count=10)
 
-    for i in range(0, len(s)):
-        for j in range(1, len(s[i].contents), 3):
-            temp_link = s[i].contents[j].attrs["href"]
-            country_short = temp_link[-2:]
-            country_links.append(country_short)
+    if country_soup is not None:
+        s = country_soup.find_all(attrs={"class": "countryCol"})
+
+        for i in range(0, len(s)):
+            for j in range(1, len(s[i].contents), 3):
+                temp_link = s[i].contents[j].attrs["href"]
+                country_short = temp_link[-2:]
+                country_links.append(country_short)
 
     return country_links
 
