@@ -184,7 +184,9 @@ class VisitBandThread(threading.Thread):
         year_tokens = years_raw.split(',')
 
         for year_token in year_tokens:
-            if '(as' not in year_token:
+            # First one filters the earlier incarnation. The second one is for a bit more obscure use case. In that an
+            # earlier incarnation exists but has a comma in the name (leading for the latter portion to be split).
+            if '(as' not in year_token and ')' not in year_token:
                 band_data[band_id]["active"].append(year_token.lstrip())
 
         s = band_soup.find_all(attrs={"class": "float_right"})
