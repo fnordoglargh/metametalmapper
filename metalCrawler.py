@@ -601,17 +601,18 @@ def cut_instruments(instrument_string):
                         # (2)
                         if len(time_span) is 4:
                             years = (int(time_span), int(time_span))
-                        elif time_span[0] == '?':
-                            pass
                         # (1)
-                        elif len(time_span) is 9:
+                        elif len(time_span) is 9 and time_span[0] != '?':
                             years = (int(time_span[0:4]), int(time_span[5:]))
                         # (4) Nasty special case.
                         elif '?' in time_span:
                             if time_span[0] == '?' and time_span[:-1] == '?':
                                 years = ('?', '?')
                             elif time_span[0] == '?':
-                                years = ('?', int(time_span[2:]))
+                                if 'present' in time_span:
+                                    years = ('?', 'present')
+                                else:
+                                    years = ('?', int(time_span[2:]))
                             elif time_span[-1:] == '?':
                                 years = (int(time_span[0:4]), '?')
                             else:
