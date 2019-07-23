@@ -263,7 +263,7 @@ class VisitBandThread(threading.Thread):
                     artist_exists = False
 
                 name = ""
-                gender = ""
+                gender = "U"
                 age = -1
 
                 if artist_soup is not None:
