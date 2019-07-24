@@ -10,7 +10,7 @@ import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 import re
 from graph.choices import *
-from datetime import date
+from datetime import *
 from pathlib import Path
 from genre import split_genres
 
@@ -443,6 +443,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                           'themes': temp_band_data[band]['theme'],
                           'genres': temp_band_data[band]['genre'],
                           'locations': temp_band_data[band]['location'],
+                          'visited': datetime.strptime(temp_band_data[band]['visited'], "%Y-%m-%d").date()
                           # 'active': active_list
                           }
 
@@ -469,7 +470,8 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                 'name': inner_data['name'],
                                 'link': inner_data['link'],
                                 'age': int(inner_data['age']),
-                                'gender': inner_data['gender']
+                                'gender': inner_data['gender'],
+                                'visited': datetime.strptime(inner_data['visited'], "%Y-%m-%d").date()
                                 }
 
             logger.debug(f"  Writing data for artist {temp_member_dict['link']}.")
