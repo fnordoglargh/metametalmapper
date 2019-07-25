@@ -10,7 +10,7 @@ import pprint
 from bs4 import BeautifulSoup, NavigableString, Tag
 import re
 from graph.choices import *
-from datetime import *
+from datetime import date, datetime
 from pathlib import Path
 from genre import split_genres
 
@@ -270,16 +270,19 @@ class VisitBandThread(threading.Thread):
                 name = ""
                 gender = "U"
                 age = -1
+                origin = 'ZZ'
 
                 if artist_soup is not None:
                     member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                     gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
                     temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
-
                     # Age strings contain either an N/A or are YY (born ...).
                     if 'N/A' not in temp_age:
                         age = temp_age[:temp_age.find(" ")]
+
+                    if 'N/A' not in member_info.contents[9].contents[3].text:
+                        origin = member_info.contents[9].contents[3].contents[1].attrs['href'][-2:]
                 else:
                     # Error case. artist_soup is invalid and the artist does not exist.
                     if not artist_exists:
@@ -298,6 +301,7 @@ class VisitBandThread(threading.Thread):
                 artist_data[temp_artist_id]["name"] = name
                 artist_data[temp_artist_id]["gender"] = gender
                 artist_data[temp_artist_id]["age"] = age
+                artist_data[temp_artist_id]["origin"] = origin
                 artist_data[temp_artist_id]["bands"] = {}
                 artist_data[temp_artist_id]["bands"][band_id] = {}
                 artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
@@ -471,6 +475,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                 'link': inner_data['link'],
                                 'age': int(inner_data['age']),
                                 'gender': inner_data['gender'],
+                                'origin': inner_data['origin'],
                                 'visited': datetime.strptime(inner_data['visited'], "%Y-%m-%d").date()
                                 }
 

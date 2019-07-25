@@ -248,7 +248,8 @@ COUNTRIES = {
     'YE': 'Yemen',
     'ZM': 'Zambia',
     'ZW': 'Zimbabwe',
-    'XX': 'International'
+    'XX': 'International',
+    'ZZ': 'Unknown'
 }
 
 LABEL_STATUS = {

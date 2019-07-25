@@ -57,6 +57,7 @@ class Member(StructuredNode):
     visited = DateProperty()
     name = StringProperty()
     age = IntegerProperty()
+    origin = StringProperty(max_length=2, choices=COUNTRIES)
     gender = StringProperty(max_length=1, choices=GENDER)
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
 
