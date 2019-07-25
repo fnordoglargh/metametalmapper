@@ -13,6 +13,7 @@ from graph.choices import *
 from datetime import date, datetime
 from pathlib import Path
 from genre import split_genres
+from global_helpers import get_dict_key
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -25,10 +26,6 @@ lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known"
 # 8 might be a bit high (leaves some forbidden messages on getting the JSON
 # data or the bands).
 THREAD_COUNT = 8
-
-
-def get_dict_key(source_dict, value):
-    return list(source_dict.keys())[list(source_dict.values()).index(value)]
 
 
 class VisitBandThread(threading.Thread):
