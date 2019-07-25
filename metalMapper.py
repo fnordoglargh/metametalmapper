@@ -149,7 +149,7 @@ def flush_queue(country_short):
     :param country_short: ISO country code used in the file name.
     :return: A filename with the format ``links/bands-NN.lnks``.
     """
-    logger = logging.getLogger('Crawler')
+    logger = logging.getLogger('Mapper')
     country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
 
     if bandsQueue.qsize() != 0:
@@ -164,6 +164,17 @@ def flush_queue(country_short):
         logger.warning(f"No bands in country {country_short}. To check country manually, use above link.")
 
     return country_filename
+
+
+def init_db():
+    logger = logging.getLogger('Mapper')
+    db_handle = None
+    try:
+        db_handle = GraphDatabaseContext(NeoModelStrategy())
+    except:
+        logger.error("  Need database to function properly. Exiting...")
+
+    return db_handle
 
 
 def main(argv):
@@ -288,13 +299,10 @@ def main(argv):
                 logger.error(f"File {path} was not readable.")
 
         if len(sanitized_bands) is not 0:
-            try:
-                db_handle = GraphDatabaseContext(NeoModelStrategy())
-            except:
-                logger.error("  Need database to function properly. Exiting...")
-                exit(7)
-            # TODO: Get the country from filename and pass as parameter.
-            crawl_bands(sanitized_bands, db_handle, is_detailed)
+            db_handle = init_db()
+            if db_handle is not None:
+                # TODO: Get the country from filename and pass as parameter.
+                crawl_bands(sanitized_bands, db_handle, is_detailed)
     elif mode is CrawlMode.AnalyseDatabase:
         print('Currently not implemented.')
     elif mode is CrawlMode.DisplayInfo:
