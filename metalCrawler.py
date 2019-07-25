@@ -278,7 +278,7 @@ class VisitBandThread(threading.Thread):
                     temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
 
                     # Age strings contain either an N/A or are YY (born ...).
-                    if temp_age.find("N/A") < 0:
+                    if 'N/A' not in temp_age:
                         age = temp_age[:temp_age.find(" ")]
                 else:
                     # Error case. artist_soup is invalid and the artist does not exist.
@@ -287,7 +287,7 @@ class VisitBandThread(threading.Thread):
 
                 # If the band member does not have a name in the database we simply use the pseudonym. This
                 # unfortunately overwrites the name with whatever pseudonym we found last.
-                if name.find("N/A") >= 0:
+                if 'N/A' in name:
                     name = temp_artist_name
 
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
