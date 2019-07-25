@@ -245,7 +245,6 @@ def main(argv):
             filenames.append(Path("testLinks.txt"))
         elif opt == '-m':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
-            print()
         elif opt == '-d':
             is_detailed = True
         else:
@@ -304,7 +303,9 @@ def main(argv):
                 # TODO: Get the country from filename and pass as parameter.
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
     elif mode is CrawlMode.AnalyseDatabase:
-        print('Currently not implemented.')
+        db_handle = init_db()
+        if db_handle is not None:
+            raw_analysis(db_handle)
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()
@@ -315,7 +316,6 @@ def main(argv):
         print('Available regions:')
         print(regions)
 
-    input('...ending')
     logging.shutdown()
 
 

@@ -4,6 +4,10 @@ style_later = "(later)"
 style_early = "(early)"
 
 
+def raw_analysis(db_handle):
+    pass
+
+
 def style_stripper(style):
     if style_later in style:
         style = style[0:style.find(style_later)].rstrip()
