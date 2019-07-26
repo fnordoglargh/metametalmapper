@@ -3,6 +3,7 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neo4j import exceptions
 from graph.choices import *
 from graph.metalGraph import *
+from country_helper import COUNTRY_NAMES
 import logging
 import settings
 
@@ -22,7 +23,7 @@ class Band(StructuredNode):
     link = StringProperty()
     visited = DateProperty()
     name = StringProperty()
-    country = StringProperty(max_length=2, choices=COUNTRIES)
+    country = StringProperty(max_length=2, choices=COUNTRY_NAMES)
     locations = ArrayProperty()
     status = StringProperty(max_length=1, choices=BAND_STATUS)
     formed = DateProperty()
@@ -57,7 +58,7 @@ class Member(StructuredNode):
     visited = DateProperty()
     name = StringProperty()
     age = IntegerProperty()
-    origin = StringProperty(max_length=2, choices=COUNTRIES)
+    origin = StringProperty(max_length=2, choices=COUNTRY_NAMES)
     gender = StringProperty(max_length=1, choices=GENDER)
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
 
