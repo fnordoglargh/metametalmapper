@@ -1,11 +1,28 @@
 from collections import OrderedDict
+from graph.implNeoModel import *
+from country_helper import *
+from global_helpers import get_dict_key
 
 style_later = "(later)"
 style_early = "(early)"
 
 
 def raw_analysis(db_handle):
-    pass
+    country_short = 'NO'
+    bands = Band.nodes.filter(country__exact=country_short)
+    country_long = COUNTRY_NAMES[country_short]
+    population = COUNTRY_POPULATION[country_short]
+    bands_per_100k = len(bands) / (int(population) / 100000)
+
+    print(
+        f'{country_long}\n'
+        f'  Bands: {len(bands)}\n'
+        f'  Population: {population}\n'
+        f'  Bands per 100k people: {bands_per_100k:.2f} '
+    )
+
+    for band in bands:
+        pass
 
 
 def style_stripper(style):
