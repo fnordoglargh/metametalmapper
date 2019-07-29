@@ -15,9 +15,9 @@ import datetime
 from graph.implNeoModel import *
 from graph.metalGraph import *
 
-link_extension = ".lnks"
-bandsListFileName = "bands" + link_extension
-bandLinkFileName = "bands-{}" + link_extension
+LINK_EXTENSION = ".lnks"
+BANDS_LIST_FILE_NAME = "bands" + LINK_EXTENSION
+BAND_LINK_FILE_NAME = "bands-{}" + LINK_EXTENSION
 
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
@@ -118,7 +118,7 @@ def print_regions():
 
 
 def print_help():
-    file_name_a = bandLinkFileName.format('XX')
+    file_name_a = BAND_LINK_FILE_NAME.format('XX')
     # TODO: Move two letter country names to description section.
     print(
         f'Supported modes:\n'
@@ -150,7 +150,7 @@ def flush_queue(country_short):
     :return: A filename with the format ``links/bands-NN.lnks``.
     """
     logger = logging.getLogger('Crawler')
-    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
+    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{LINK_EXTENSION}")
 
     if bandsQueue.qsize() != 0:
         band_links_file = open(country_filename, "w", encoding="utf-8")
