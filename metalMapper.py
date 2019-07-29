@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import sys
 import getopt
 import logging
@@ -10,22 +9,10 @@ from metalCrawler import *
 from metalAnalyzer import *
 import json
 from pathlib import Path
-import pprint
 import datetime
 from graph.implNeoModel import *
 from graph.metalGraph import *
-
-LINK_EXTENSION = ".lnks"
-BANDS_LIST_FILE_NAME = "bands" + LINK_EXTENSION
-BAND_LINK_FILE_NAME = "bands-{}" + LINK_EXTENSION
-
-FOLDER_LINKS = Path("links")
-FOLDER_DB = Path("databases")
-folders = [FOLDER_LINKS, FOLDER_DB]
-REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
-REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
-REGIONS = {REG_NORDIC[0]: REG_NORDIC,
-           REG_TST[0]: REG_TST}
+from global_helpers import *
 
 countries = {}
 
@@ -192,8 +179,8 @@ def main(argv):
     mode = CrawlMode.Error
     filenames = []
 
-    # Check necessary folders exist, try to create them otherwise.
-    for folder in folders:
+    # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
+    for folder in FOLDERS_MAIN:
         if not folder.exists() and not folder.is_dir():
             try:
                 folder.mkdir()
