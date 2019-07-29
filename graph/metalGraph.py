@@ -30,6 +30,13 @@ class GraphDatabaseContext:
         self._strategy.label_issued_release_interface(label_id, release_id)
 
     def get_all_links(self) -> dict:
+        """Prepares a dictionary that contains all previously visited short links of all bands and artists. Two keys are
+            used: 'bands' and 'artists'. For ~10k bands and ~40k artists this takes ~7s. It's faster than checking for
+            the existence of nodes (which takes ~0.01s for the neomodel implementation).
+
+        :return: Dictionary with all known 'bands' and 'artists'. Each short link of these entities has a time stamp of
+            the last visit as the value.
+        """
         return self._strategy.get_all_links_interface()
 
 

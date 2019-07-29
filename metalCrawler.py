@@ -29,7 +29,7 @@ THREAD_COUNT = 8
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, is_detailed=False):
+    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
@@ -52,7 +52,7 @@ class VisitBandThread(threading.Thread):
         self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
         self.db_handle = db_handle
-        self.visited_entities = self.db_handle.get_all_links()
+        self.visited_entities = visited_entities
         self.today = date.today()
         self.is_detailed = is_detailed
         self.band_errors = band_errors
@@ -754,11 +754,19 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
         thread_count = len(band_links)
 
     unrecoverable_bands = {}
+    # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
+    # took longer and longer the larger the database got.
+    time_start = datetime.now()
+    visited_entities = db_handle.get_all_links()
+    time_delta = datetime.now() - time_start
+    amount_bands = len(visited_entities["bands"])
+    amount_artists = len(visited_entities["artists"])
+    logger.info(f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.')
 
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, is_detailed)
+            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
