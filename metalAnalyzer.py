@@ -6,23 +6,57 @@ from global_helpers import get_dict_key
 style_later = "(later)"
 style_early = "(early)"
 
+POP_PER_100K = 'Bands per 100k people'
+POP_POPULATION = 'Population'
+POP_BANDS = 'Bands'
 
-def raw_analysis(db_handle):
-    country_short = 'NO'
+
+def calc_bands_per_pop(country_short):
+    result = {}
     bands = Band.nodes.filter(country__exact=country_short)
-    country_long = COUNTRY_NAMES[country_short]
-    population = COUNTRY_POPULATION[country_short]
-    bands_per_100k = len(bands) / (int(population) / 100000)
 
-    print(
-        f'{country_long}\n'
-        f'  Bands: {len(bands)}\n'
-        f'  Population: {population}\n'
-        f'  Bands per 100k people: {bands_per_100k:.2f} '
-    )
+    if len(bands) is 0:
+        return result
+
+    population = COUNTRY_POPULATION[country_short]
+
+    if int(population) <= 1:
+        return result
+
+    country_long = COUNTRY_NAMES[country_short]
+    result[country_long] = {}
+    result[country_long][POP_BANDS] = str(len(bands))
+    result[country_long][POP_POPULATION] = population
+    bands_per_100k = len(bands) / (int(population) / 100000)
+    result[country_long][POP_PER_100K] = f'{bands_per_100k:.2f}'
+
+    return result
+
+
+def prettify_calc_result(calc_dict):
+    pretty_string = ""
+    for inner_key, inner_value in calc_dict.items():
+        pretty_string += f'  {inner_key}\n'
+        for outer_key, outer_value in inner_value.items():
+            pretty_string += f'    {outer_key}: {outer_value}\n'
+
+    return pretty_string[:-1]
+
+
+def raw_analysis():
+    bands = Band.nodes.filter()
+    band_per_country = []
+    calc_results = []
 
     for band in bands:
-        pass
+        if band.country not in band_per_country:
+            band_per_country.append(band.country)
+            calc_results.append(calc_bands_per_pop(band.country))
+
+    print(f'The database contains {len(bands)} bands from {len(band_per_country)} countries.')
+
+    for calc_result in calc_results:
+        print(prettify_calc_result(calc_result))
 
 
 def style_stripper(style):

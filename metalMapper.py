@@ -305,7 +305,7 @@ def main(argv):
     elif mode is CrawlMode.AnalyseDatabase:
         db_handle = init_db()
         if db_handle is not None:
-            raw_analysis(db_handle)
+            raw_analysis()
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()
