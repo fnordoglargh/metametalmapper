@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from graph.implNeoModel import *
 from country_helper import *
-from global_helpers import get_dict_key
 
 style_later = "(later)"
 style_early = "(early)"
@@ -44,7 +43,7 @@ def prettify_calc_result(calc_dict):
 
 
 def raw_analysis():
-    bands = Band.nodes.filter()
+    bands = Band.nodes.all()
     band_per_country = []
     calc_results = []
 
@@ -57,6 +56,20 @@ def raw_analysis():
 
     for calc_result in calc_results:
         print(prettify_calc_result(calc_result))
+
+    all_artists = Member.nodes.all()
+    amount_artists = len(all_artists)
+    artist_per_country = []
+
+    for artist in all_artists:
+        if artist.origin not in artist_per_country:
+            artist_per_country.append(artist.origin)
+    print(f'The database contains {amount_artists} artists from {len(artist_per_country)} countries.')
+
+    for key, value in GENDER.items():
+        artist_gender = Member.nodes.filter(gender__exact=key)
+        percentage = (len(artist_gender) / amount_artists) * 100
+        print(f'  {len(artist_gender)} ({percentage:.2f}%) artists are {value}.')
 
 
 def style_stripper(style):
