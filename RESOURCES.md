@@ -14,7 +14,7 @@ https://en.wikipedia.org/wiki/Graph_Modelling_Language
 
 ### Alchemy.js
 
-http://graphalchemist.github.io/Alchemy/#/
+[A graph visualization application for the web.](http://graphalchemist.github.io/Alchemy/#/)
 
 ### sigma.js
 
@@ -33,6 +33,10 @@ display a graph stored in a Gremlin graph database.
 
 ### graph-tool
 https://graph-tool.skewed.de
+
+### Observations
+
+graph-tool and Cytoscape both understand GML and GraphML.
 
 ## Examples
 
