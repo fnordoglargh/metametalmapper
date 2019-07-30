@@ -29,7 +29,7 @@ THREAD_COUNT = 8
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, lock, db_handle, is_detailed=False):
+    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
@@ -52,9 +52,11 @@ class VisitBandThread(threading.Thread):
         self.logger.debug(f"  Init with {self.qsize} bands.")
         self.lock = lock
         self.db_handle = db_handle
-        self.visited_entities = self.db_handle.get_all_links()
+        self.visited_entities = visited_entities
         self.today = date.today()
         self.is_detailed = is_detailed
+        self.band_errors = band_errors
+        self.retries_max = 3
 
     def run(self):
         self.logger.debug("Running " + self.name)
@@ -72,9 +74,19 @@ class VisitBandThread(threading.Thread):
             except Exception:
                 self.logger.exception("Something bad happened while crawling.")
                 crawl_result = -1
+
             # Error case: putting the link back into circulation.
             if crawl_result == -1:
-                self.bandLinks.put(link_band_temp)
+                if link_band_temp not in self.band_errors.keys():
+                    self.band_errors[link_band_temp] = 1
+                else:
+                    self.band_errors[link_band_temp] += 1
+
+                if self.band_errors[link_band_temp] < self.retries_max:
+                    self.bandLinks.put(link_band_temp)
+                else:
+                    self.logger.error(f'Too many retries for {link_band_temp}.')
+
                 continue
             else:
                 self.visited_entities['bands'][link_band_temp] = ""
@@ -741,10 +753,20 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     if len(band_links) < THREAD_COUNT:
         thread_count = len(band_links)
 
+    unrecoverable_bands = {}
+    # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
+    # took longer and longer the larger the database got.
+    time_start = datetime.now()
+    visited_entities = db_handle.get_all_links()
+    time_delta = datetime.now() - time_start
+    amount_bands = len(visited_entities["bands"])
+    amount_artists = len(visited_entities["artists"])
+    logger.info(f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.')
+
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, is_detailed)
+            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
@@ -755,7 +777,19 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for t in threads:
         t.join()
 
-    # pp = pprint.PrettyPrinter(indent=2)
-    # pp.pprint(database)
+    # Print all bands which were not added to the database to the log and save the short links into a file.
+    if len(unrecoverable_bands) > 0:
+        logger.error('The following bands had too many problems and were not added to the database:')
+        actual_time = datetime.now()
+        time_stamp = f'{actual_time.date()}_{actual_time.time().strftime("%H%M%S")}'
+        unrecoverable_file_name = Path(f'links/_bands_with_errors_{time_stamp}')
+        unrecoverable_file = open(unrecoverable_file_name, "w", encoding="utf-8")
+
+        for key, value in unrecoverable_bands.items():
+            logger.error(f'  {key}')
+            unrecoverable_file.write(f'{key}\n')
+
+        unrecoverable_file.close()
+        logger.info(f'The short links of the bands are available in [{unrecoverable_file_name}].')
 
     logger.debug('<<< Crawling all bands')

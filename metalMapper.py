@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import os
 import sys
 import getopt
 import logging
@@ -10,22 +9,10 @@ from metalCrawler import *
 from metalAnalyzer import *
 import json
 from pathlib import Path
-import pprint
 import datetime
 from graph.implNeoModel import *
 from graph.metalGraph import *
-
-link_extension = ".lnks"
-bandsListFileName = "bands" + link_extension
-bandLinkFileName = "bands-{}" + link_extension
-
-FOLDER_LINKS = Path("links")
-FOLDER_DB = Path("databases")
-folders = [FOLDER_LINKS, FOLDER_DB]
-REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
-REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
-REGIONS = {REG_NORDIC[0]: REG_NORDIC,
-           REG_TST[0]: REG_TST}
+from global_helpers import *
 
 countries = {}
 
@@ -118,7 +105,7 @@ def print_regions():
 
 
 def print_help():
-    file_name_a = bandLinkFileName.format('XX')
+    file_name_a = BAND_LINK_FILE_NAME.format('XX')
     # TODO: Move two letter country names to description section.
     print(
         f'Supported modes:\n'
@@ -150,7 +137,7 @@ def flush_queue(country_short):
     :return: A filename with the format ``links/bands-NN.lnks``.
     """
     logger = logging.getLogger('Mapper')
-    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{link_extension}")
+    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{LINK_EXTENSION}")
 
     if bandsQueue.qsize() != 0:
         band_links_file = open(country_filename, "w", encoding="utf-8")
@@ -203,8 +190,8 @@ def main(argv):
     mode = CrawlMode.Error
     filenames = []
 
-    # Check necessary folders exist, try to create them otherwise.
-    for folder in folders:
+    # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
+    for folder in FOLDERS_MAIN:
         if not folder.exists() and not folder.is_dir():
             try:
                 folder.mkdir()
