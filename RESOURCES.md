@@ -23,7 +23,7 @@ http://sigmajs.org/
 ### Ogma
 
 * https://doc.linkurio.us/ogma/latest/index.html
-* Connects to log4j.
+* Connects to neo4j.
     
 ### Graphexp
 
@@ -32,7 +32,7 @@ is a lightweight web interface graph explorer with D3.js to explore and
 display a graph stored in a Gremlin graph database.
 
 ### graph-tool
-https://graph-tool.skewed.de
+[graph-tool](https://graph-tool.skewed.de) needs Linux to run and manual compilation.
 
 ### Observations
 
