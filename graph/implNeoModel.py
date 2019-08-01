@@ -7,6 +7,7 @@ from graph.metalGraph import *
 from country_helper import COUNTRY_NAMES
 import logging
 import settings
+import progressbar
 
 
 class MemberRelationship(StructuredRel):
@@ -141,6 +142,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         else:
             bands = Band.nodes.all()
 
+        progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_relationships = {}
 
         for band in bands:
@@ -169,4 +171,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     if not is_already_connected:
                         band_relationships[band.emid]['relations'].append(linked_band.emid)
 
+            progress_bar.update(len(band_relationships))
+
+        print()
         return band_relationships
