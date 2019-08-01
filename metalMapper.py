@@ -12,6 +12,7 @@ from pathlib import Path
 import datetime
 from graph.implNeoModel import *
 from graph.metalGraph import *
+from graph.exportGraph import *
 from global_helpers import *
 
 countries = {}
@@ -294,6 +295,8 @@ def main(argv):
         if db_handle is not None:
             raw_analysis()
             relationships = db_handle.export_bands_network()
+            export_handle = GraphExportContext(GraphMLExporter())
+            export_handle.export_graph(relationships)
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()
