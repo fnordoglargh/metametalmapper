@@ -145,7 +145,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         for band in bands:
             # We have a band; let's create an entry and see if it's linked no anything.
-            band_relationships[band.emid] = []
+            band_relationships[band.emid] = {
+                'name': band.name,
+                'relations': []
+            }
             # Get the relationships of all members linked to the actual band and see if they're connected to other
             # bands.
             outer_rel_definition = dict(node_class=Member, direction=INCOMING, relation_type=None, model=None)
@@ -161,9 +164,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 for linked_band in all_linked_bands:
                     is_already_connected = band.emid is linked_band.emid
                     is_already_connected |= linked_band.emid in band_relationships.keys()
-                    is_already_connected |= linked_band.emid in band_relationships[band.emid]
+                    is_already_connected |= linked_band.emid in band_relationships[band.emid]['relations']
 
-                    if band.emid != linked_band.emid and linked_band.emid not in band_relationships[band.emid]:
-                        band_relationships[band.emid].append(linked_band.emid)
+                    if not is_already_connected:
+                        band_relationships[band.emid]['relations'].append(linked_band.emid)
 
         return band_relationships
