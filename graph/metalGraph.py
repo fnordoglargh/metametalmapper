@@ -39,6 +39,9 @@ class GraphDatabaseContext:
         """
         return self._strategy.get_all_links_interface()
 
+    def export_bands_network(self, country_short=None):
+        return self._strategy.export_bands_network_interface(country_short)
+
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
 
@@ -72,4 +75,8 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def get_all_links_interface(self) -> dict:
+        pass
+
+    @abstractmethod
+    def export_bands_network_interface(self, country_short):
         pass

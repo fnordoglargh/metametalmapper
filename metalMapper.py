@@ -293,6 +293,7 @@ def main(argv):
         db_handle = init_db()
         if db_handle is not None:
             raw_analysis()
+            relationships = db_handle.export_bands_network()
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()

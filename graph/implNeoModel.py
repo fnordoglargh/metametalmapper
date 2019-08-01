@@ -136,3 +136,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     # label = Label.nodes.get(emid=8)
     # label.delete()
+    def export_bands_network_interface(self, country_short):
+        band_relationships = {}
+        return band_relationships
