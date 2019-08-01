@@ -5,7 +5,8 @@ BAND_LINK_FILE_NAME = "bands-{}" + LINK_EXTENSION
 
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")
-FOLDERS_MAIN = [FOLDER_LINKS, FOLDER_DB]
+FOLDER_EXPORTS = Path("exports")
+FOLDERS_MAIN = [FOLDER_LINKS, FOLDER_DB, FOLDER_EXPORTS]
 
 REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
 REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
