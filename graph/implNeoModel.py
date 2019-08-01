@@ -1,5 +1,6 @@
 from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
     RelationshipFrom, StructuredRel, config, core
+from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
 from graph.metalGraph import *
@@ -134,8 +135,35 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return all_links
 
-    # label = Label.nodes.get(emid=8)
-    # label.delete()
     def export_bands_network_interface(self, country_short):
+        if country_short is not None:
+            bands = Band.nodes.filter(country__exact=country_short)
+        else:
+            bands = Band.nodes.all()
+
         band_relationships = {}
+
+        for band in bands:
+            # We have a band; let's create an entry and see if it's linked no anything.
+            band_relationships[band.emid] = []
+            # Get the relationships of all members linked to the actual band and see if they're connected to other
+            # bands.
+            outer_rel_definition = dict(node_class=Member, direction=INCOMING, relation_type=None, model=None)
+            outer_rel_traversal = Traversal(band, Band.__label__, outer_rel_definition)
+            actual_band_relations = outer_rel_traversal.all()
+
+            # For each band member we get all connections to all bands (including the actual one).
+            for rel in actual_band_relations:
+                inner_rel_definition = dict(node_class=Band, direction=OUTGOING, relation_type=None, model=None)
+                inner_rel_traversal = Traversal(rel, Member.__label__, inner_rel_definition)
+                all_linked_bands = inner_rel_traversal.all()
+
+                for linked_band in all_linked_bands:
+                    is_already_connected = band.emid is linked_band.emid
+                    is_already_connected |= linked_band.emid in band_relationships.keys()
+                    is_already_connected |= linked_band.emid in band_relationships[band.emid]
+
+                    if band.emid != linked_band.emid and linked_band.emid not in band_relationships[band.emid]:
+                        band_relationships[band.emid].append(linked_band.emid)
+
         return band_relationships
