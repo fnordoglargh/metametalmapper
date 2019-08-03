@@ -70,22 +70,23 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     config.DATABASE_URL = f'bolt://{settings.NEO4J_USERNAME}:{settings.NEO4J_PASSWORD}@{settings.NEO4J_IP_ADDRESS}:7687'
 
     def __init__(self):
-        logger = logging.getLogger('NeoModel')
+        self.logger = logging.getLogger('NeoModel')
         error_text = "Cannot connect to Neo4j database."
         # Cheap test to test if the DB is available.
         try:
             Label.nodes.get(emid=-1)
         # No node with 'emid' of -1 available means the DB is up and running.
         except core.DoesNotExist:
+            self.logger.info("Neo4j database is up and running.")
             pass
         except exceptions.AuthError:
-            logger.error(f"{error_text} Check the credentials in the settings.py.")
+            self.logger.error(f"{error_text} Check the credentials in the settings.py.")
             raise
         except exceptions.ServiceUnavailable:
-            logger.error(f"{error_text} Make sure the database is up and running.")
+            self.logger.error(f"{error_text} Make sure the database is up and running.")
             raise
         except Exception:
-            logger.error(f"{error_text}")
+            self.logger.error(f"{error_text}")
             raise
 
     def add_band_interface(self, band_dict):
@@ -142,6 +143,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         else:
             bands = Band.nodes.all()
 
+        self.logger.info('Starting export of band network...')
         progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_relationships = {}
 
