@@ -43,6 +43,7 @@ def prettify_calc_result(calc_dict):
 
 
 def raw_analysis():
+    print('Prepping bands.')
     bands = Band.nodes.all()
     band_per_country = []
     calc_results = []
@@ -57,6 +58,7 @@ def raw_analysis():
     for calc_result in calc_results:
         print(prettify_calc_result(calc_result))
 
+    print('Prepping artists.')
     all_artists = Member.nodes.all()
     amount_artists = len(all_artists)
     artist_per_country = []
@@ -64,6 +66,7 @@ def raw_analysis():
     for artist in all_artists:
         if artist.origin not in artist_per_country:
             artist_per_country.append(artist.origin)
+
     print(f'The database contains {amount_artists} artists from {len(artist_per_country)} countries.')
 
     for key, value in GENDER.items():
