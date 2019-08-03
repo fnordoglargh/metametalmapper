@@ -175,5 +175,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             progress_bar.update(len(band_relationships))
 
+        progress_bar.finish()
         print()
         return band_relationships
