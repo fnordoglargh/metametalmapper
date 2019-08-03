@@ -3,7 +3,7 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
-from graph.metalGraph import *
+from graph.metalGraph import GraphDatabaseStrategy
 from country_helper import COUNTRY_NAMES
 import logging
 import settings
