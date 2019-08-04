@@ -12,3 +12,4 @@ links/
 databases/
 !img/*
 crawler.log*
+exports/
