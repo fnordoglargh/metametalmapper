@@ -36,13 +36,16 @@ def calc_bands_per_pop(country_short) -> dict:
     return result
 
 
-def prettify_calc_result(calc_dict) -> str:
+def prettify_calc_result(calc_dict: dict) -> str:
     """Prettifies the raw data from the dict returned by calc_bands_per_pop.
 
     :param calc_dict: Takes a dict with the format supplied by calc_bands_per_pop.
     :return: A string representation of the given dict.
     """
     pretty_string = ""
+
+    if len(calc_dict) is 0:
+        return pretty_string
 
     for inner_key, inner_value in calc_dict.items():
         pretty_string += f'  {inner_key}\n'
