@@ -6,7 +6,15 @@ POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'
 
 
-def calc_bands_per_pop(country_short):
+def calc_bands_per_pop(country_short) -> dict:
+    """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result will
+        be empty for two error cases: The country population is smaller than one or if there are no bands available in
+        the requested country.
+
+    :param country_short: The country's ISO code to get the data from the database.
+    :return: A dictionary with the the calculated data. Keys to data are the country short and the constants above. The
+        dict will be empty for the above described error cases.
+    """
     result = {}
     bands = Band.nodes.filter(country__exact=country_short)
 
@@ -28,8 +36,14 @@ def calc_bands_per_pop(country_short):
     return result
 
 
-def prettify_calc_result(calc_dict):
+def prettify_calc_result(calc_dict) -> str:
+    """Prettifies the raw data from the dict returned by calc_bands_per_pop.
+
+    :param calc_dict: Takes a dict with the format supplied by calc_bands_per_pop.
+    :return: A string representation of the given dict.
+    """
     pretty_string = ""
+
     for inner_key, inner_value in calc_dict.items():
         pretty_string += f'  {inner_key}\n'
         for outer_key, outer_value in inner_value.items():
@@ -39,6 +53,9 @@ def prettify_calc_result(calc_dict):
 
 
 def raw_analysis():
+    """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the number of
+        countries they are from plus a gender breakdown of all artists.
+    """
     print('Prepping bands.')
     bands = Band.nodes.all()
     band_per_country = []
