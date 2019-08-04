@@ -6,7 +6,6 @@ import logging.config
 import yaml
 from enum import Enum
 from metalCrawler import *
-from metalAnalyzer import *
 import json
 from pathlib import Path
 import datetime
@@ -293,7 +292,7 @@ def main(argv):
     elif mode is CrawlMode.AnalyseDatabase:
         db_handle = init_db()
         if db_handle is not None:
-            raw_analysis()
+            db_handle.raw_analysis()
             relationships = db_handle.export_bands_network()
             export_handle = GraphExportContext(GraphMLExporter())
             export_handle.export_graph(relationships)

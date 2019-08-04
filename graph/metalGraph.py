@@ -1,5 +1,28 @@
 from abc import ABCMeta, abstractmethod
 
+POP_PER_100K = 'Bands per 100k people'
+POP_POPULATION = 'Population'
+POP_BANDS = 'Bands'
+
+
+def prettify_calc_result(calc_dict: dict) -> str:
+    """Prettifies the raw data from the dict returned by calc_bands_per_pop.
+
+    :param calc_dict: Takes a dict with the format supplied by calc_bands_per_pop.
+    :return: A string representation of the given dict.
+    """
+    pretty_string = ""
+
+    if len(calc_dict) is 0:
+        return pretty_string
+
+    for inner_key, inner_value in calc_dict.items():
+        pretty_string += f'  {inner_key}\n'
+        for outer_key, outer_value in inner_value.items():
+            pretty_string += f'    {outer_key}: {outer_value}\n'
+
+    return pretty_string[:-1]
+
 
 class GraphDatabaseContext:
 
@@ -42,6 +65,12 @@ class GraphDatabaseContext:
     def export_bands_network(self, country_short=None):
         return self._strategy.export_bands_network_interface(country_short)
 
+    def calc_bands_per_pop(self, country_short) -> dict:
+        return self._strategy.calc_bands_per_pop_interface(country_short)
+
+    def raw_analysis(self):
+        return self._strategy.raw_analysis_interface()
+
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
 
@@ -79,4 +108,12 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def export_bands_network_interface(self, country_short):
+        pass
+
+    @abstractmethod
+    def calc_bands_per_pop_interface(self, country_short) -> dict:
+        pass
+
+    @abstractmethod
+    def raw_analysis_interface(self):
         pass
