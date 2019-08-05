@@ -137,9 +137,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return all_links
 
-    def export_bands_network_interface(self, country_short):
-        if country_short is not None:
-            bands = Band.nodes.filter(country__exact=country_short)
+    def export_bands_network_interface(self, country_shorts: list):
+        if len(country_shorts) is not 0:
+            bands = Band.nodes.filter(country__in=country_shorts)
         else:
             bands = Band.nodes.all()
 

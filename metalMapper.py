@@ -117,7 +117,11 @@ def print_help():
         f'  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)\n'
         f'    and uses the standard file name together with the ID to write a\n'
         f'    file with all band links from the given country. See list below.\n'
-        # f'  -y: Prints a report about the genres of a database.\n'
+        f'  -y: Prints a raw data report of the active database and exports a GraphML file\n'
+        f'    of all bands (including their implicit connections through artists).\n'
+        f'  -z: Does the same as "-y" but expects a list of 1 to n countries or regions.\n'
+        f'    The list items must always be separated by commas without spaces or be '
+        f'    enclosed by quotation-marks.\n'
         f'  -f <filename>: filename is a parameter to override the standard file name\n'
         f'    for -b or -c and is used either to write an output file or to read an\n'
         f'    input file.\n'
@@ -167,7 +171,7 @@ def init_db():
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "dbac:hf:tylr:")
+        opts, args = getopt.getopt(argv, "dbac:hf:tyz:lr:")
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -221,6 +225,9 @@ def main(argv):
             filenames.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
         elif opt == '-y':
+            mode = CrawlMode.AnalyseDatabase
+        elif opt == '-z':
+            country_links = arg.upper().split(',')
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-l':
             mode = CrawlMode.DisplayInfo
@@ -289,13 +296,29 @@ def main(argv):
             if db_handle is not None:
                 # TODO: Get the country from filename and pass as parameter.
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
-    elif mode is CrawlMode.AnalyseDatabase:
+    elif mode in [CrawlMode.AnalyseDatabase]:
         db_handle = init_db()
-        if db_handle is not None:
-            db_handle.raw_analysis()
-            relationships = db_handle.export_bands_network()
-            export_handle = GraphExportContext(GraphMLExporter())
-            export_handle.export_graph(relationships)
+
+        if db_handle is None:
+            sys.exit(-9)
+
+        cleaned_shorts = []
+
+        for short in country_links:
+            stripped_short = short.rstrip().strip()
+            if stripped_short in REGIONS.keys():
+                region_elements = REGIONS[stripped_short][2]
+                for country in region_elements:
+                    cleaned_shorts.append(country)
+            elif stripped_short in COUNTRY_NAMES.keys():
+                cleaned_shorts.append(stripped_short)
+            else:
+                logger.error(f'Ignoring {stripped_short}; not found in countries or regions.')
+
+        db_handle.raw_analysis()
+        relationships = db_handle.export_bands_network(cleaned_shorts)
+        export_handle = GraphExportContext(GraphMLExporter())
+        export_handle.export_graph(relationships)
     elif mode is CrawlMode.DisplayInfo:
         countries = print_countries(4)
         print()
