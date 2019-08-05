@@ -61,9 +61,12 @@ class GraphMLExporter(GraphExportStrategy):
         # The second time we write the connections. This might seem odd but Cytoscape does not like the connections
         # between the nodes.
         counter = 0
+
         for node, payload in data_dict.items():
             for relation in payload['relations']:
                 export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
                 counter += 1
+
         export_file.write(footer)
         export_file.close()
+        self.logger.info(f'Band network available as "{db_path}".')
