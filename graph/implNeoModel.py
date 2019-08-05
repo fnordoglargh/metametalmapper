@@ -180,13 +180,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         return band_relationships
 
     def calc_bands_per_pop_interface(self, country_short) -> dict:
-        """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result will
-            be empty for two error cases: The country population is smaller than one or if there are no bands available in
-            the requested country.
+        """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result
+            will be empty for two error cases: The country population is smaller than one or if there are no bands
+            available in the requested country.
 
         :param country_short: The country's ISO code to get the data from the database.
-        :return: A dictionary with the the calculated data. Keys to data are the country short and the constants above. The
-            dict will be empty for the above described error cases.
+        :return: A dictionary with the the calculated data. Keys to data are the country short and the constants above.
+            The dict will be empty for the above described error cases.
         """
         result = {}
         bands = Band.nodes.filter(country__exact=country_short)
@@ -209,8 +209,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         return result
 
     def raw_analysis_interface(self):
-        """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the number of
-            countries they are from plus a gender breakdown of all artists.
+        """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the
+            number of countries they are from plus a gender breakdown of all artists.
         """
         print('Prepping bands.')
         bands = Band.nodes.all()
