@@ -151,6 +151,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             # We have a band; let's create an entry and see if it's linked no anything.
             band_relationships[band.emid] = {
                 'name': band.name,
+                'country': COUNTRY_NAMES[band.country],
                 'relations': []
             }
             # Get the relationships of all members linked to the actual band and see if they're connected to other

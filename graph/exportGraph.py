@@ -34,7 +34,8 @@ class GraphMLExporter(GraphExportStrategy):
             f'<graphml xmlns="http://graphml.graphdrawing.org/xmlns"\n'
             f'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
             f'xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">\n'
-            f'<key id="d0" for="node" attr.name="band_name" attr.type="string"/>\n'
+            f'<key id="d0" for="node" attr.name="label" attr.type="string"/>\n'
+            f'<key id="d1" for="node" attr.name="country" attr.type="string"/>\n'
             f'<graph id="G" edgedefault="undirected">\n'
         )
 
@@ -56,7 +57,10 @@ class GraphMLExporter(GraphExportStrategy):
             if '&' in band_name:
                 band_name = band_name.replace('&', '&amp;')
 
-            export_file.write(f'<node id="n{node}"><data key="d0">{band_name}</data></node>\n')
+            export_file.write(
+                f'<node id="n{node}"><data key="d0">{band_name}</data>'
+                f'<data key="d1">{payload["country"]}</data></node>\n'
+            )
 
         # The second time we write the connections. This might seem odd but Cytoscape does not like the connections
         # between the nodes.
