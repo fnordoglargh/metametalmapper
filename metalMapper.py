@@ -13,6 +13,7 @@ from graph.implNeoModel import *
 from graph.metalGraph import *
 from graph.exportGraph import *
 from global_helpers import *
+from country_helper import REGIONS
 
 countries = {}
 

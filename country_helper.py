@@ -1,5 +1,12 @@
 from pathlib import Path
 
+REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
+REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
+REGIONS = {
+    REG_NORDIC[0]: REG_NORDIC,
+    REG_TST[0]: REG_TST
+}
+
 # Hardcoded file paths for the countries.
 COUNTRY_NAMES_FILE_PATH = Path('countries.csv')
 COUNTRY_POPULATION_FILE_PATH = Path('populations.csv')
