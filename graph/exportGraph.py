@@ -56,6 +56,10 @@ class GraphMLExporter(GraphExportStrategy):
 
             if '&' in band_name:
                 band_name = band_name.replace('&', '&amp;')
+            elif '\'' in band_name:
+                band_name = band_name.replace('\'', '&apos;')
+            elif '"' in band_name:
+                band_name = band_name.replace('"', '&quot;')
 
             export_file.write(
                 f'<node id="n{node}"><data key="d0">{band_name}</data>'
