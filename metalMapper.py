@@ -13,7 +13,7 @@ from graph.implNeoModel import *
 from graph.metalGraph import *
 from graph.exportGraph import *
 from global_helpers import *
-from country_helper import REGIONS
+from country_helper import REGIONS, print_regions, print_countries
 
 countries = {}
 
@@ -27,82 +27,6 @@ class CrawlMode(Enum):
     DisplayInfo = 4
     CrawlRegion = 5
     Test = 6
-
-
-def load_countries():
-    """Loads the file with ISO country codes and their names into a dictionary. The ISO code acts as the key.
-
-    :return: True of false depending on the success.
-    """
-    if len(countries) is not 0:
-        return True
-
-    country_path = Path("countries.csv")
-
-    if not country_path.is_file():
-        return False
-
-    with country_path.open(encoding="utf-8") as f:
-        line = f.readline().rstrip()
-        while line is not "":
-            split_line = line.split(';')
-            countries[split_line[0]] = split_line[1]
-            line = f.readline().rstrip()
-
-    return True
-
-
-def print_countries(columns_count):
-    """Uses ``crawl_countries`` to get a list of all available countries and their ISO codes from MA. The list is then
-    used to prepare a formatted printable string with all countries.
-
-    :param columns_count: The amount of columns for the formatted printout. The column width depends on the length
-    of the longest country name. A count of three or four should work fine.
-    :return: A string with all ISO country codes and their names neatly formatted in columns.
-    """
-    if type(columns_count) is not int:
-        print("Cannot list countries with parameter type other than int.")
-        return
-    elif columns_count < 1:
-        print("Cannot list countries with columns count smaller than one. Defaulting to one.")
-        columns_count = 1
-
-    longest_country = 0
-    country_links = crawl_countries()
-
-    for key, value in countries.items():
-        if len(value) > longest_country and key in country_links:
-            longest_country = len(value)
-
-    line_format = "[{}] {:" + str(longest_country) + "}"
-    counter = 0
-    actual_line = "    "
-
-    for key, country_name in countries.items():
-        if key in country_links:
-            actual_line += line_format.format(key, country_name)
-            counter += 1
-            if counter is columns_count:
-                counter = 0
-                actual_line += '\n    '
-
-    return actual_line
-
-
-def print_regions():
-    """Prepares a string with all known regions from inside this file and their countries.
-
-    :return: String with all regions and their containing countries.
-    """
-    lines = ''
-    for key, value in REGIONS.items():
-        lines += f'  [{value[0]}] {value[1]}: '
-        for country_key in value[2]:
-            lines += countries[country_key] + ', '
-        lines = lines[0:lines.rfind(',')]
-        lines += '\n'
-
-    return lines
 
 
 def print_help():
@@ -184,8 +108,6 @@ def main(argv):
     with open('loggerConfig.yaml', 'r') as log_config:
         log_config = yaml.safe_load(log_config.read())
         logging.config.dictConfig(log_config)
-
-    load_countries()
 
     # Change to a terminal size in which everything fits.
     os.system('mode con: cols=153 lines=9999')
@@ -321,10 +243,10 @@ def main(argv):
         export_handle = GraphExportContext(GraphMLExporter())
         export_handle.export_graph(relationships)
     elif mode is CrawlMode.DisplayInfo:
-        countries = print_countries(4)
+        country_string = print_countries(4, crawl_countries())
         print()
         print('Available countries:')
-        print(countries)
+        print(country_string)
         regions = print_regions()
         print()
         print('Available regions:')
