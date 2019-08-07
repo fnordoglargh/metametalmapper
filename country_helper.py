@@ -1,9 +1,13 @@
 from pathlib import Path
 
 REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
+REG_EU_WEST = ("WE", "Western Europe", ["BE", "FR", "IE", "LU", "MC", "NL", "GB"])
+REG_EU_CENTRAL = ("CE", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH"])
 REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
 REGIONS = {
     REG_NORDIC[0]: REG_NORDIC,
+    REG_EU_WEST[0]: REG_EU_WEST,
+    REG_EU_CENTRAL[0]: REG_EU_CENTRAL,
     REG_TST[0]: REG_TST
 }
 
