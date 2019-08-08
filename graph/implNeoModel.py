@@ -154,6 +154,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 'country': COUNTRY_NAMES[band.country],
                 'relations': []
             }
+
             # Get the relationships of all members linked to the actual band and see if they're connected to other
             # bands.
             outer_rel_definition = dict(node_class=Member, direction=INCOMING, relation_type=None, model=None)
@@ -206,6 +207,36 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         result[country_long][POP_POPULATION] = population
         bands_per_100k = len(bands) / (int(population) / 100000)
         result[country_long][POP_PER_100K] = f'{bands_per_100k:.2f}'
+
+        unique_members = []
+        genders = {}
+
+        for gender in GENDER:
+            genders[gender] = 0
+
+        progress_bar = progressbar.ProgressBar(max_value=len(bands))
+        band_counter = 0
+        member_counter = 0
+        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender statistics.')
+
+        for band in bands:
+            # Get the relationships of all members linked to the actual band and see if they're connected to other
+            # bands.
+            for member in band.current_lineup:
+                if member.emid not in unique_members:
+                    unique_members.append(member.emid)
+                    genders[member.gender] += 1
+                    member_counter += 1
+
+            band_counter += 1
+            progress_bar.update(band_counter)
+
+        progress_bar.finish()
+        result[country_long]['Artists'] = member_counter
+
+        for key, value in genders.items():
+            percentage = (value / member_counter) * 100
+            result[country_long][f'  {GENDER[key]}'] = f'{value} ({percentage:.2f}%).'
 
         return result
 
