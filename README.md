@@ -11,16 +11,23 @@ interesting ways to visualize the _Metal Archives'_ data:
 ## Highlights
 
 * Generates lists for bands to crawl based on countries, regions or the entire database.
-* Extracts information on bands, their band members and releases.
-* Links the information with the ME IDs of the entities.
-* Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis. 
+    It also accepts handcrafted files with bands of your choice.
+* Extracts information on bands, their band members and releases from MA.
+* Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
+    The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
+    1000 nodes.
+* Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools. 
 
 ## Installation
+
+### Python3
+
+A Python3 installation >= 3.6 is needed to execute Metal Mapper.
 
 ### Neo4j
 
 Data is stored in a [Neo4j database](https://neo4j.com/product/).
-Download and install the [desktop page](https://neo4j.com/download/). 
+Download and install the [desktop version](https://neo4j.com/download/). 
 
 ### Library Hack
 
@@ -33,6 +40,10 @@ looks like this:
     
 Needs to import `rfc3986` to function.
 
+### Metal Mapper
+
+Clone this repo and execute `python metalMapper.py` (see _How to use_ section). 
+
 ## Basics
 
 ### Countries
@@ -44,8 +55,8 @@ A list of all countries with at least one band is shown on calling with the swit
 
 ### Regions
 
-A _region_ is a group of countries defined inside the main python file. Available regions can shown on calling 
-with the switch `-l`.
+A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
+are shown on calling with the switch `-l`.
 
 A popular region is are the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
 Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
@@ -63,9 +74,10 @@ how to use them.
 
 ### Use Case: Crawl Norway
 
-1. Get all Norwegian bands: `metalMaper.py -c NO`
-2. Crawl all bands in Norway: `metalMaper.py -b -f links/bands-NO.lnks`
+1. Get all Norwegian bands: `metalMapper.py -c NO`
+2. Crawl all bands in Norway: `metalMapper.py -b -f links/bands-NO.lnks`
 3. Open Neo4j Desktop and look at the graph.
+4. Print raw analysis in the terminal and export a `.graphml` file: `metalMapper.py -z NO`
 
 ### Bootstrapping: Crawl _all_ available countries
 
