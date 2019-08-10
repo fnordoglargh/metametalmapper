@@ -237,6 +237,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         self.logger.debug('Prepping bands.')
 
+        # Two sets of bands are needed: First the bands from the requested countries and second all bands.
         if len(country_shorts) is not 0:
             bands = Band.nodes.filter(country__in=country_shorts)
             all_bands = Band.nodes.all()

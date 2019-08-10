@@ -49,7 +49,9 @@ Clone this repo and execute `python metalMapper.py` (see _How to use_ section).
 ### Countries
 
 Countries on MA and this tool are represented in [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-two letter format. Whenever you read _NN_ in context with countries, a two letter country code is meant.
+two letter format. Whenever you read _NN_ in context with countries, a two letter country 
+code is meant. Two special countries exist: XX (international) and YY (unknown).
+
 
 A list of all countries with at least one band is shown on calling with the switch `-l`.
 
@@ -58,7 +60,7 @@ A list of all countries with at least one band is shown on calling with the swit
 A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
 are shown on calling with the switch `-l`.
 
-A popular region is are the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
+A popular region is the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
 Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
 
 ### Graph Databases
@@ -70,12 +72,13 @@ like what pseudonym a member used in a certain band or what instruments were pla
 ## How to use
 
 `metalMaper.py`, when called without switches, shows a list of compiler switches and some hints
-how to use them.
+how to use them. The program does not have an interactive mode. Every function (but the
+bootstrapping) needs data from previous runs.
 
-### Use Case: Crawl Norway
+### Use Case: Crawl and Analyse Norway
 
-1. Get all Norwegian bands: `metalMapper.py -c NO`
-2. Crawl all bands in Norway: `metalMapper.py -b -f links/bands-NO.lnks`
+1. Get all known Norwegian band links from MA: `metalMapper.py -c NO`
+2. Crawl all Norwegian bands: `metalMapper.py -b -f links/bands-NO.lnks`
 3. Open Neo4j Desktop and look at the graph.
 4. Print raw analysis in the terminal and export a `.graphml` file: `metalMapper.py -z NO`
 
@@ -94,7 +97,8 @@ with at least one band entry.
     Nami/3540321763
     Persefone/12779
     ```
-    Together with `https://www.metal-archives.com/bands/` a fully fledged link to every band can be generated.
+    Together with `https://www.metal-archives.com/bands/` a fully fledged link to every band can be generated
+    whenever it is needed.
     
 ### Boostrapping at smaller scale: Crawl a country or a region
 
@@ -115,14 +119,17 @@ Use `settings.py` to set the following properties:
 
 #### Nodes
 
+Metal Mapper defines the following nodes and properties.
+
 ##### Band
 
 A _band_ is a node connected to members through a `played_in` relationship and has the 
 following properties:
 
-* `emid`: The band id used on MA.
+* `emid`: The band ID used on MA.
 * `name`: Name of the band.
-* `country`: The country of origin as a two letter ISO code. Uses `COUNTRIES`.
+* `country`: The country of origin as a two letter ISO code. Uses `COUNTRY_NAMES` from `country_helper.py`
+    to ensure validity.
 * `locations`: Locations where the bands was active in.
 * `status`: Short form of the `BAND_STATUS`. One of six possible values.
 * `formed`: MA only uses years in for dates on the band page. To get it somehow right,
@@ -130,20 +137,34 @@ following properties:
 * `themes`: Themes used in the lyrics.
 * `genres`: Genres the band played. This could be a relationship or a collection.
     Need to learn a bit more about the string and how to cut it up.
-* `current_lineup`: Relationship (PLAYED_IN) from a Member.
+* `current_lineup`: Relationship (PLAYED_IN) from a `Member`.
+* `releases`: Relationship (RECORDED) from a `Release`.
 
 ##### Member
 
 A _member_ is a node connected to bands through a `played_in` relationship and has the 
 following properties:
 
-* `emid`:  The artist id used on MA.
+* `emid`:  The artist ID used on MA.
 * `name`: Name of the band member. Note that pseudonyms or instruments are part of the 
     `MemberRelationship`.
 * `age`: Age of the member at the time of crawling. It might contain -1 as a value if the age is
     unknown.
 * `gender`: Gender from `GENDER` dictionary.
 * `played_in`: Relationship to a band.
+
+##### Release
+
+A _release_ is a node connected to a band through a _recorded_ relationship and has the following
+properties:
+
+* `emid`: The release ID used on MA.
+* `name`: Name of the release.
+* `type`: The type of teh release. Validity ensured by `RELEASE_TYPES`.
+* `rating`: The rating of the release (in percent). If it has not been rated on MA, the value will
+    be set with -1.
+* `release_date`: The _year_ when the release first was available.
+* `recorded_by`: Relationship to a band.
 
 #### Relationships
 
@@ -161,7 +182,7 @@ The Keys are used inside the database and line up with the value which is used i
     'F': 'Female',
     'U': 'Unknown/other'
     
-##### COUNTRIES
+##### COUNTRY_NAMES
 
     ...
     'NF': 'Norfolk Island',
@@ -177,6 +198,20 @@ The Keys are used inside the database and line up with the value which is used i
     'S': 'Split-up',
     'U': 'Unknown',
     'D': 'Disputed'
+    
+##### RELEASE_TYPES
+
+    'D': 'Demo',
+    'F': 'Full-length',
+    'S': 'Single',
+    'T': 'Split',
+    'L': 'Live album',
+    'C': 'Compilation',
+    'E': 'EP',
+    'V': 'Video',
+    'B': 'Boxed set',
+    'P': 'Split video',
+    'O': 'Collaboration'
 
 #### Screenshots
 
