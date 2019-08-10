@@ -148,32 +148,22 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         band_relationships = {}
 
         for band in bands:
-            # We have a band; let's create an entry and see if it's linked no anything.
+            # We have a band; let's create an entry and see if it's linked to anything.
             band_relationships[band.emid] = {
                 'name': band.name,
                 'country': COUNTRY_NAMES[band.country],
                 'relations': []
             }
 
-            # Get the relationships of all members linked to the actual band and see if they're connected to other
-            # bands.
-            outer_rel_definition = dict(node_class=Member, direction=INCOMING, relation_type=None, model=None)
-            outer_rel_traversal = Traversal(band, Band.__label__, outer_rel_definition)
-            actual_band_relations = outer_rel_traversal.all()
-
-            # For each band member we get all connections to all bands (including the actual one).
-            for rel in actual_band_relations:
-                inner_rel_definition = dict(node_class=Band, direction=OUTGOING, relation_type=None, model=None)
-                inner_rel_traversal = Traversal(rel, Member.__label__, inner_rel_definition)
-                all_linked_bands = inner_rel_traversal.all()
-
-                for linked_band in all_linked_bands:
-                    is_already_connected = band.emid is linked_band.emid
-                    is_already_connected |= linked_band.emid in band_relationships.keys()
-                    is_already_connected |= linked_band.emid in band_relationships[band.emid]['relations']
+            # Iterate over all members linked to the actual band and see if they're connected to other bands.
+            for member in band.current_lineup:
+                for outer_band in member.played_in:
+                    is_already_connected = band.emid is outer_band.emid
+                    is_already_connected |= outer_band.emid in band_relationships.keys()
+                    is_already_connected |= outer_band.emid in band_relationships[band.emid]['relations']
 
                     if not is_already_connected:
-                        band_relationships[band.emid]['relations'].append(linked_band.emid)
+                        band_relationships[band.emid]['relations'].append(outer_band.emid)
 
             progress_bar.update(len(band_relationships))
 
