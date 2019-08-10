@@ -240,26 +240,61 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
-    def raw_analysis_interface(self):
+    def raw_analysis_interface(self, country_shorts: list):
         """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the
             number of countries they are from plus a gender breakdown of all artists.
         """
-        print('Prepping bands.')
-        bands = Band.nodes.all()
-        band_per_country = []
+
+        self.logger.debug('Prepping bands.')
+
+        if len(country_shorts) is not 0:
+            bands = Band.nodes.filter(country__in=country_shorts)
+            all_bands = Band.nodes.all()
+        else:
+            bands = Band.nodes.all()
+            all_bands = bands
+
+        bands_per_country = []
+        all_bands_per_country = []
         calc_results = []
 
         for band in bands:
-            if band.country not in band_per_country:
-                band_per_country.append(band.country)
+            if band.country not in bands_per_country:
+                bands_per_country.append(band.country)
                 calc_results.append(self.calc_bands_per_pop_interface(band.country))
 
-        print(f'The database contains {len(bands)} bands from {len(band_per_country)} countries.')
+        if len(country_shorts) > 0:
+            for band in all_bands:
+                if band.country not in all_bands_per_country:
+                    all_bands_per_country.append(band.country)
+        else:
+            all_bands_per_country = bands_per_country
+
+        report_str = f'This raw analysis contains data of {len(bands)} bands from {len(bands_per_country)} countries. '
+
+        if bands is not all_bands:
+            report_str += f'The database contains {len(all_bands)} from {len(all_bands_per_country)} countries.'
+        else:
+            report_str += 'That is the entire database.'
+
+        print(report_str)
+        country_diff = set(country_shorts) - set(bands_per_country)
+
+        if len(country_diff) > 0:
+            diff_report = 'No bands were found for: '
+
+            for country in country_diff:
+                diff_report += COUNTRY_NAMES[country]
+
+            if len(country_diff) > 1:
+                diff_report = diff_report[:-2]
+
+            print(diff_report)
 
         for calc_result in calc_results:
             print(prettify_calc_result(calc_result))
 
-        print('Prepping artists.')
+        self.logger.debug('Prepping artists.')
         all_artists = Member.nodes.all()
         amount_artists = len(all_artists)
         artist_per_country = []

@@ -238,7 +238,17 @@ def main(argv):
             else:
                 logger.error(f'Ignoring {stripped_short}; not found in countries or regions.')
 
-        db_handle.raw_analysis()
+        country_info = 'Generating report for: '
+
+        for clean_short in cleaned_shorts:
+            country_info += f'{COUNTRY_NAMES[clean_short]}, '
+
+        if len(cleaned_shorts) is 0:
+            print(f'{country_info} Entire database.')
+        else:
+            print(country_info[:-2])
+
+        db_handle.raw_analysis(cleaned_shorts)
         relationships = db_handle.export_bands_network(cleaned_shorts)
         export_handle = GraphExportContext(GraphMLExporter())
         export_handle.export_graph(relationships)
