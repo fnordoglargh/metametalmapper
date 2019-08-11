@@ -44,7 +44,18 @@ recorded by Mayhem and Zyklon-B. Just put these short links into a file and try 
 
 ## India
 
-The entire metal scene of [India](img/india.svg) in one picture. 
+The entire metal scene of [India](img/india.svg) in one picture. Following is the analysis of Indian
+bands. 
+
+    This raw analysis contains data of 219 bands from 1 countries. That is the entire database.
+      India
+        Bands: 219
+        Population: 1366417754
+        Bands per 100k people: 0.02
+        Artists: 1165
+          Male: 1155 (99.14%).
+          Female: 8 (0.69%).
+          Unknown/other: 2 (0.17%).
 
 ## Metallica and Satyricon
 
@@ -58,7 +69,6 @@ interesting enough to mention.
 ### Query 
 
 `MATCH (n:Band)--(m:Member) WHERE n.emid IN [959, 72, 125 ,341] RETURN n, m`
-
 
 ### Short links
 

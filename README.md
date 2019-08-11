@@ -80,7 +80,7 @@ bootstrapping) needs data from previous runs.
 ### Use Case: Crawl and Analyse Norway
 
 1. Get all known Norwegian band links from MA: `metalMapper.py -c NO`
-2. Crawl all Norwegian bands: `metalMapper.py -b -f links/bands-NO.lnks`
+2. Crawl all Norwegian bands: `metalMapper.py -b -f links/NO.lnks`
 3. Open Neo4j Desktop and look at the graph.
 4. Print raw analysis in the terminal and export a `.graphml` file: `metalMapper.py -z NO`
 
@@ -91,7 +91,7 @@ Calling with the switch `-a` will:
 1. Generate a list of all countries (from MA's [by country page](https://www.metal-archives.com/browse/country))
 with at least one band entry.
 2. Extract the link for every band in every country and save the links in a folder with the same name.
-    The name of the files follows this simple scheme: `bands-NN.lnks` where NN is the two letter short form.
+    The name of the files follows this simple scheme: `NN.lnks` where NN is the two letter short form.
     The contents of an `.lnks` file looks like this:
     ```
     Akollonizer/3540362756
@@ -130,14 +130,20 @@ name like `_bands_with_errors_{time_stamp}`. The resulting files contain short b
 simply remove the line from the file. In case of defects drop me a message or fix it yourself and issue
 a pull request.
 
+### Analysis
+
+Two switches are available to analyze data and export `.graphml` networks:
+
+* `-y`: Analyze the entire database.
+* `-z NN`: Analyze only the given country.
+* `-z NN1,NN2,RR1`: Analyze all given countries and/or regions.  
+
+
 ## Known Issues
 
-* The instruments of artists are a string separated by commas. This might be
-    inconvenient for any analysis on the individual instruments.
+* `PLAYED_IN` relationships are be overwritten with the last found one. Means an artists which was a regular
+    band member and helped out live in the past will be considered to be "only" to be a `PL` (past (live)). 
 * The hierarchy of the instrument structure for artists may be in the wrong order.
-* Crawling the whole database of almost 130.000 bands will take a very long time (one or two days). 
-    You will probably run out of memory before that. There is no flushing of intermittent results. Which 
-    brings us to the...
 
 ## Backlog
 

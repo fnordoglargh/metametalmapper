@@ -264,7 +264,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         report_str = f'This raw analysis contains data of {len(bands)} bands from {len(bands_per_country)} countries. '
 
         if bands is not all_bands:
-            report_str += f'The database contains {len(all_bands)} from {len(all_bands_per_country)} countries.'
+            report_str += f'The database contains {len(all_bands)} bands from {len(all_bands_per_country)} countries.'
         else:
             report_str += 'That is the entire database.'
 
