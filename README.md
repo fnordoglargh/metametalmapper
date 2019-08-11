@@ -19,7 +19,7 @@ interesting ways to visualize the _Metal Archives'_ data:
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Head over to [examples](EXAMPLES.md) to see some networks.
 
-## Installation
+## Getting Started
 
 ### Python3
 
@@ -28,7 +28,8 @@ A Python3 installation >= 3.6 is needed to execute Metal Mapper.
 ### Neo4j
 
 Data is stored in a [Neo4j database](https://neo4j.com/product/).
-Download and install the [desktop version](https://neo4j.com/download/). 
+Download and install the [desktop version](https://neo4j.com/download/). Fire it up and create a database.
+The credentials need to go into `settings.py`.
 
 ### Library Hack
 
@@ -39,7 +40,7 @@ looks like this:
 
     url = rfc3986.uri_reference(url).unsplit()
     
-Needs to import `rfc3986` to function.
+This hack needs to import `rfc3986` to function.
 
 ### Metal Mapper
 
@@ -108,20 +109,26 @@ If you're not interested in getting the band links for all countries you can eit
 * start with the switch `-c NN` to crawl all bands in exactly one country **or** 
 * call with `-r NN` where NN is the key of the region you want to crawl.
 
+### Crawl bands
+
+Two options are available to crawl bands from the above generated link files:
+1. `-b`: Crawls _every_ band from all files found in `./links`. This mode is not recommended. It will take
+    a long time finish. Better use
+2.  `-b -f filename`: Crawls the bands in the given file.
+
+Data is applied immediately to the database and won't be overwritten.
+
+
 All data is stored in a [database](DATABASES.md).
 
+#### Error cases
 
-#### Screenshots
-
-Connection between some Norwegian black metal bands through their band members. A lot of band members
-are not connected to anything else because only the shown bands were visited.
-
-![Connection between some Norwegian black metal bands](img/intro_graph_1.png)
-
-One of the next milestones will be adding details like releases and which labels they were releases on.
-The screenshot shows a few nodes from prototyping.
-
-![Prototype including labels and Albums](img/intro_graph_2.png)
+A band might encounter unrecoverable errors while crawling. It might happen if the band does not exist
+or the network connection breaks down. Unrecoverable bands will be saved in a file in `./links` and a 
+name like `_bands_with_errors_{time_stamp}`. The resulting files contain short band links (as the other 
+`.lnks` files) and can be used for crawling. If you notice from the log that a band was removed from MA
+simply remove the line from the file. In case of defects drop me a message or fix it yourself and issue
+a pull request.
 
 ## Known Issues
 
@@ -134,4 +141,9 @@ The screenshot shows a few nodes from prototyping.
 
 ## Backlog
 
-* Memorize which bands wre already visited (e.g. for long runs or when it crashes). 
+* Allow fine tuning the band relationships (e.g. don't connect bands through artists who were only part
+    of the live line-up).
+* Implement a flag to overwrite data unconditionally.
+* Implement option to overwrite data based on how old it is.
+* Connecting releases with labels. The screenshot shows a few nodes from prototyping.
+![Prototype including labels and Albums](img/intro_graph_2.png)
