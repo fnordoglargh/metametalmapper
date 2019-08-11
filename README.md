@@ -16,7 +16,8 @@ interesting ways to visualize the _Metal Archives'_ data:
 * Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
     The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
     1000 nodes.
-* Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools. 
+* Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
+* Head over to [examples](EXAMPLES.md) to see some networks.
 
 ## Installation
 
