@@ -219,6 +219,8 @@ def main(argv):
             if db_handle is not None:
                 # TODO: Get the country from filename and pass as parameter.
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
+        else:
+            logger.error("No bands are available. Make sure that you crawled a country or regions before -b is used.")
     elif mode in [CrawlMode.AnalyseDatabase]:
         db_handle = init_db()
 
