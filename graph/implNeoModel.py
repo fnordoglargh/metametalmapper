@@ -198,7 +198,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         bands_per_100k = len(bands) / (int(population) / 100000)
         result[country_long][POP_PER_100K] = f'{bands_per_100k:.2f}'
 
-        unique_members = []
+        unique_members = {}
         genders = {}
 
         for gender in GENDER:
@@ -212,8 +212,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for band in bands:
             # Get the relationships of all members linked to the actual band.
             for member in band.current_lineup:
-                if member.emid not in unique_members:
-                    unique_members.append(member.emid)
+                if member.emid not in unique_members.keys():
+                    unique_members[member.emid] = ""
                     genders[member.gender] += 1
                     member_counter += 1
 
