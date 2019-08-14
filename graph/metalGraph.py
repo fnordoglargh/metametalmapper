@@ -65,8 +65,8 @@ class GraphDatabaseContext:
     def export_bands_network(self, country_shorts=None):
         return self._strategy.export_bands_network_interface(country_shorts)
 
-    def calc_bands_per_pop(self, country_short) -> dict:
-        return self._strategy.calc_bands_per_pop_interface(country_short)
+    def calc_bands_per_pop(self, country_short, bands) -> dict:
+        return self._strategy.calc_bands_per_pop_interface(country_short, bands)
 
     def raw_analysis(self, country_shorts=None):
         return self._strategy.raw_analysis_interface(country_shorts)
@@ -111,7 +111,7 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def calc_bands_per_pop_interface(self, country_short) -> dict:
+    def calc_bands_per_pop_interface(self, country_short, bands) -> dict:
         pass
 
     @abstractmethod

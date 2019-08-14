@@ -171,17 +171,17 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         print()
         return band_relationships
 
-    def calc_bands_per_pop_interface(self, country_short) -> dict:
+    def calc_bands_per_pop_interface(self, country_short, bands) -> dict:
         """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result
             will be empty for two error cases: The country population is smaller than one or if there are no bands
             available in the requested country.
 
         :param country_short: The country's ISO code to get the data from the database.
+        :param bands: A list of bands used as basis for the calculation for the given country.
         :return: A dictionary with the the calculated data. Keys to data are the country short and the constants above.
             The dict will be empty for the above described error cases.
         """
         result = {}
-        bands = Band.nodes.filter(country__exact=country_short)
 
         if len(bands) is 0:
             return result
@@ -210,8 +210,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender statistics.')
 
         for band in bands:
-            # Get the relationships of all members linked to the actual band and see if they're connected to other
-            # bands.
+            # Get the relationships of all members linked to the actual band.
             for member in band.current_lineup:
                 if member.emid not in unique_members:
                     unique_members.append(member.emid)
@@ -233,43 +232,42 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def raw_analysis_interface(self, country_shorts: list):
         """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the
             number of countries they are from plus a gender breakdown of all artists.
+
+        :param country_shorts: The list either contains the ISO names of countries to analyse or it is empty. In that
+            case we take all countries of all bands into account.
         """
 
-        self.logger.debug('Prepping bands.')
+        self.logger.debug('>>> Getting all bands.')
+        bands_all = Band.nodes.all()
+        self.logger.debug('<<< Getting all bands.')
+        bands_filtered = {}
 
-        # Two sets of bands are needed: First the bands from the requested countries and second all bands.
-        if len(country_shorts) is not 0:
-            bands = Band.nodes.filter(country__in=country_shorts)
-            all_bands = Band.nodes.all()
+        # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
+        # e.g. percentages.
+        if len(country_shorts) is 0:
+            for band in bands_all:
+                if band.country not in bands_filtered.keys():
+                    bands_filtered[band.country] = []
+                bands_filtered[band.country].append(band)
         else:
-            bands = Band.nodes.all()
-            all_bands = bands
+            for short in country_shorts:
+                temp_bands = Band.nodes.filter(country__exact=short)
+                # This guarantees that every key also has data behind it.
+                if len(temp_bands) > 0:
+                    bands_filtered[short] = temp_bands
 
-        bands_per_country = []
+        self.logger.debug('Bands prepped.')
+
         all_bands_per_country = []
         calc_results = []
 
-        for band in bands:
-            if band.country not in bands_per_country:
-                bands_per_country.append(band.country)
-                calc_results.append(self.calc_bands_per_pop_interface(band.country))
+        # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
+        for iso_short, bands in bands_filtered.items():
+            self.logger.debug(f'  Calc {iso_short}.')
+            calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
 
-        if len(country_shorts) > 0:
-            for band in all_bands:
-                if band.country not in all_bands_per_country:
-                    all_bands_per_country.append(band.country)
-        else:
-            all_bands_per_country = bands_per_country
-
-        report_str = f'This raw analysis contains data of {len(bands)} bands from {len(bands_per_country)} countries. '
-
-        if bands is not all_bands:
-            report_str += f'The database contains {len(all_bands)} bands from {len(all_bands_per_country)} countries.'
-        else:
-            report_str += 'That is the entire database.'
-
-        print(report_str)
-        country_diff = set(country_shorts) - set(bands_per_country)
+        print(f'This raw analysis contains data of {len(bands_all)} bands from {len(bands_filtered.keys())} countries.')
+        country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:
             diff_report = 'No bands were found for: '
