@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'
+RAW_GENRES = 'Genres'
 
 
 def prettify_calc_result(calc_dict: dict) -> str:

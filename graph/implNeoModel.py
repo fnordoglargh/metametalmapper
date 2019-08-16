@@ -3,7 +3,7 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, prettify_calc_result
+from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, prettify_calc_result
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
@@ -208,8 +208,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         band_counter = 0
         member_counter = 0
         print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender statistics.')
+        genres = {}
 
         for band in bands:
+            for genre in band.genres:
+                if genre not in genres.keys():
+                    genres[genre] = 1
+                else:
+                    genres[genre] += 1
             # Get the relationships of all members linked to the actual band.
             for member in band.current_lineup:
                 if member.emid not in unique_members.keys():
@@ -226,6 +232,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for key, value in genders.items():
             percentage = (value / member_counter) * 100
             result[country_long][f'  {GENDER[key]}'] = f'{value} ({percentage:.2f}%).'
+
+        result[country_long][RAW_GENRES] = genres
 
         return result
 
@@ -257,8 +265,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     bands_filtered[short] = temp_bands
 
         self.logger.debug('Bands prepped.')
-
-        all_bands_per_country = []
         calc_results = []
 
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
@@ -280,8 +286,18 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
+        genres = {}
+
         for calc_result in calc_results:
             print(prettify_calc_result(calc_result))
+            for country, payload in calc_result.values():
+                for genre, count in calc_result[country][RAW_GENRES].items():
+                    if genre not in genres.keys():
+                        genres[genre] = count
+                    else:
+                        genres[genre] += count
+
+        print(genres)
 
         self.logger.debug('Prepping artists.')
         all_artists = Member.nodes.all()
