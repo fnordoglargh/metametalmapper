@@ -290,7 +290,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         for calc_result in calc_results:
             print(prettify_calc_result(calc_result))
-            for country, payload in calc_result.values():
+            for country in calc_result.keys():
                 for genre, count in calc_result[country][RAW_GENRES].items():
                     if genre not in genres.keys():
                         genres[genre] = count
