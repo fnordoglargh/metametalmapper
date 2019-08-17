@@ -613,6 +613,9 @@ def cut_instruments(instrument_string):
                     # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'.
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
+                        # Safeguard against sloppy instruments where the time span starts with a comma.
+                        if time_span == '':
+                            continue
                         # There still is a trailing ')' in the end.
                         if time_span[len(time_span) - 1] == ')':
                             time_span = time_span[:-1]
