@@ -13,16 +13,20 @@ def prettify_calc_result(calc_dict: dict) -> str:
     :param calc_dict: Takes a dict with the format supplied by calc_bands_per_pop.
     :return: A string representation of the given dict.
     """
-    pretty_string = ""
+    pretty_string = ''
+    indentation_1 = '  '
+    indentation_2 = '    '
 
     if len(calc_dict) is 0:
         return pretty_string
 
     for inner_key, inner_value in calc_dict.items():
         if inner_key == POP_COUNTRY:
-            pretty_string += f'  {inner_key}\n'
+            indent = indentation_1
         else:
-            pretty_string += f'    {inner_key}: {inner_value}\n'
+            indent = indentation_2
+
+        pretty_string += f'{indent}{inner_key}: {inner_value}\n'
 
     return pretty_string[:-1]
 
