@@ -4,6 +4,7 @@ POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'
 RAW_GENRES = 'Genres'
+POP_COUNTRY = 'Country'
 
 
 def prettify_calc_result(calc_dict: dict) -> str:
@@ -18,9 +19,10 @@ def prettify_calc_result(calc_dict: dict) -> str:
         return pretty_string
 
     for inner_key, inner_value in calc_dict.items():
-        pretty_string += f'  {inner_key}\n'
-        for outer_key, outer_value in inner_value.items():
-            pretty_string += f'    {outer_key}: {outer_value}\n'
+        if inner_key == POP_COUNTRY:
+            pretty_string += f'  {inner_key}\n'
+        else:
+            pretty_string += f'    {inner_key}: {inner_value}\n'
 
     return pretty_string[:-1]
 

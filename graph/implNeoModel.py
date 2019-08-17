@@ -3,7 +3,8 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, prettify_calc_result
+from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY,\
+    prettify_calc_result
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
@@ -191,12 +192,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         if int(population) <= 1:
             return result
 
-        country_long = COUNTRY_NAMES[country_short]
-        result[country_long] = {}
-        result[country_long][POP_BANDS] = str(len(bands))
-        result[country_long][POP_POPULATION] = population
+        result[POP_COUNTRY] = COUNTRY_NAMES[country_short]
+        result[POP_BANDS] = str(len(bands))
+        result[POP_POPULATION] = population
         bands_per_100k = len(bands) / (int(population) / 100000)
-        result[country_long][POP_PER_100K] = f'{bands_per_100k:.2f}'
+        result[POP_PER_100K] = f'{bands_per_100k:.2f}'
 
         unique_members = {}
         genders = {}
@@ -227,13 +227,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             progress_bar.update(band_counter)
 
         progress_bar.finish()
-        result[country_long]['Artists'] = member_counter
+        result['Artists'] = member_counter
 
         for key, value in genders.items():
             percentage = (value / member_counter) * 100
-            result[country_long][f'  {GENDER[key]}'] = f'{value} ({percentage:.2f}%).'
+            result[f'  {GENDER[key]}'] = f'{value} ({percentage:.2f}%).'
 
-        result[country_long][RAW_GENRES] = genres
+        result[RAW_GENRES] = genres
 
         return result
 
@@ -290,12 +290,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         for calc_result in calc_results:
             print(prettify_calc_result(calc_result))
-            for country in calc_result.keys():
-                for genre, count in calc_result[country][RAW_GENRES].items():
-                    if genre not in genres.keys():
-                        genres[genre] = count
-                    else:
-                        genres[genre] += count
+            for genre, count in calc_result[RAW_GENRES].items():
+                if genre not in genres.keys():
+                    genres[genre] = count
+                else:
+                    genres[genre] += count
 
         print(genres)
 
