@@ -207,7 +207,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_counter = 0
         member_counter = 0
-        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender statistics.')
+        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
         genres = {}
 
         for band in bands:
@@ -286,6 +286,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
+        # Prepare the genres by adding all known genres in a dictionary.
         genres = {}
 
         for calc_result in calc_results:
@@ -296,7 +297,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 else:
                     genres[genre] += count
 
-        print(genres)
+        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
+        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is'
+              f'  counted as both "Atmospheric Black" and "Black."')
+        number_bands = len(bands_all)
+
+        for genre in genres:
+            percentage = (genre[1] / len(bands_all)) * 100
+            print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
 
         self.logger.debug('Prepping artists.')
         all_artists = Member.nodes.all()
