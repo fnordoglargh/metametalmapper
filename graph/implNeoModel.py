@@ -298,8 +298,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     genres[genre] += count
 
         genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is'
-              f'  counted as both "Atmospheric Black" and "Black."')
+        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
+              f'counted as both "Atmospheric Black" and "Black."')
         number_bands = len(bands_all)
 
         for genre in genres:
