@@ -300,7 +300,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
         print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
               f'counted as both "Atmospheric Black" and "Black."')
-        number_bands = len(bands_all)
+        print('Displaying MA\'s core genres (in relation to all bands):')
 
         for genre in genres:
             percentage = (genre[1] / len(bands_all)) * 100
