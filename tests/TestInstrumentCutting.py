@@ -46,6 +46,10 @@ class TestInstrumentCutting(unittest.TestCase):
                         ('Bass, Guitars (additional)', [(1993, 'present')])]
         self.assertEqual(expected_cut, result)
 
+        result = cut_instruments('Bass (on EP 1)')
+        expected_cut = [('Bass', [])]
+        self.assertEqual(expected_cut, result)
+
     def test_question_marks(self):
         result = cut_instruments('Drums	(?-2011)')
         expected_cut = [('Drums', [('?', 2011)])]

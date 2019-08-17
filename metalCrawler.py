@@ -616,7 +616,8 @@ def cut_instruments(instrument_string):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
                     # Then we have one of four types of strings. (1) two years separated by a '-', (2) a single
-                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'.
+                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
+                    # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
                         # Safeguard against sloppy instruments where the time span starts with a comma.
@@ -644,6 +645,9 @@ def cut_instruments(instrument_string):
                                 years = (int(time_span[0:4]), '?')
                             else:
                                 years = ()
+                        # (5)
+                        elif not time_span.isdigit() and 'present' not in time_span:
+                            continue
                         # (3)
                         else:
                             years = (int(time_span[0:4]), 'present')
