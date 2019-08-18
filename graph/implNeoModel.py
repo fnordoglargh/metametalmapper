@@ -3,8 +3,7 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY,\
-    prettify_calc_result
+from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
@@ -272,7 +271,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             self.logger.debug(f'  Calc {iso_short}.')
             calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
 
-        print(f'This raw analysis contains data of {len(bands_all)} bands from {len(bands_filtered.keys())} countries.')
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:
@@ -286,38 +284,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
-        # Prepare the genres by adding all known genres in a dictionary.
-        genres = {}
-
-        for calc_result in calc_results:
-            print(prettify_calc_result(calc_result))
-            for genre, count in calc_result[RAW_GENRES].items():
-                if genre not in genres.keys():
-                    genres[genre] = count
-                else:
-                    genres[genre] += count
-
-        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
-              f'counted as both "Atmospheric Black" and "Black."')
-        number_bands = len(bands_all)
-
-        for genre in genres:
-            percentage = (genre[1] / len(bands_all)) * 100
-            print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
-
-        self.logger.debug('Prepping artists.')
-        all_artists = Member.nodes.all()
-        amount_artists = len(all_artists)
-        artist_per_country = []
-
-        for artist in all_artists:
-            if artist.origin not in artist_per_country:
-                artist_per_country.append(artist.origin)
-
-        print(f'The database contains {amount_artists} artists from {len(artist_per_country)} countries.')
-
-        for key, value in GENDER.items():
-            artist_gender = Member.nodes.filter(gender__exact=key)
-            percentage = (len(artist_gender) / amount_artists) * 100
-            print(f'  {len(artist_gender)} ({percentage:.2f}%) artists are {value}.')
+        return {
+            'raw_data': calc_results,
+            'number_bands': len(bands_all),
+            'number_countries': len(bands_filtered.keys())
+        }
