@@ -1,7 +1,7 @@
 from pathlib import Path
 
 LINK_EXTENSION = ".lnks"
-BAND_LINK_FILE_NAME = "bands-{}" + LINK_EXTENSION
+BAND_LINK_FILE_NAME = "{}" + LINK_EXTENSION
 
 FOLDER_LINKS = Path("links")
 FOLDER_DB = Path("databases")

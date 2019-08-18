@@ -63,10 +63,10 @@ def flush_queue(country_short):
     metalCrawler.crawl_country.
 
     :param country_short: ISO country code used in the file name.
-    :return: A filename with the format ``links/bands-NN.lnks``.
+    :return: A filename with the format ``links/NN.lnks``.
     """
     logger = logging.getLogger('Mapper')
-    country_filename = Path(f"{FOLDER_LINKS}/bands-{country_short}{LINK_EXTENSION}")
+    country_filename = Path(f"{FOLDER_LINKS}/" + BAND_LINK_FILE_NAME.format(country_short))
 
     if bandsQueue.qsize() != 0:
         band_links_file = open(country_filename, "w", encoding="utf-8")
