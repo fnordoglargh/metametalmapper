@@ -3,6 +3,7 @@ from pathlib import Path
 import logging
 from global_helpers import FOLDER_EXPORTS
 from datetime import datetime
+from graph.choices import GENDER
 from graph.metalGraph import POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 
 
@@ -138,12 +139,18 @@ class GraphMLExporter(GraphExportStrategy):
             percentage = (genre[1] / number_bands) * 100
             print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
 
-        number_artists = statistics['number_artists']
         artist_per_country = statistics['artist_per_country']
-        print(f'The database contains {number_artists} artists from {len(artist_per_country)} countries.')
+        genders = statistics['genders']
+        number_artists = 0
+        gender_report = ''
 
-        # for key, value in GENDER.items():
-        #     artist_gender = Member.nodes.filter(gender__exact=key)
-        #     percentage = (len(artist_gender) / amount_artists) * 100
-        #     print(f'  {len(artist_gender)} ({percentage:.2f}%) artists are {value}.')
+        for gender, count in genders.items():
+            number_artists += count
+
+        for gender, count in genders.items():
+            percentage = (count / number_artists) * 100
+            gender_report += f'  {GENDER[gender]}: {count} ({percentage:.2f}%)\n'
+
+        print(f'The database contains {number_artists} artists from {len(artist_per_country)} countries.')
+        print(gender_report)
 

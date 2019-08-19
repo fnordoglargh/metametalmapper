@@ -285,9 +285,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
-        self.logger.debug('Prepping artists.')
-        all_artists = Member.nodes.all()
-        amount_artists = len(all_artists)
         artist_per_country = []
 
         genders = {}
@@ -295,16 +292,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for gender in GENDER:
             genders[gender] = 0
 
-        for artist in all_artists:
-            genders[artist.gender] += 1
-            if artist.origin not in artist_per_country:
-                artist_per_country.append(artist.origin)
+        for key, value in GENDER.items():
+            genders[key] = len(Member.nodes.filter(gender__exact=key))
 
         return {
             'raw_data': calc_results,
             'number_bands': len(bands_all),
             'number_countries': len(bands_filtered.keys()),
-            'number_artists': amount_artists,
             'artist_per_country': artist_per_country,
             'genders': genders
         }
