@@ -138,17 +138,10 @@ class GraphMLExporter(GraphExportStrategy):
             percentage = (genre[1] / number_bands) * 100
             print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
 
-        # self.logger.debug('Prepping artists.')
-        # all_artists = Member.nodes.all()
-        # amount_artists = len(all_artists)
-        # artist_per_country = []
-        #
-        # for artist in all_artists:
-        #     if artist.origin not in artist_per_country:
-        #         artist_per_country.append(artist.origin)
-        #
-        # print(f'The database contains {amount_artists} artists from {len(artist_per_country)} countries.')
-        #
+        number_artists = statistics['number_artists']
+        artist_per_country = statistics['artist_per_country']
+        print(f'The database contains {number_artists} artists from {len(artist_per_country)} countries.')
+
         # for key, value in GENDER.items():
         #     artist_gender = Member.nodes.filter(gender__exact=key)
         #     percentage = (len(artist_gender) / amount_artists) * 100
