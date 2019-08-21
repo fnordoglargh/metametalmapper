@@ -8,6 +8,7 @@ from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
 import progressbar
+from graph.report import CountryReport, DatabaseReport
 
 
 class MemberRelationship(StructuredRel):
@@ -302,3 +303,41 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             'artist_per_country': artist_per_country,
             'genders': genders
         }
+
+    def generate_report_interface(self, country_shorts: list):
+        db_report = DatabaseReport()
+
+        for key, value in GENDER.items():
+            db_report. genders[key] = len(Member.nodes.filter(gender__exact=key))
+
+        calc_results = []
+
+        self.logger.debug('>>> Getting all bands.')
+        bands_all = Band.nodes.all()
+        self.logger.debug('<<< Getting all bands.')
+        bands_filtered = {}
+
+        # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
+        # e.g. percentages.
+        if len(country_shorts) is 0:
+            for band in bands_all:
+                if band.country not in bands_filtered.keys():
+                    bands_filtered[band.country] = []
+                bands_filtered[band.country].append(band)
+        else:
+            for short in country_shorts:
+                temp_bands = Band.nodes.filter(country__exact=short)
+                # This guarantees that every key also has data behind it.
+                if len(temp_bands) > 0:
+                    bands_filtered[short] = temp_bands
+
+        self.logger.debug('Bands prepped.')
+        calc_results = []
+
+        # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
+        for iso_short, bands in bands_filtered.items():
+            self.logger.debug(f'  Calc {iso_short}.')
+            calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
+
+        pass
+
