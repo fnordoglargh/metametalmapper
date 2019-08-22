@@ -8,7 +8,12 @@ class DatabaseReport:
         for gender in GENDER:
             self.genders[gender] = 0
 
+        self.country_reports = {}
+
 
 class CountryReport:
-    def __init__(self, country_name):
+    def __init__(self, country_name, population, number_bands):
         self.country_name = country_name
+        self.population = population
+
+        self.bands_per_100k = number_bands / (int(population) / 100000)

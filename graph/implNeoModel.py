@@ -172,6 +172,20 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         print()
         return band_relationships
 
+    def generate_country_report(self, country_short, bands):
+        number_bands = len(bands)
+        if number_bands is 0:
+            return None
+
+        population = COUNTRY_POPULATION[country_short]
+
+        if int(population) <= 1:
+            return None
+
+        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands)
+
+        return report
+
     def calc_bands_per_pop_interface(self, country_short, bands) -> dict:
         """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result
             will be empty for two error cases: The country population is smaller than one or if there are no bands
@@ -332,12 +346,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     bands_filtered[short] = temp_bands
 
         self.logger.debug('Bands prepped.')
-        calc_results = []
+        country_reports = {}
 
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
         for iso_short, bands in bands_filtered.items():
             self.logger.debug(f'  Calc {iso_short}.')
-            calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
+            db_report.country_reports[iso_short] = self.generate_country_report(iso_short, bands)
 
-        pass
-
+        return db_report
