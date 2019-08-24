@@ -32,7 +32,7 @@ class DatabaseReport:
 class CountryReport:
     def __init__(self, country_name, population, number_bands):
         self.country_name = country_name
-        self.population = population
+        self.population = int(population)
         self.bands_per_100k = number_bands / (int(population) / 100000)
         self.genders = {}
 
@@ -47,7 +47,7 @@ class CountryReport:
             amount_people += self.genders[gender]
 
         report = f'  {self.country_name}\n' \
-                 f'    {POP_POPULATION}: {self.population}\n' \
+                 f'    {POP_POPULATION}: {self.population:,}\n' \
                  f'    {POP_PER_100K}: {self.bands_per_100k:.2f}\n' \
                  f'    Gender distribution ({amount_people} artists)\n'
 
