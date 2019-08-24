@@ -36,6 +36,7 @@ class CountryReport:
         self.number_bands = number_bands
         self.bands_per_100k = number_bands / (int(population) / 100000)
         self.genders = {}
+        self.gender_per_country = {}
 
         for gender in GENDER:
             self.genders[gender] = 0
@@ -51,7 +52,7 @@ class CountryReport:
                  f'    {POP_POPULATION}: {self.population:,}\n' \
                  f'    Bands: {self.number_bands}\n' \
                  f'    {POP_PER_100K}: {self.bands_per_100k:.2f}\n' \
-                 f'    Gender distribution ({amount_people} artists)\n'
+                 f'    Gender distribution ({amount_people} artists from {len(self.gender_per_country)} countries)\n'
 
         for gender, number in self.genders.items():
             report += f'      {GENDER[gender]}: ' + get_percentage_string(number, amount_people) + '\n'

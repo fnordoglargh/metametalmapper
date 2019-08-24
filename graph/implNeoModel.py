@@ -203,6 +203,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     # TODO: Fix multiple counting of artists.
                     report.genders[member.gender] += 1
                     member_counter += 1
+                    if member.origin not in report.gender_per_country:
+                        report.gender_per_country[member.origin] = 1
+                    else:
+                        report.gender_per_country[member.origin] += 1
 
             band_counter += 1
             progress_bar.update(band_counter)
