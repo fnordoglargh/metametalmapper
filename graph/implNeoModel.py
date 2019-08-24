@@ -370,6 +370,19 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 if len(temp_bands) > 0:
                     bands_filtered[short] = temp_bands
 
+        country_diff = set(country_shorts) - set(bands_filtered.keys())
+
+        if len(country_diff) > 0:
+            diff_report = 'No bands were found for: '
+
+            for country in country_diff:
+                diff_report += COUNTRY_NAMES[country]
+
+            if len(country_diff) > 1:
+                diff_report = diff_report[:-2]
+
+            print(diff_report)
+
         self.logger.debug('Bands prepped.')
         country_reports = {}
 
