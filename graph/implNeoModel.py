@@ -184,6 +184,31 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands)
 
+        unique_members = {}
+        progress_bar = progressbar.ProgressBar(max_value=number_bands)
+        band_counter = 0
+        member_counter = 0
+        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
+
+        for band in bands:
+            for genre in band.genres:
+                if genre not in report.genres.keys():
+                    report.genres[genre] = 1
+                else:
+                    report.genres[genre] += 1
+            # Get the relationships of all members linked to the actual band.
+            for member in band.current_lineup:
+                if member.emid not in unique_members.keys():
+                    unique_members[member.emid] = ""
+                    # TODO: Fix multiple counting of artists.
+                    report.genders[member.gender] += 1
+                    member_counter += 1
+
+            band_counter += 1
+            progress_bar.update(band_counter)
+
+        progress_bar.finish()
+
         return report
 
     def calc_bands_per_pop_interface(self, country_short, bands) -> dict:

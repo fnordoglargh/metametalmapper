@@ -250,12 +250,13 @@ def main(argv):
         else:
             print(country_info[:-2])
 
-        raw_data = db_handle.raw_analysis(cleaned_shorts)
+        # raw_data = db_handle.raw_analysis(cleaned_shorts)
         raw_report = db_handle.generate_report(cleaned_shorts)
-        export_handle = GraphExportContext(GraphMLExporter())
-        export_handle.export_csv(raw_data)
-        relationships = db_handle.export_bands_network(cleaned_shorts)
-        export_handle.export_graph(relationships)
+        print(raw_report)
+        # export_handle = GraphExportContext(GraphMLExporter())
+        # export_handle.export_csv(raw_data)
+        # relationships = db_handle.export_bands_network(cleaned_shorts)
+        # export_handle.export_graph(relationships)
     elif mode is CrawlMode.DisplayInfo:
         country_string = print_countries(4, crawl_countries())
         print()
