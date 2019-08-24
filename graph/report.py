@@ -4,6 +4,14 @@ POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 
 
+def get_percentage_string(dividend, divisor):
+    if divisor is 0 or divisor * dividend < 0:
+        return ""
+    else:
+        percentage = (dividend / divisor) * 100
+        return f'{dividend} ({percentage:.2f}%)'
+
+
 class DatabaseReport:
     def __init__(self):
         self.genders = {}
@@ -34,9 +42,17 @@ class CountryReport:
         self.genres = {}
 
     def __str__(self):
+        amount_people = 0
+        for gender in self.genders.keys():
+            amount_people += self.genders[gender]
+
         report = f'  {self.country_name}\n' \
                  f'    {POP_POPULATION}: {self.population}\n' \
-                 f'    {POP_PER_100K}: {self.bands_per_100k}\n'
+                 f'    {POP_PER_100K}: {self.bands_per_100k:.2f}\n' \
+                 f'    Gender distribution ({amount_people} artists)\n'
+
+        for gender, number in self.genders.items():
+            report += f'      {GENDER[gender]}: ' + get_percentage_string(number, amount_people) + '\n'
 
         return report
 
