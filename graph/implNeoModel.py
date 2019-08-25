@@ -182,36 +182,43 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         if int(population) <= 1:
             return None
 
-        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands)
-
         unique_members = {}
         progress_bar = progressbar.ProgressBar(max_value=number_bands)
         band_counter = 0
         member_counter = 0
         print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
 
+        # Init genders dict outside. Will be set in CountryReport object manually.
+        genders = {}
+        for gender in GENDER:
+            genders[gender] = 0
+
+        genres = {}
+        gender_per_country = {}
+
         for band in bands:
             for genre in band.genres:
-                if genre not in report.genres.keys():
-                    report.genres[genre] = 1
+                if genre not in genres.keys():
+                    genres[genre] = 1
                 else:
-                    report.genres[genre] += 1
+                    genres[genre] += 1
             # Get the relationships of all members linked to the actual band.
             for member in band.current_lineup:
                 if member.emid not in unique_members.keys():
                     unique_members[member.emid] = ""
                     # TODO: Fix multiple counting of artists.
-                    report.genders[member.gender] += 1
+                    genders[member.gender] += 1
                     member_counter += 1
-                    if member.origin not in report.gender_per_country:
-                        report.gender_per_country[member.origin] = 1
+                    if member.origin not in gender_per_country:
+                        gender_per_country[member.origin] = 1
                     else:
-                        report.gender_per_country[member.origin] += 1
+                        gender_per_country[member.origin] += 1
 
             band_counter += 1
             progress_bar.update(band_counter)
 
         progress_bar.finish()
+        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres)
 
         return report
 
