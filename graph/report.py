@@ -1,8 +1,8 @@
 from graph.choices import GENDER
-from collections import Counter
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
+GENDER_DISTRIBUTION = 'Gender distribution ({} artists from {} countries)\n'
 
 
 def get_percentage_string(dividend, divisor):
@@ -53,10 +53,10 @@ class DatabaseReport:
                 gender_total[key] += country_report.genders[key]
                 amount_artists += country_report.genders[key]
 
-        report += f'  Gender distribution ({amount_artists} artists from {len(gender_per_country)} countries)\n'
+        report += f'  {GENDER_DISTRIBUTION.format(amount_artists, len(gender_per_country))}'
 
         for gender, count in gender_total.items():
-            report += f'    {GENDER[gender]}: ' + get_percentage_string(count, amount_artists) + '\n'
+            report += f'    {GENDER[gender]}: {get_percentage_string(count, amount_artists)}\n'
 
         print(gender_total)
 
@@ -86,10 +86,10 @@ class CountryReport:
                  f'    {POP_POPULATION}: {self.population:,}\n' \
                  f'    Bands: {self.number_bands}\n' \
                  f'    {POP_PER_100K}: {self.bands_per_100k:.2f}\n' \
-                 f'    Gender distribution ({amount_people} artists from {len(self.gender_per_country)} countries)\n'
+                 f'    {GENDER_DISTRIBUTION.format(amount_people, len(self.gender_per_country))}'
 
         for gender, count in self.genders.items():
-            report += f'      {GENDER[gender]}: ' + get_percentage_string(count, amount_people) + '\n'
+            report += f'      {GENDER[gender]}: {get_percentage_string(count, amount_people)}\n'
 
         return report
 
