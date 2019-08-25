@@ -1,4 +1,5 @@
 from graph.choices import GENDER
+from collections import Counter
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -30,10 +31,36 @@ class DatabaseReport:
         self.genres = {}
 
     def __str__(self):
-        report = 'Database report:\n'
+        report = f'Database report for {len(self.country_reports)} countries.\n'
+        gender_total = {}
+        country_report_str = ''
+        amount_artists = 0
+        gender_per_country = {}
+
+        for gender in GENDER:
+            gender_total[gender] = 0
+
         for country_name, country_report in self.country_reports.items():
-            report += str(country_report)
-        return report
+            country_report_str += str(country_report)
+
+            for key, count in country_report.gender_per_country.items():
+                if key not in gender_per_country.keys():
+                    gender_per_country[key] = 0
+
+                gender_per_country[key] += country_report.gender_per_country[key]
+
+            for key in gender_total.keys():
+                gender_total[key] += country_report.genders[key]
+                amount_artists += country_report.genders[key]
+
+        report += f'  Gender distribution ({amount_artists} artists from {len(gender_per_country)} countries)\n'
+
+        for gender, count in gender_total.items():
+            report += f'    {GENDER[gender]}: ' + get_percentage_string(count, amount_artists) + '\n'
+
+        print(gender_total)
+
+        return report + country_report_str
 
 
 class CountryReport:
@@ -61,8 +88,8 @@ class CountryReport:
                  f'    {POP_PER_100K}: {self.bands_per_100k:.2f}\n' \
                  f'    Gender distribution ({amount_people} artists from {len(self.gender_per_country)} countries)\n'
 
-        for gender, number in self.genders.items():
-            report += f'      {GENDER[gender]}: ' + get_percentage_string(number, amount_people) + '\n'
+        for gender, count in self.genders.items():
+            report += f'      {GENDER[gender]}: ' + get_percentage_string(count, amount_people) + '\n'
 
         return report
 
