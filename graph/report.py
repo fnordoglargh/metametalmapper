@@ -68,7 +68,7 @@ class CountryReport:
 
 
 class DatabaseReport:
-    def __init__(self, band_count):
+    def __init__(self, band_count, genders, artist_count, artists_per_country):
         self._band_count = band_count
         self._genders = {}
         self._country_reports = []
@@ -76,7 +76,6 @@ class DatabaseReport:
         self._amount_artists = 0
         self._artists_per_country = []
 
-    def add_genders(self, genders, artist_count, artists_per_country):
         for gender in genders:
             self._amount_artists += genders[gender]
             self._genders[gender] = (genders[gender], (genders[gender] / artist_count) * 100)
