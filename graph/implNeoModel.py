@@ -357,9 +357,23 @@ class NeoModelStrategy(GraphDatabaseStrategy):
     def generate_report_interface(self, country_shorts: list):
         db_report = DatabaseReport()
 
-        for key, value in GENDER.items():
-            db_report. genders[key] = len(Member.nodes.filter(gender__exact=key))
+        genders = {}
+        artists_total = 0
+        artists_per_country = {}
 
+        for gender_key in GENDER:
+            artists = Member.nodes.filter(gender__exact=gender_key)
+
+            for artist in artists:
+                if artist.origin not in artists_per_country:
+                    artists_per_country[artist.origin] = 1
+                else:
+                    artists_per_country[artist.origin] += 1
+
+            genders[gender_key] = len(artists)
+            artists_total += genders[gender_key]
+
+        db_report.add_genders(genders, artists_total, artists_per_country)
         calc_results = []
 
         self.logger.debug('>>> Getting all bands.')
@@ -400,6 +414,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
         for iso_short, bands in bands_filtered.items():
             self.logger.debug(f'  Calc {iso_short}.')
-            db_report.country_reports[iso_short] = self.generate_country_report(iso_short, bands)
+            db_report.add_country_report(self.generate_country_report(iso_short, bands))
 
         return db_report

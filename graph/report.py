@@ -48,6 +48,9 @@ class CountryReport:
             # Fill with value pairs count and the percentage.
             self._genders[gender] = (count, (count / self._amount_people) * 100)
 
+    def get_gender(self, gender_key):
+        return self._genders[gender_key][0]
+
     def __str__(self):
         if len(self._genders) == 0:
             return "Invalid Country Report: Genders not set."
@@ -66,57 +69,31 @@ class CountryReport:
 
 class DatabaseReport:
     def __init__(self):
-        self.genders = {}
+        self._genders = {}
+        self._country_reports = []
+        self._genres = {}
+        self._amount_artists = 0
+        self._artists_per_country = []
 
-        for gender in GENDER:
-            self.genders[gender] = 0
+    def add_genders(self, genders, artist_count, artists_per_country):
+        for gender in genders:
+            self._amount_artists += genders[gender]
+            self._genders[gender] = (genders[gender], (genders[gender] / artist_count) * 100)
+            self._artists_per_country = artists_per_country
 
-        self.country_reports = {}
-        self.genres = {}
-    #
-    # def add_country(self, report: CountryReport):
-    #     for gender, count in report.genders:
-    #         self.genders[gender] += report.genders[gender]
-    #
-    # def init_country(self, country_short):
-    #     if country_short not in COUNTRY_NAMES:
-    #         return None
-    #
-    #     self.country_reports[country_short] = \
-    #         CountryReport(COUNTRY_NAMES[country_short], COUNTRY_POPULATION[country_short], -1)
-    #
-    # def add_genders(self, country_short, genders: dict):
-    #     if country_short not in COUNTRY_NAMES:
-    #         return None
+    def add_country_report(self, report: CountryReport):
+        self._country_reports.append(report)
 
     def __str__(self):
-        report = f'Database report for {len(self.country_reports)} countries.\n'
-        gender_total = {}
+        report = f'Database report for {len(self._country_reports)} countries.\n'
         country_report_str = ''
-        amount_artists = 0
-        gender_per_country = {}
 
-        for gender in GENDER:
-            gender_total[gender] = 0
-
-        for country_name, country_report in self.country_reports.items():
+        for country_report in self._country_reports:
             country_report_str += str(country_report)
 
-            for key, count in country_report._gender_per_country.items():
-                if key not in gender_per_country.keys():
-                    gender_per_country[key] = 0
+        report += f'  {GENDER_DISTRIBUTION.format(self._amount_artists, len(self._artists_per_country))}'
 
-                gender_per_country[key] += country_report._gender_per_country[key]
-
-            for key in gender_total.keys():
-                gender_total[key] += country_report._genders[key][0]
-                amount_artists += country_report._genders[key][0]
-
-        report += f'  {GENDER_DISTRIBUTION.format(amount_artists, len(gender_per_country))}'
-
-        for gender, count in gender_total.items():
-            report += f'    {GENDER[gender]}: {get_percentage_string(count, amount_artists)}\n'
+        for gender, value_pair in self._genders.items():
+            report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
 
         return report + country_report_str
-
-
