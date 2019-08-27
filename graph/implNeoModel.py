@@ -355,8 +355,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         }
 
     def generate_report_interface(self, country_shorts: list):
-        db_report = DatabaseReport()
-
         genders = {}
         artists_total = 0
         artists_per_country = {}
@@ -373,8 +371,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             genders[gender_key] = len(artists)
             artists_total += genders[gender_key]
 
+        band_count = len(Band.nodes.all())
+        db_report = DatabaseReport(band_count)
         db_report.add_genders(genders, artists_total, artists_per_country)
-        calc_results = []
 
         self.logger.debug('>>> Getting all bands.')
         bands_all = Band.nodes.all()

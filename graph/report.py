@@ -68,7 +68,8 @@ class CountryReport:
 
 
 class DatabaseReport:
-    def __init__(self):
+    def __init__(self, band_count):
+        self._band_count = band_count
         self._genders = {}
         self._country_reports = []
         self._genres = {}
@@ -85,13 +86,14 @@ class DatabaseReport:
         self._country_reports.append(report)
 
     def __str__(self):
-        report = f'Database report for {len(self._country_reports)} countries.\n'
+        report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '
+        report += f'{len(self._artists_per_country)} countries play in {self._band_count} bands.\n'
+        report += f'  Gender distribution for entire database:\n'
+
         country_report_str = ''
 
         for country_report in self._country_reports:
             country_report_str += str(country_report)
-
-        report += f'  {GENDER_DISTRIBUTION.format(self._amount_artists, len(self._artists_per_country))}'
 
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
