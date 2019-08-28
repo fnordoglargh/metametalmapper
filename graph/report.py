@@ -36,6 +36,7 @@ class CountryReport:
         self._genders = {}
         self._amount_people = 0
         self._set_genders(genders)
+        # A dictionary with a ISO country name as key and the amount of people from that country as value.
         self._gender_per_country = gender_per_country
         self._genres = genres
 
@@ -63,7 +64,7 @@ class CountryReport:
         else:
             return f'    {POP_POPULATION}: {self._population}\n'
 
-    def _get_pop_pper_100k(self):
+    def _get_pop_per_100k(self):
         if self._bands_per_100k.isdigit():
             return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n'
         else:
@@ -76,7 +77,7 @@ class CountryReport:
         report = f'  {self._country_name}\n'
         report += self._get_population()
         report += f'    Bands: {self._number_bands}\n'
-        report += self._get_pop_pper_100k()
+        report += self._get_pop_per_100k()
         report += f'    {GENDER_DISTRIBUTION.format(self._amount_people, len(self._gender_per_country))}'
 
         for gender, value_pair in self._genders.items():
