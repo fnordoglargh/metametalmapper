@@ -288,73 +288,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
-    def raw_analysis_interface(self, country_shorts: list):
-        """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the
-            number of countries they are from plus a gender breakdown of all artists.
+    def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
+        """Generates a report with an analysis of the entire database into an handy object.
 
         :param country_shorts: The list either contains the ISO names of countries to analyse or it is empty. In that
             case we take all countries of all bands into account.
+        :return: An initialized DatabaseReport object which can be processed further. Printing it is an obvious choice.
         """
 
-        self.logger.debug('>>> Getting all bands.')
-        bands_all = Band.nodes.all()
-        self.logger.debug('<<< Getting all bands.')
-        bands_filtered = {}
-
-        # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
-        # e.g. percentages.
-        if len(country_shorts) is 0:
-            for band in bands_all:
-                if band.country not in bands_filtered.keys():
-                    bands_filtered[band.country] = []
-                bands_filtered[band.country].append(band)
-        else:
-            for short in country_shorts:
-                temp_bands = Band.nodes.filter(country__exact=short)
-                # This guarantees that every key also has data behind it.
-                if len(temp_bands) > 0:
-                    bands_filtered[short] = temp_bands
-
-        self.logger.debug('Bands prepped.')
-        calc_results = []
-
-        # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
-        for iso_short, bands in bands_filtered.items():
-            self.logger.debug(f'  Calc {iso_short}.')
-            calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
-
-        country_diff = set(country_shorts) - set(bands_filtered.keys())
-
-        if len(country_diff) > 0:
-            diff_report = 'No bands were found for: '
-
-            for country in country_diff:
-                diff_report += COUNTRY_NAMES[country]
-
-            if len(country_diff) > 1:
-                diff_report = diff_report[:-2]
-
-            print(diff_report)
-
-        artist_per_country = []
-
-        genders = {}
-
-        for gender in GENDER:
-            genders[gender] = 0
-
-        for key, value in GENDER.items():
-            genders[key] = len(Member.nodes.filter(gender__exact=key))
-
-        return {
-            'raw_data': calc_results,
-            'number_bands': len(bands_all),
-            'number_countries': len(bands_filtered.keys()),
-            'artist_per_country': artist_per_country,
-            'genders': genders
-        }
-
-    def generate_report_interface(self, country_shorts: list):
         genders = {}
         artists_total = 0
         artists_per_country = {}
@@ -407,7 +348,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             print(diff_report)
 
         self.logger.debug('Bands prepped.')
-        country_reports = {}
 
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
         for iso_short, bands in bands_filtered.items():
