@@ -179,7 +179,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         population = COUNTRY_POPULATION[country_short]
 
-        if int(population) <= 1:
+        if int(population) == 0:
             return None
 
         unique_members = {}

@@ -26,7 +26,13 @@ class CountryReport:
         self._country_name = country_name
         self._population = int(population)
         self._number_bands = number_bands
-        self._bands_per_100k = number_bands / (int(population) / 100000)
+
+        if self._population <= 1:
+            self._bands_per_100k = 'N/A'
+            self._population = 'N/A'
+        else:
+            self._bands_per_100k = number_bands / (int(population) / 100000)
+
         self._genders = {}
         self._amount_people = 0
         self._set_genders(genders)
@@ -51,15 +57,27 @@ class CountryReport:
     def get_gender(self, gender_key):
         return self._genders[gender_key][0]
 
+    def _get_population(self):
+        if self._population.isdigit():
+            return f'    {POP_POPULATION}: {self._population:,}\n'
+        else:
+            return f'    {POP_POPULATION}: {self._population}\n'
+
+    def _get_pop_pper_100k(self):
+        if self._bands_per_100k.isdigit():
+            return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n'
+        else:
+            return f'    {POP_PER_100K}: {self._bands_per_100k}\n'
+
     def __str__(self):
         if len(self._genders) == 0:
             return "Invalid Country Report: Genders not set."
 
-        report = f'  {self._country_name}\n' \
-                 f'    {POP_POPULATION}: {self._population:,}\n' \
-                 f'    Bands: {self._number_bands}\n' \
-                 f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n' \
-                 f'    {GENDER_DISTRIBUTION.format(self._amount_people, len(self._gender_per_country))}'
+        report = f'  {self._country_name}\n'
+        report += self._get_population()
+        report += f'    Bands: {self._number_bands}\n'
+        report += self._get_pop_pper_100k()
+        report += f'    {GENDER_DISTRIBUTION.format(self._amount_people, len(self._gender_per_country))}'
 
         for gender, value_pair in self._genders.items():
             report += f'      {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
