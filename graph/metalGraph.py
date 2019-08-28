@@ -37,8 +37,9 @@ class GraphDatabaseContext:
 
     def get_all_links(self) -> dict:
         """Prepares a dictionary that contains all previously visited short links of all bands and artists. Two keys are
-            used: 'bands' and 'artists'. For ~10k bands and ~40k artists this takes ~7s. It's faster than checking for
-            the existence of nodes (which takes ~0.01s for the neomodel implementation).
+            used: 'bands' and 'artists'. For ~10k bands and ~40k artists this takes ~7s. Using the lookup table is  much
+            faster than checking for the existence of nodes (which takes ~0.01s for the neomodel implementation per
+            check).
 
         :return: Dictionary with all known 'bands' and 'artists'. Each short link of these entities has a time stamp of
             the last visit as the value.
