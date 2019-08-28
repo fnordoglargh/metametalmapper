@@ -1,5 +1,4 @@
 from graph.choices import GENDER
-from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -22,11 +21,19 @@ def get_percentage_string(dividend, divisor):
 
 
 class CountryReport:
+    """A CountryReport stores information for a country which can be printed on a CLI or exported to a CSV file. A
+        constructor allows creation. Everything else but a function to get the amount of people of a certain gender is
+        internal.
+
+        We store e.g. the amount of bands and artists and the number of countries they are from plus a gender breakdown
+        of all artists. Artists are not filtered through their origin. Any artists linked to a band will be counted.
+    """
     def __init__(self, country_name, population, number_bands, genders, gender_per_country, genres):
         self._country_name = country_name
         self._population = int(population)
         self._number_bands = number_bands
 
+        # Special case handling for countries like "International" (XX) which have -1 as population.
         if self._population <= 1:
             self._bands_per_100k = 'N/A'
             self._population = 'N/A'
@@ -58,12 +65,14 @@ class CountryReport:
     def get_gender(self, gender_key):
         return self._genders[gender_key][0]
 
+    # Handles invalid populations.
     def _get_population(self):
         if self._population.isdigit():
             return f'    {POP_POPULATION}: {self._population:,}\n'
         else:
             return f'    {POP_POPULATION}: {self._population}\n'
 
+    # Handles invalid populations.
     def _get_pop_per_100k(self):
         if self._bands_per_100k.isdigit():
             return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n'
@@ -87,6 +96,10 @@ class CountryReport:
 
 
 class DatabaseReport:
+    """A DatabaseReport stores the analysis of the entire database plus the attached CountryReport objects. It always
+        contains e.g. the amount of _all_ artists and which genders they have.
+
+    """
     def __init__(self, band_count, genders, artist_count, artists_per_country):
         self._band_count = band_count
         self._genders = {}
