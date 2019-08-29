@@ -218,6 +218,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             progress_bar.update(band_counter)
 
         progress_bar.finish()
+
+        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
         report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres)
 
         return report
@@ -353,14 +355,5 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for iso_short, bands in bands_filtered.items():
             self.logger.debug(f'  Calc {iso_short}.')
             db_report.add_country_report(self.generate_country_report(iso_short, bands))
-
-        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
-              f'counted as both "Atmospheric Black" and "Black."')
-        print('Displaying MA\'s core genres (in relation to all bands):')
-
-        for genre in genres:
-            percentage = (genre[1] / len(bands_all)) * 100
-            print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
 
         return db_report

@@ -35,8 +35,8 @@ class CountryReport:
 
         # Special case handling for countries like "International" (XX) which have -1 as population.
         if self._population <= 1:
-            self._bands_per_100k = 'N/A'
-            self._population = 'N/A'
+            self._bands_per_100k = 'NA'
+            self._population = 'NA'
         else:
             self._bands_per_100k = number_bands / (int(population) / 100000)
 
@@ -45,7 +45,12 @@ class CountryReport:
         self._set_genders(genders)
         # A dictionary with a ISO country name as key and the amount of people from that country as value.
         self._gender_per_country = gender_per_country
-        self._genres = genres
+        self._genres = []
+        self._set_genres(genres)
+
+    def _set_genres(self, genres: list):
+        for genre in genres:
+            self._genres.append((genre[0], genre[1], (genre[1] / self._number_bands) * 100))
 
     def _set_genders(self, genders: dict):
         self._amount_people = 0
@@ -67,17 +72,17 @@ class CountryReport:
 
     # Handles invalid populations.
     def _get_population(self):
-        if self._population.isdigit():
+        if str(self._population).isdigit():
             return f'    {POP_POPULATION}: {self._population:,}\n'
         else:
             return f'    {POP_POPULATION}: {self._population}\n'
 
     # Handles invalid populations.
     def _get_pop_per_100k(self):
-        if self._bands_per_100k.isdigit():
-            return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n'
-        else:
+        if str(self._bands_per_100k).isalpha():
             return f'    {POP_PER_100K}: {self._bands_per_100k}\n'
+        else:
+            return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}%\n'
 
     def __str__(self):
         if len(self._genders) == 0:
@@ -91,6 +96,15 @@ class CountryReport:
 
         for gender, value_pair in self._genders.items():
             report += f'      {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
+
+        top = 5
+
+        if len(self._genres) < top:
+            top = len(self._genres)
+
+        report += f'    TOP {top} Genres;\n'
+        for index in range(0, top):
+            report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
 
         return report
 
@@ -128,5 +142,9 @@ class DatabaseReport:
 
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
+
+        # print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
+        #       f'counted as both "Atmospheric Black" and "Black."')
+        # print('Displaying MA\'s core genres (in relation to all bands):')
 
         return report + country_report_str
