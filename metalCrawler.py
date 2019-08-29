@@ -284,7 +284,13 @@ class VisitBandThread(threading.Thread):
                 if artist_soup is not None:
                     member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
-                    gender = get_dict_key(GENDER, str(member_info.contents[9].contents[7].contents[0]))
+                    gender = str(member_info.contents[9].contents[7].contents[0])
+
+                    if gender not in GENDER.keys():
+                        gender = 'U'
+                    else:
+                        gender = get_dict_key(GENDER, get_dict_key(GENDER, gender))
+
                     temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
                     # Age strings contain either an N/A or are YY (born ...).
                     if 'N/A' not in temp_age:
@@ -609,10 +615,15 @@ def cut_instruments(instrument_string):
                 if bool(re.search(r'\d', split_more[inner])):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
-                    # Then we have one of four types of strings. (1) two years separated by a '-', (2) a single
-                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'.
+                    # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
+                    #  in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
+                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
+                    # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
+                        # Safeguard against sloppy instruments where the time span starts with a comma.
+                        if time_span == '':
+                            continue
                         # There still is a trailing ')' in the end.
                         if time_span[len(time_span) - 1] == ')':
                             time_span = time_span[:-1]
@@ -620,7 +631,7 @@ def cut_instruments(instrument_string):
                         if len(time_span) is 4:
                             years = (int(time_span), int(time_span))
                         # (1)
-                        elif len(time_span) is 9 and time_span[0] != '?':
+                        elif len(time_span) is 9 and time_span[0] != '?' and time_span[4] == '-':
                             years = (int(time_span[0:4]), int(time_span[5:]))
                         # (4) Nasty special case.
                         elif '?' in time_span:
@@ -635,6 +646,9 @@ def cut_instruments(instrument_string):
                                 years = (int(time_span[0:4]), '?')
                             else:
                                 years = ()
+                        # (5)
+                        elif not time_span.isdigit() and 'present' not in time_span:
+                            continue
                         # (3)
                         else:
                             years = (int(time_span[0:4]), 'present')

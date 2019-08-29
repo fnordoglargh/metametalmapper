@@ -25,11 +25,49 @@ interesting ways to visualize the _Metal Archives'_ data:
 
 A Python3 installation >= 3.6 is needed to execute Metal Mapper.
 
+If you see output like this
+
+      File "metalMapper.py", line 36
+        f'Supported modes:\n'
+                            ^
+    SyntaxError: invalid syntax
+
+you need to run the program explicitly with `python3 metalMapper.py`.
+
+### Libraries
+
+metalMapper depends on the following packages:
+* [bs4](https://pypi.org/project/beautifulsoup4/) (BeautifulSoup)
+* [neomodel](https://neomodel.readthedocs.io/en/latest/)
+* [progressbar](https://pypi.org/project/progressbar/)
+
+Install them with `pip3`:
+
+    pip3 install bs4 neomodel progressbar2
+
 ### Neo4j
 
 Data is stored in a [Neo4j database](https://neo4j.com/product/).
-Download and install the [desktop version](https://neo4j.com/download/). Fire it up and create a database.
-The credentials need to go into `settings.py`.
+If you want to explore graphs locally you should download and install the 
+[desktop version (Windows)](https://neo4j.com/download/).
+The downside for some users might be the mandatory use of a Google of Facebook account to authorize
+the desktop app. 30 days to try the software without authorizations is given.
+If you know what you're doing you may simply set up Neo4j from other
+available editions. There is e.g. the official Linux 
+[guide](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
+
+Fire it up and create a database.
+Change the database credentials as needed in `settings.py`.
+
+#### Starting Neo4j Appimage on Linux
+
+If the Neo4j Appimage does not start the desktop window check the console logs contents like:
+
+    The name org.freedesktop.secrets was not provided by any .service files
+    
+Installation of the gnome-keyring helped me in that case.
+
+    sudo apt install gnome-keyring
 
 ### Library Hack
 
