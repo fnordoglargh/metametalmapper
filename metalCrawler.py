@@ -615,7 +615,8 @@ def cut_instruments(instrument_string):
                 if bool(re.search(r'\d', split_more[inner])):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
-                    # Then we have one of four types of strings. (1) two years separated by a '-', (2) a single
+                    # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
+                    #  in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
                     # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
                     # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
                     for time_span in time_spans:
@@ -630,7 +631,7 @@ def cut_instruments(instrument_string):
                         if len(time_span) is 4:
                             years = (int(time_span), int(time_span))
                         # (1)
-                        elif len(time_span) is 9 and time_span[0] != '?':
+                        elif len(time_span) is 9 and time_span[0] != '?' and time_span[4] == '-':
                             years = (int(time_span[0:4]), int(time_span[5:]))
                         # (4) Nasty special case.
                         elif '?' in time_span:
