@@ -76,6 +76,9 @@ class CountryReport:
         """
         return self._genders[gender_key][0]
 
+    def get_genres(self):
+        return self._genres
+
     def _get_population(self):
         """Returns a string for the str() method which handles the formatting of valid populations (inserts comma for
             thousands-separator) and simply prints the 'NA' of invalid values.
@@ -149,6 +152,15 @@ class DatabaseReport:
         :param report: The CountryReport to add.
         """
         self._country_reports.append(report)
+        genres = report.get_genres()
+
+        for genre in genres:
+            if genre[0] not in self._genres.keys():
+                self._genres[genre[0]] = genre[1]
+            else:
+                self._genres[genre[0]] += genre[1]
+
+        self._genres = dict(sorted(self._genres.items(), key=lambda x: x[1], reverse=True))
 
     def __str__(self):
         report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '
