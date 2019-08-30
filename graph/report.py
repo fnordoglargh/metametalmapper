@@ -12,6 +12,10 @@ class CountryReport:
 
         We store e.g. the amount of bands and artists and the number of countries they are from plus a gender breakdown
         of all artists. Artists are not filtered through their origin. Any artists linked to a band will be counted.
+
+        A word on genres: A band which plays 'Atmospheric Black Metal' has the genre string dissected into both
+        'Atmospheric Black' and 'Black'. This is especially important for counting against the core genres of MA. See
+        genre.py for details.
     """
     def __init__(self, country_name, population, number_bands, genders, gender_per_country, genres):
         self._country_name = country_name
@@ -34,10 +38,21 @@ class CountryReport:
         self._set_genres(genres)
 
     def _set_genres(self, genres: list):
+        """Internal function used by the constructor to set genres and calculate their percentages in relation to the
+            number of bands in the given country.
+
+        :param genres: List of tuples with a genre and the number of bands which play it.
+        """
+
         for genre in genres:
             self._genres.append((genre[0], genre[1], (genre[1] / self._number_bands) * 100))
 
     def _set_genders(self, genders: dict):
+        """Internal function used by the constructor to set the genders.
+
+        :param genders: A dictionary with genders and the number of people of that gender for bands of the given
+            country.
+        """
         self._amount_people = 0
         for gender in genders.keys():
             self._amount_people += genders[gender]
@@ -53,6 +68,12 @@ class CountryReport:
             self._genders[gender] = (count, (count / self._amount_people) * 100)
 
     def get_gender(self, gender_key):
+        """Gets the countries gender tuple for the given gender key.
+
+        :param gender_key: The gender key. See GENDER for possible values.
+        :return: A tuple with three values; The gender string, number of people in the given country belonging to that
+            gender and a percentage in relation to the total number of people playing in bands of this country.
+        """
         return self._genders[gender_key][0]
 
     def _get_population(self):
@@ -135,9 +156,5 @@ class DatabaseReport:
 
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
-
-        # print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
-        #       f'counted as both "Atmospheric Black" and "Black."')
-        # print('Displaying MA\'s core genres (in relation to all bands):')
 
         return report + country_report_str
