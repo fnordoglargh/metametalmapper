@@ -55,15 +55,23 @@ class CountryReport:
     def get_gender(self, gender_key):
         return self._genders[gender_key][0]
 
-    # Handles invalid populations.
     def _get_population(self):
+        """Returns a string for the str() method which handles the formatting of valid populations (inserts comma for
+            thousands-separator) and simply prints the 'NA' of invalid values.
+
+        :return: A perfectly formatted population string used internally by the str() method.
+        """
         if str(self._population).isdigit():
             return f'    {POP_POPULATION}: {self._population:,}\n'
         else:
             return f'    {POP_POPULATION}: {self._population}\n'
 
-    # Handles invalid populations.
     def _get_pop_per_100k(self):
+        """Returns a string for the str() method which handles the formatting of valid values for the number of bands
+            per 100k people (rounds to two digits) and simply prints 'NA' for invalid values.
+
+        :return: A perfectly formatted population per 100k people string used internally by the str() method.
+        """
         if str(self._bands_per_100k).isalpha():
             return f'    {POP_PER_100K}: {self._bands_per_100k}\n'
         else:
