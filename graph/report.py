@@ -5,21 +5,6 @@ POP_POPULATION = 'Population'
 GENDER_DISTRIBUTION = 'Gender distribution ({} artists from {} countries)\n'
 
 
-def get_percentage_string(dividend, divisor):
-    """Prepares a string with a number and a percentage (in parenthesis) for a given value pair.
-
-    :param dividend: Dividend for percentage calculation.
-    :param divisor: Divisor for percentage calculation.
-    :return: A string based on given values in the format "dividend (percentage%)" with two digits. The string will be
-        empty for invalid value pairs (e.g. divisor is zero or any value is smaller than zero).
-    """
-    if divisor is 0 or divisor * dividend < 0:
-        return ""
-    else:
-        percentage = (dividend / divisor) * 100
-        return f'{dividend} ({percentage:.2f}%)'
-
-
 class CountryReport:
     """A CountryReport stores information for a country which can be printed on a CLI or exported to a CSV file. A
         constructor allows creation. Everything else but a function to get the amount of people of a certain gender is
