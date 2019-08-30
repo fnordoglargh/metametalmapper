@@ -113,10 +113,12 @@ class CountryReport:
 
         top = 5
 
+        # Make sure we only print the amount available (until maximum defined above).
         if len(self._genres) < top:
             top = len(self._genres)
 
         report += f'    TOP {top} Genres;\n'
+
         for index in range(0, top):
             report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
 
@@ -142,6 +144,10 @@ class DatabaseReport:
             self._artists_per_country = artists_per_country
 
     def add_country_report(self, report: CountryReport):
+        """Appends the ready made CountryReport to the DatabaseReport.
+
+        :param report: The CountryReport to add.
+        """
         self._country_reports.append(report)
 
     def __str__(self):
