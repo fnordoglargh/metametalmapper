@@ -302,6 +302,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         artists_total = 0
         artists_per_country = {}
 
+        self.logger.debug('>>> Getting all artists.')
+
         for gender_key in GENDER:
             artists = Member.nodes.filter(gender__exact=gender_key)
 
@@ -315,11 +317,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             artists_total += genders[gender_key]
 
         band_count = len(Band.nodes.all())
-        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country)
 
         self.logger.debug('>>> Getting all bands.')
         bands_all = Band.nodes.all()
-        self.logger.debug('<<< Getting all bands.')
+        self.logger.debug('<<< Prep done.')
         bands_filtered = {}
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
@@ -336,6 +337,16 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 if len(temp_bands) > 0:
                     bands_filtered[short] = temp_bands
 
+        genres = {}
+
+        for band in bands_all:
+            for genre in band.genres:
+                if genre not in genres.keys():
+                    genres[genre] = 1
+                else:
+                    genres[genre] += 1
+
+        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:

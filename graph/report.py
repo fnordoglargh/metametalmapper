@@ -133,11 +133,11 @@ class DatabaseReport:
         contains e.g. the amount of _all_ artists and which genders they have.
 
     """
-    def __init__(self, band_count, genders, artist_count, artists_per_country):
+    def __init__(self, band_count, genders, artist_count, artists_per_country, genres):
         self._band_count = band_count
         self._genders = {}
         self._country_reports = []
-        self._genres = {}
+        self._genres = []
         self._amount_artists = 0
         self._artists_per_country = []
 
@@ -146,21 +146,17 @@ class DatabaseReport:
             self._genders[gender] = (genders[gender], (genders[gender] / artist_count) * 100)
             self._artists_per_country = artists_per_country
 
+        genres = dict(sorted(genres.items(), key=lambda x: x[1], reverse=True))
+
+        for genre_name, count in genres.items():
+            self._genres.append((genre_name, count, (count / band_count) * 100))
+
     def add_country_report(self, report: CountryReport):
         """Appends the ready made CountryReport to the DatabaseReport.
 
         :param report: The CountryReport to add.
         """
         self._country_reports.append(report)
-        genres = report.get_genres()
-
-        for genre in genres:
-            if genre[0] not in self._genres.keys():
-                self._genres[genre[0]] = genre[1]
-            else:
-                self._genres[genre[0]] += genre[1]
-
-        self._genres = dict(sorted(self._genres.items(), key=lambda x: x[1], reverse=True))
 
     def __str__(self):
         report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '
@@ -174,5 +170,11 @@ class DatabaseReport:
 
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
+
+        report += f'  {self._band_count} bands play {len(self._genres)} genres (there are more genres than bands; a '
+        report += 'band playing Atmospheric Black Metal counts as both "Atmospheric Black" and "Black"):\n'
+
+        for genre in self._genres:
+            report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
 
         return report + country_report_str
