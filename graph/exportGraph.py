@@ -1,8 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 import logging
-from global_helpers import FOLDER_EXPORTS
-from datetime import datetime
+from global_helpers import get_export_path
 from graph.choices import GENDER
 from graph.metalGraph import POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from genre import GENRE_CORE
@@ -56,9 +55,7 @@ class GraphMLExporter(GraphExportStrategy):
             f'</graphml>'
         )
 
-        actual_time = datetime.now()
-        time_stamp = f'{actual_time.date()}_{actual_time.time().strftime("%H%M%S")}'
-        db_path = Path(f"{FOLDER_EXPORTS}/bands_{time_stamp}.graphml")
+        db_path = get_export_path('bands', '.graphml')
         export_file = open(db_path, "w", encoding="utf-8")
         export_file.write(header)
 
