@@ -112,7 +112,8 @@ class CountryReport:
 
     @staticmethod
     def get_csv_header():
-        return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre\n'
+        return 'Country;Population;Bands;Bands per 100k;# Total;# Male;% Male;# Female;% Female;# Unknown;% Unknown;' \
+               'TOP genre\n'
 
     def get_csv_data(self):
         export_data = f'{self._country_name};{self._population};{self._number_bands};'
@@ -122,7 +123,7 @@ class CountryReport:
         else:
             export_data += f'{self._bands_per_100k:.2f}'
 
-        export_data += f';{self._get_csv_gender_data()}{self._genres[0][0]} Metal\n'
+        export_data += f';{self._amount_people};{self._get_csv_gender_data()}{self._genres[0][0]} Metal\n'
 
         return export_data
 
