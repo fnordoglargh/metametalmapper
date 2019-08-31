@@ -127,7 +127,6 @@ class CountryReport:
 
         return export_data
 
-
     def __str__(self):
         if len(self._genders) == 0:
             return "Invalid Country Report: Genders not set."
@@ -194,6 +193,8 @@ class DatabaseReport:
         export_file = get_export_path('countries', 'csv')
         export_file.write_text(export_text, encoding="utf-8")
 
+        return export_file
+
     def get_csv_header(self):
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
 
@@ -218,7 +219,5 @@ class DatabaseReport:
 
         for genre in self._genres:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
-
-        self.export_csv_country()
 
         return report + country_report_str

@@ -250,9 +250,10 @@ def main(argv):
         else:
             print(country_info[:-2])
 
-        # raw_data = db_handle.raw_analysis(cleaned_shorts)
         raw_report = db_handle.generate_report(cleaned_shorts)
         print(raw_report)
+        logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
+
         # export_handle = GraphExportContext(GraphMLExporter())
         # export_handle.export_csv(raw_data)
         # relationships = db_handle.export_bands_network(cleaned_shorts)

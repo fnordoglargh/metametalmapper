@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from graph.report import DatabaseReport
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -52,7 +53,7 @@ class GraphDatabaseContext:
     def calc_bands_per_pop(self, country_short, bands) -> dict:
         return self._strategy.calc_bands_per_pop_interface(country_short, bands)
 
-    def generate_report(self, country_shorts=None) -> dict:
+    def generate_report(self, country_shorts=None) -> DatabaseReport:
         return self._strategy.generate_report_interface(country_shorts)
 
 
@@ -99,5 +100,5 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def generate_report_interface(self, country_shorts) -> dict:
+    def generate_report_interface(self, country_shorts) -> DatabaseReport:
         pass
