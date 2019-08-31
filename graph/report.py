@@ -1,4 +1,5 @@
 from graph.choices import GENDER
+from global_helpers import get_export_path
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -101,6 +102,31 @@ class CountryReport:
         else:
             return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}%\n'
 
+    def _get_csv_gender_data(self):
+        gender_csv = ''
+
+        for gender in self._genders:
+            gender_csv += f'{self._genders[gender][0]};{self._genders[gender][1]:.2f};'
+
+        return gender_csv
+
+    @staticmethod
+    def get_csv_header():
+        return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre\n'
+
+    def get_csv_data(self):
+        export_data = f'{self._country_name};{self._population};{self._number_bands};'
+
+        if str(self._bands_per_100k).isalpha():
+            export_data += f'{self._bands_per_100k}'
+        else:
+            export_data += f'{self._bands_per_100k:.2f}'
+
+        export_data += f';{self._get_csv_gender_data()}{self._genres[0][0]} Metal\n'
+
+        return export_data
+
+
     def __str__(self):
         if len(self._genders) == 0:
             return "Invalid Country Report: Genders not set."
@@ -158,6 +184,21 @@ class DatabaseReport:
         """
         self._country_reports.append(report)
 
+    def export_csv_country(self):
+        export_text = CountryReport.get_csv_header()
+
+        for report in self._country_reports:
+            export_text += report.get_csv_data()
+
+        export_file = get_export_path('countries', 'csv')
+        export_file.write_text(export_text, encoding="utf-8")
+
+    def get_csv_header(self):
+        return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
+
+    def get_csv_data(self):
+        return f''
+
     def __str__(self):
         report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '
         report += f'{len(self._artists_per_country)} countries play in {self._band_count} bands.\n'
@@ -176,5 +217,7 @@ class DatabaseReport:
 
         for genre in self._genres:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
+
+        self.export_csv_country()
 
         return report + country_report_str
