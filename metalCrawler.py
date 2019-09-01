@@ -23,8 +23,7 @@ ajaxLinks = queue.Queue()
 entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
 lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
 
-# 8 might be a bit high (leaves some forbidden messages on getting the JSON
-# data or the bands).
+# 8 might be a bit high (leaves some forbidden messages on getting the JSON data or the bands).
 THREAD_COUNT = 8
 
 
