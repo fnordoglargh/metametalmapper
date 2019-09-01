@@ -253,6 +253,7 @@ def main(argv):
         raw_report = db_handle.generate_report(cleaned_shorts)
         print(raw_report)
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
+        logger.info(f'Genre report saved to: {raw_report.export_csv_genres()}')
 
         # export_handle = GraphExportContext(GraphMLExporter())
         # export_handle.export_csv(raw_data)

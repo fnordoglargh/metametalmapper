@@ -195,6 +195,57 @@ class DatabaseReport:
 
         return export_file
 
+    def export_csv_genres(self):
+        """Exports a CSV of all genres (rows) in all countries (columns).
+
+        :return: The Path object to the saved file.
+        """
+        country_genres = {'Total': {}}
+        genre_cache = {}
+
+        for report in self._country_reports:
+            genre_tuples = report.get_genres()
+            genre_cache[report._country_name] = {}
+
+            for genre_tuple in genre_tuples:
+                # 0: Genre name
+                if genre_tuple[0] not in country_genres['Total'].keys():
+                    country_genres['Total'][genre_tuple[0]] = genre_tuple[1]
+                else:
+                    country_genres['Total'][genre_tuple[0]] += genre_tuple[1]
+
+                genre_cache[report._country_name][genre_tuple[0]] = genre_tuple[1]
+
+        # At this point we have a all known genres in 'Total'. Now we need to construct the rest of the table. Having
+        # the cache will make that easier.
+        # Sort the dict from highest to lowest amount of genres.
+        country_genres['Total'] = dict(sorted(country_genres['Total'].items(), key=lambda x: x[1], reverse=True))
+        # First two items of the header.
+        export = 'Genre;Total;'
+
+        # Add all other countries to the header. TODO: Maybe sort the countries too.
+        for country in genre_cache.keys():
+            export += f'{country};'
+
+        # Last item of the header.
+        export += '\n'
+
+        # This loop constructs the rest of the table, starting with the genre.
+        for genre_name, count in country_genres['Total'].items():
+            export += f'{genre_name};{count};'
+            # Either append the number of bands playing the genre or an empty cell.
+            for country in genre_cache.keys():
+                if genre_name in genre_cache[country].keys():
+                    export += f'{genre_cache[country][genre_name]};'
+                else:
+                    export += ';'
+
+            export += '\n'
+
+        export_file = get_export_path('genres', 'csv')
+        export_file.write_text(export, encoding="utf-8")
+        return export_file
+
     def get_csv_header(self):
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
 
