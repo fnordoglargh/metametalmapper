@@ -1,34 +1,11 @@
 from abc import ABCMeta, abstractmethod
+from graph.report import DatabaseReport
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'
 RAW_GENRES = 'Genres'
 POP_COUNTRY = 'Country'
-
-
-def prettify_calc_result(calc_dict: dict) -> str:
-    """Prettifies the raw data from the dict returned by calc_bands_per_pop.
-
-    :param calc_dict: Takes a dict with the format supplied by calc_bands_per_pop.
-    :return: A string representation of the given dict.
-    """
-    pretty_string = ''
-    indentation_1 = '  '
-    indentation_2 = '    '
-
-    if len(calc_dict) is 0:
-        return pretty_string
-
-    for inner_key, inner_value in calc_dict.items():
-        if inner_key == POP_COUNTRY:
-            indent = indentation_1
-        else:
-            indent = indentation_2
-
-        pretty_string += f'{indent}{inner_key}: {inner_value}\n'
-
-    return pretty_string[:-1]
 
 
 class GraphDatabaseContext:
@@ -61,8 +38,9 @@ class GraphDatabaseContext:
 
     def get_all_links(self) -> dict:
         """Prepares a dictionary that contains all previously visited short links of all bands and artists. Two keys are
-            used: 'bands' and 'artists'. For ~10k bands and ~40k artists this takes ~7s. It's faster than checking for
-            the existence of nodes (which takes ~0.01s for the neomodel implementation).
+            used: 'bands' and 'artists'. For ~10k bands and ~40k artists this takes ~7s. Using the lookup table is  much
+            faster than checking for the existence of nodes (which takes ~0.01s for the neomodel implementation per
+            check).
 
         :return: Dictionary with all known 'bands' and 'artists'. Each short link of these entities has a time stamp of
             the last visit as the value.
@@ -75,8 +53,8 @@ class GraphDatabaseContext:
     def calc_bands_per_pop(self, country_short, bands) -> dict:
         return self._strategy.calc_bands_per_pop_interface(country_short, bands)
 
-    def raw_analysis(self, country_shorts=None):
-        return self._strategy.raw_analysis_interface(country_shorts)
+    def generate_report(self, country_shorts=None) -> DatabaseReport:
+        return self._strategy.generate_report_interface(country_shorts)
 
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
@@ -122,5 +100,5 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def raw_analysis_interface(self, country_shorts):
+    def generate_report_interface(self, country_shorts) -> DatabaseReport:
         pass

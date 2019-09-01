@@ -3,12 +3,12 @@ from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayPrope
 from neomodel.match import *
 from neo4j import exceptions
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY,\
-    prettify_calc_result
+from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
 import progressbar
+from graph.report import CountryReport, DatabaseReport
 
 
 class MemberRelationship(StructuredRel):
@@ -172,6 +172,58 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         print()
         return band_relationships
 
+    def generate_country_report(self, country_short, bands):
+        number_bands = len(bands)
+        if number_bands is 0:
+            return None
+
+        population = COUNTRY_POPULATION[country_short]
+
+        if int(population) == 0:
+            return None
+
+        unique_members = {}
+        progress_bar = progressbar.ProgressBar(max_value=number_bands)
+        band_counter = 0
+        member_counter = 0
+        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
+
+        # Init genders dict outside. Will be set in CountryReport object manually.
+        genders = {}
+        for gender in GENDER:
+            genders[gender] = 0
+
+        genres = {}
+        gender_per_country = {}
+
+        for band in bands:
+            for genre in band.genres:
+                if genre not in genres.keys():
+                    genres[genre] = 1
+                else:
+                    genres[genre] += 1
+            # Get the relationships of all members linked to the actual band.
+            for member in band.current_lineup:
+                if member.emid not in unique_members.keys():
+                    unique_members[member.emid] = ""
+                    # TODO: Fix multiple counting of artists.
+                    genders[member.gender] += 1
+                    member_counter += 1
+                    if member.origin not in gender_per_country:
+                        gender_per_country[member.origin] = 1
+                    else:
+                        gender_per_country[member.origin] += 1
+
+            band_counter += 1
+            progress_bar.update(band_counter)
+
+        progress_bar.finish()
+
+        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
+        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres)
+
+        return report
+
     def calc_bands_per_pop_interface(self, country_short, bands) -> dict:
         """Calculates the number of bands per 100k people for a given country and puts the data into a dict. The result
             will be empty for two error cases: The country population is smaller than one or if there are no bands
@@ -220,6 +272,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             for member in band.current_lineup:
                 if member.emid not in unique_members.keys():
                     unique_members[member.emid] = ""
+                    # TODO: Fix multiple counting of artists.
                     genders[member.gender] += 1
                     member_counter += 1
 
@@ -237,17 +290,37 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
-    def raw_analysis_interface(self, country_shorts: list):
-        """Prints some raw analysis of the entire database to the std out: The amount of bands and artists and the
-            number of countries they are from plus a gender breakdown of all artists.
+    def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
+        """Generates a report with an analysis of the entire database into an handy object.
 
         :param country_shorts: The list either contains the ISO names of countries to analyse or it is empty. In that
             case we take all countries of all bands into account.
+        :return: An initialized DatabaseReport object which can be processed further. Printing it is an obvious choice.
         """
+
+        genders = {}
+        artists_total = 0
+        artists_per_country = {}
+
+        self.logger.debug('>>> Getting all artists.')
+
+        for gender_key in GENDER:
+            artists = Member.nodes.filter(gender__exact=gender_key)
+
+            for artist in artists:
+                if artist.origin not in artists_per_country:
+                    artists_per_country[artist.origin] = 1
+                else:
+                    artists_per_country[artist.origin] += 1
+
+            genders[gender_key] = len(artists)
+            artists_total += genders[gender_key]
+
+        band_count = len(Band.nodes.all())
 
         self.logger.debug('>>> Getting all bands.')
         bands_all = Band.nodes.all()
-        self.logger.debug('<<< Getting all bands.')
+        self.logger.debug('<<< Prep done.')
         bands_filtered = {}
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
@@ -264,15 +337,16 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 if len(temp_bands) > 0:
                     bands_filtered[short] = temp_bands
 
-        self.logger.debug('Bands prepped.')
-        calc_results = []
+        genres = {}
 
-        # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
-        for iso_short, bands in bands_filtered.items():
-            self.logger.debug(f'  Calc {iso_short}.')
-            calc_results.append(self.calc_bands_per_pop_interface(iso_short, bands))
+        for band in bands_all:
+            for genre in band.genres:
+                if genre not in genres.keys():
+                    genres[genre] = 1
+                else:
+                    genres[genre] += 1
 
-        print(f'This raw analysis contains data of {len(bands_all)} bands from {len(bands_filtered.keys())} countries.')
+        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:
@@ -286,38 +360,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
-        # Prepare the genres by adding all known genres in a dictionary.
-        genres = {}
+        self.logger.debug('Bands prepped.')
 
-        for calc_result in calc_results:
-            print(prettify_calc_result(calc_result))
-            for genre, count in calc_result[RAW_GENRES].items():
-                if genre not in genres.keys():
-                    genres[genre] = count
-                else:
-                    genres[genre] += count
+        # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
+        for iso_short, bands in bands_filtered.items():
+            self.logger.debug(f'  Calc {iso_short}.')
+            db_report.add_country_report(self.generate_country_report(iso_short, bands))
 
-        genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        print(f'{len(bands_all)} bands play {len(genres)} genres. Note that a genre like "Atmospheric Black Metal" is '
-              f'counted as both "Atmospheric Black" and "Black."')
-        print('Displaying MA\'s core genres (in relation to all bands):')
-
-        for genre in genres:
-            percentage = (genre[1] / len(bands_all)) * 100
-            print(f'  {genre[0]}: {genre[1]} ({percentage:.2f}%)')
-
-        self.logger.debug('Prepping artists.')
-        all_artists = Member.nodes.all()
-        amount_artists = len(all_artists)
-        artist_per_country = []
-
-        for artist in all_artists:
-            if artist.origin not in artist_per_country:
-                artist_per_country.append(artist.origin)
-
-        print(f'The database contains {amount_artists} artists from {len(artist_per_country)} countries.')
-
-        for key, value in GENDER.items():
-            artist_gender = Member.nodes.filter(gender__exact=key)
-            percentage = (len(artist_gender) / amount_artists) * 100
-            print(f'  {len(artist_gender)} ({percentage:.2f}%) artists are {value}.')
+        return db_report
