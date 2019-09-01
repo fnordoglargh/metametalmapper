@@ -18,6 +18,7 @@ interesting ways to visualize the _Metal Archives'_ data:
     1000 nodes.
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Head over to [examples](EXAMPLES.md) to see some networks.
+* Exports CSV files with country reports or database reports of all countries and their genres. 
 
 ## Getting Started
 
@@ -71,7 +72,7 @@ Installation of the gnome-keyring helped me in that case.
 
 ### Library Hack
 
-While crawling band links I encountered a defect in `Lib/http/client.py`. 
+While crawling band links on Windows I encountered a defect in `Lib/http/client.py`. 
 The percent escaped characters were not resolved correctly. The solution for
 me was to change `putrequest()` (before `self._output()` is called). The line
 looks like this:
@@ -176,6 +177,22 @@ Two switches are available to analyze data and export `.graphml` networks:
 * `-z NN`: Analyze only the given country.
 * `-z NN1,NN2,RR1`: Analyze all given countries and/or regions.  
 
+The country analysis for all Norwegian band might look similar to this:
+
+    Norway
+      Population: 5,378,857
+      Bands: 1706
+      Bands per 100k people: 31.72%
+      Gender distribution (5779 artists from 45 countries)
+        Male: 5520 (95.52%)
+        Female: 240 (4.15%)
+        Unknown/other: 19 (0.33%)
+      TOP 5 Genres;
+        Black: 865 (50.70%)
+        Death: 381 (22.33%)
+        Thrash: 249 (14.60%)
+        Doom/Stoner/Sludge: 178 (10.43%)
+        Progressive: 165 (9.67%)
 
 ## Known Issues
 
