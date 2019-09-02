@@ -1,19 +1,16 @@
 #!/usr/bin/python
 import sys
 import getopt
-import logging
 import logging.config
 import yaml
 from enum import Enum
 from metalCrawler import *
-import json
-from pathlib import Path
-import datetime
 from graph.implNeoModel import *
 from graph.metalGraph import *
 from graph.exportGraph import *
 from global_helpers import *
 from country_helper import REGIONS, print_regions, print_countries
+from genre import save_genres
 
 countries = {}
 
@@ -219,6 +216,7 @@ def main(argv):
             if db_handle is not None:
                 # TODO: Get the country from filename and pass as parameter.
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
+                save_genres()
         else:
             logger.error("No bands are available. Make sure that you crawled a country or regions before -b is used.")
     elif mode in [CrawlMode.AnalyseDatabase]:
