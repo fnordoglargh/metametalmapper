@@ -13,3 +13,4 @@ databases/
 !img/*
 crawler.log*
 exports/
+genre_cache.json

@@ -75,7 +75,7 @@ class GraphMLExporter(GraphExportStrategy):
                 f'<data key="d1">{payload["country"]}</data></node>\n'
             )
 
-        # The second time we write the connections. This might seem odd but Cytoscape does not like the connections
+        # Only in a second run we write the connections. This might seem odd but Cytoscape does not like the connections
         # between the nodes.
         counter = 0
 
