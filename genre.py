@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import re
 
 # Hardcoded file path for the genre cache.
 GENRES_FILE_PATH = Path('genre_cache.json')
@@ -19,9 +20,6 @@ def load_genres():
 
 # Bootstrap: Call your own loading function.
 GENRE_CACHE = load_genres()
-
-# Known strings we want cut from the end of genre.
-GENRE_BLACKLIST = ['(early)', '(mid)', '(later)', 'Metal']
 
 # Hardcoded dict of all known genres considered on the MA page https://www.metal-archives.com/browse/genre.
 # The key is used up to look up the fitting genre string as on above page.
@@ -66,23 +64,30 @@ def split_genres(genre_string):
         'Experimental/Avant-garde', 'Dark Ambient'. See the test for more examples.
     :return: A list of all genres detected in the given genre_string.
     """
-    # Early return if the string is cached.
+    # Early return if the string is found in cache.
     if genre_string in GENRE_CACHE:
         return GENRE_CACHE[genre_string]
 
     genre_list = []
 
+    # Filter everything enclosed in parenthesis.
+    genre_string = re.sub('\([^)]*\)', '', genre_string)
+
     # Iterate over the split genre_string.
     for outer_genre in genre_string.split(', '):
         # Each outer_genre may consist of multiple genres (separated by a '/'). So we split those too.
         for inner_genre in outer_genre.split('/'):
-            temp_genre = inner_genre
-            # Remove the blacklisted strings at the end.
-            for blacked in GENRE_BLACKLIST:
-                position = temp_genre.find(blacked)
-                #  The second condition is necessary to detect genres with a leading 'Metal' in them.
-                if position > 0 and position + len(blacked) == len(temp_genre):
-                    temp_genre = temp_genre[:position].rstrip()
+            temp_genre = inner_genre.lstrip().strip()
+            # Remove the trailing instances of 'Metal'.
+            position = temp_genre.find('Metal')
+            #  The second condition is necessary to detect genres with a leading 'Metal' in them.
+            if position > 0 and position + 5 == len(temp_genre):
+                temp_genre = temp_genre[:position].rstrip()
+            # A lone 'Metal'.
+            elif position is 0:
+                continue
+
+            # Test existence in genre_list and append core item if parts match.
             if temp_genre not in genre_list:
                 genre_list.append(temp_genre)
                 for key, value in GENRE_CORE.items():

@@ -24,11 +24,14 @@ class TestGenreCutting(unittest.TestCase):
              ['Electronic Progressive Death', 'Death', 'Electronic/Industrial', 'Progressive', 'Thrash']),
             ('Melodic Death/Doom Metal (early), Industrial/Gothic Metal (mid), Melodic Metalcore (later)',
              ['Melodic Death', 'Death', 'Doom', 'Doom/Stoner/Sludge', 'Industrial', 'Electronic/Industrial', 'Gothic', 'Melodic Metalcore', 'Metalcore/Deathcore']),
-            ('Symphonic/Atmospheric Black Metal',
-             ['Symphonic Black', 'Atmospheric Black', 'Black'])
+            # ('Symphonic/Atmospheric Black Metal',
+            #  ['Symphonic Black', 'Atmospheric Black', 'Black']),
+            ('Progressive Death Metal, Progressive Rock/Metal (on Screaming Machines)',
+             ['Progressive Death', 'Death', 'Progressive', 'Progressive Rock'])
+
 
         ]
 
         for test in test_strings:
             result = genre.split_genres(test[0])
-            self.assertEqual(result, test[1])
+            self.assertEqual(test[1], result)
