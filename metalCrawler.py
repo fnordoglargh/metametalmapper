@@ -175,7 +175,9 @@ class VisitBandThread(threading.Thread):
         band_data[band_id]["country"] = country_link[-2:]
         location = s[1].contents[7].text
 
-        if location != "N/A":
+        if location == "N/A":
+            location = ["N/A"]
+        else:
             location = location.split("/")
 
         band_data[band_id]["location"] = location
