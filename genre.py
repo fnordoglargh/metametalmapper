@@ -23,7 +23,7 @@ GENRE_CACHE = load_genres()
 
 # Hardcoded dict of all known genres considered on the MA page https://www.metal-archives.com/browse/genre.
 # The key is used up to look up the fitting genre string as on above page.
-GENRE_CORE = {
+GENRE_CORE_MAP = {
     'Black': 'Black',
     'Death': 'Death',
     'Doom': 'Doom/Stoner/Sludge',
@@ -90,7 +90,7 @@ def split_genres(genre_string):
             # Test existence in genre_list and append core item if parts match.
             if temp_genre not in genre_list:
                 genre_list.append(temp_genre)
-                for key, value in GENRE_CORE.items():
+                for key, value in GENRE_CORE_MAP.items():
                     # Add the value from the core genre dict if it is not already there.
                     if key in temp_genre and value not in genre_list:
                         genre_list.append(value)
