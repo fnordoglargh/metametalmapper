@@ -49,6 +49,25 @@ GENRE_CORE_MAP = {
     'Thrash': 'Thrash'
 }
 
+GENRE_CORE_MA = [
+    'Black',
+    'Death',
+    'Doom/Stoner/Sludge',
+    'Electronic/Industrial',
+    'Experimental/Avant-garde',
+    'Folk/Viking/Pagan',
+    'Gothic',
+    'Grindcore',
+    'Groove',
+    'Heavy',
+    'Metalcore/Deathcore',
+    'Power',
+    'Progressive',
+    'Speed',
+    'Symphonic',
+    'Thrash'
+]
+
 
 def split_genres(genre_string):
     """Takes any genre string of an band entry on MA and separates the genres into a list. We always cut trailing

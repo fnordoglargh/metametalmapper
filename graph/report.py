@@ -1,5 +1,6 @@
 from graph.choices import GENDER
 from global_helpers import get_export_path
+from genre import GENRE_CORE_MA
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -221,30 +222,49 @@ class DatabaseReport:
         # Sort the dict from highest to lowest amount of genres.
         country_genres['Total'] = dict(sorted(country_genres['Total'].items(), key=lambda x: x[1], reverse=True))
         # First two items of the header.
-        export = 'Genre;Total;'
+        export_all = 'Genre;Total;'
 
         # Add all other countries to the header. TODO: Maybe sort the countries too.
         for country in genre_cache.keys():
-            export += f'{country};'
+            export_all += f'{country};'
 
         # Last item of the header.
-        export += '\n'
+        export_all += '\n'
+        export_core = export_all
 
         # This loop constructs the rest of the table, starting with the genre.
         for genre_name, count in country_genres['Total'].items():
-            export += f'{genre_name};{count};'
+            export_all += f'{genre_name};{count};'
             # Either append the number of bands playing the genre or an empty cell.
             for country in genre_cache.keys():
                 if genre_name in genre_cache[country].keys():
-                    export += f'{genre_cache[country][genre_name]};'
+                    export_all += f'{genre_cache[country][genre_name]};'
                 else:
-                    export += ';'
+                    export_all += ';'
 
-            export += '\n'
+            export_all += '\n'
 
-        export_file = get_export_path('genres', 'csv')
-        export_file.write_text(export, encoding="utf-8")
-        return export_file
+        export_file_all = get_export_path('genres_all', 'csv')
+        export_file_all.write_text(export_all, encoding="utf-8")
+
+        for genre_name in GENRE_CORE_MA:
+            if genre_name in country_genres["Total"].keys():
+                export_core += f'{genre_name};{country_genres["Total"][genre_name]};'
+            else:
+                export_core += f'{genre_name};;'
+
+            for country in genre_cache.keys():
+                if genre_name in genre_cache[country].keys():
+                    export_core += f'{genre_cache[country][genre_name]};'
+                else:
+                    export_core += ';'
+
+            export_core += '\n'
+
+        export_file_core = get_export_path('genres_core', 'csv')
+        export_file_core.write_text(export_core, encoding="utf-8")
+
+        return export_file_all, export_file_core
 
     def get_csv_header(self):
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
