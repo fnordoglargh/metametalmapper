@@ -101,7 +101,7 @@ class CountryReport:
         if str(self._bands_per_100k).isalpha():
             return f'    {POP_PER_100K}: {self._bands_per_100k}\n'
         else:
-            return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}%\n'
+            return f'    {POP_PER_100K}: {self._bands_per_100k:.2f}\n'
 
     def _get_csv_gender_data(self):
         gender_csv = ''
