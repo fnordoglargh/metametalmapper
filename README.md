@@ -38,13 +38,15 @@ you need to run the program explicitly with `python3 metalMapper.py`.
 ### Libraries
 
 metalMapper depends on the following packages:
-* [bs4](https://pypi.org/project/beautifulsoup4/) (BeautifulSoup)
+* [certifi](https://certifi.io/en/latest/)
+* [urllib3](https://urllib3.readthedocs.io/en/latest/)
+* [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 * [neomodel](https://neomodel.readthedocs.io/en/latest/)
-* [progressbar](https://pypi.org/project/progressbar/)
+* [progressbar2](https://pypi.org/project/progressbar2/)
 
 Install them with `pip3`:
 
-    pip3 install bs4 neomodel progressbar2
+    pip3 install -r requirements.txt
 
 ### Neo4j
 

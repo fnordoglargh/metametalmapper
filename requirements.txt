@@ -1,6 +1,6 @@
+certifi
 urllib3
 progressbar2
 neomodel
 beautifulsoup4
-certifi
 
