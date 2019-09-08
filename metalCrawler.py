@@ -581,18 +581,6 @@ def display_children(c):
             display_children(e)
 
 
-def is_not_empty_string_or_live(s):
-    if not s:
-        return False
-    elif "(live)" in s:
-        if s[0:6] == "(live)":
-            return False
-        else:
-            return True
-    else:
-        return True
-
-
 def cut_instruments(instrument_string):
     collection = []
     # First split along the '),'.
