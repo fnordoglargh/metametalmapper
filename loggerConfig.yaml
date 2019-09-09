@@ -17,9 +17,9 @@ handlers:
         backupCount: 20
         encoding: utf8
 loggers:
-    sampleLogger:
-        level: DEBUG
-        handlers: [console]
+    Crawler:
+        level: INFO
+        handlers: [file]
         propagate: no
 root:
     level: DEBUG

@@ -126,11 +126,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def get_all_links_interface(self) -> dict:
         all_links = {'bands': {}, 'artists': {}}
+        print('  Getting all known bands.')
         all_bands = Band.nodes.all()
 
         for band in all_bands:
             all_links['bands'][band.link] = band.visited
 
+        print('  Getting all known artists.')
         all_artists = Member.nodes.all()
 
         for artist in all_artists:

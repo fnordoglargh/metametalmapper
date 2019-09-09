@@ -6,7 +6,7 @@ import json
 import threading
 import queue
 import time
-import pprint
+import progressbar
 from bs4 import BeautifulSoup, NavigableString, Tag
 import re
 from graph.choices import *
@@ -28,7 +28,8 @@ THREAD_COUNT = 8
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, is_detailed=False):
+    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, progress_bar,
+                 visited_bands, is_detailed=False):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
@@ -37,6 +38,15 @@ class VisitBandThread(threading.Thread):
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
         :param db_handle: The database handle is used to add all entities directly into the database with the strategy
             defined on the outside.
+        :param band_errors: A shared dictionary with band links as keys and the number of unsuccessful crawl attempts as
+            the value.
+        :param visited_entities: A dictionary with keys like 'bands' or 'artists' to quickly check if crawling is
+            needed. The value is the date the entry was written into the database. The dictionary must be filled on the
+            outside or everything will be crawled and applied to the database.
+        :param progress_bar: The progress bar is initialized on the outside with the size of the band_links as the
+            maximum value.
+        :param visited_bands: A list shared among the threads so that the progress bar is updated easily.
+        :param is_detailed: A parameter that is not used and might be useful someday.
         """
 
         super(VisitBandThread, self).__init__()
@@ -52,20 +62,35 @@ class VisitBandThread(threading.Thread):
         self.lock = lock
         self.db_handle = db_handle
         self.visited_entities = visited_entities
+        self.visited_bands = visited_bands
         self.today = date.today()
         self.is_detailed = is_detailed
         self.band_errors = band_errors
         self.retries_max = 3
+        self.progress_bar = progress_bar
+
+    def update_bar(self, band_link):
+        self.visited_bands.append(band_link)
+        self.progress_bar.update(len(self.visited_bands))
 
     def run(self):
+        """Runs crawling as long as band links are retrieved from the links queue.
+
+        :return: -1 as soon as the queue runs out of values.
+        """
         self.logger.debug("Running " + self.name)
-        while self.bandLinks.qsize() != 0:
-            link_band_temp = self.bandLinks.get_nowait()
+
+        while True:
+            try:
+                link_band_temp = self.bandLinks.get_nowait()
+            except queue.Empty:
+                return -1
 
             # TODO: Implement revisiting mechanism based on date.
             # No need to visit if the band is already in the database.
             if link_band_temp in self.visited_entities['bands']:
                 self.logger.debug(f"  Skipping {link_band_temp}.")
+                self.update_bar(link_band_temp)
                 continue
 
             try:
@@ -85,7 +110,7 @@ class VisitBandThread(threading.Thread):
                     self.bandLinks.put(link_band_temp)
                 else:
                     self.logger.error(f'Too many retries for {link_band_temp}.')
-
+                    self.update_bar(link_band_temp)
                 continue
             else:
                 self.visited_entities['bands'][link_band_temp] = ""
@@ -104,10 +129,7 @@ class VisitBandThread(threading.Thread):
                 self.logger.error(temp_label_data)
             finally:
                 self.lock.release()
-                # TODO: Refactor progress output.
-                # progress = len(self.database["bands"]) / self.qsize
-                # self.logger.info("Progress: {:.2f}%. {} of {} bands to go.".format(
-                #     progress * 100, self.qsize - len(self.database["bands"]), self.qsize))
+                self.update_bar(link_band_temp)
 
             # Saving the data to disk will later enable us to limit getting live data if it is not needed.
             for i_band in temp_band_data:
@@ -371,10 +393,6 @@ class VisitBandThread(threading.Thread):
                 'rating': album_rating
             })
 
-        # pp = pprint.PrettyPrinter(indent=2)
-        # # pp.pprint(band_data)
-        # # pp.pprint(artist_data)
-        # # pp.pprint(label_data)
         logger.debug(f'<<< Crawling [{band_short_link}]')
         return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
@@ -743,6 +761,7 @@ def crawl_countries():
 def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
+    print("Starting band crawl. All logging is diverted to file. Prepping database:")
     local_bands_queue = queue.Queue()
 
     # Put links from list into queue.
@@ -764,12 +783,16 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     time_delta = datetime.now() - time_start
     amount_bands = len(visited_entities["bands"])
     amount_artists = len(visited_entities["artists"])
-    logger.info(f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.')
+    prep_report = f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.'
+    logger.info(prep_report)
+    print(prep_report)
+    progress_bar = progressbar.ProgressBar(max_value=local_bands_queue.qsize())
+    visited_bands = []
 
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, is_detailed)
+            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, progress_bar, visited_bands, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
@@ -779,6 +802,9 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
 
     for t in threads:
         t.join()
+
+    progress_bar.finish()
+    logger = logging.getLogger('Post-Crawler')
 
     # Print all bands which were not added to the database to the log and save the short links into a file.
     if len(unrecoverable_bands) > 0:
@@ -795,4 +821,4 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
         unrecoverable_file.close()
         logger.info(f'The short links of the bands are available in [{unrecoverable_file_name}].')
 
-    logger.debug('<<< Crawling all bands')
+    logger.info('<<< Crawling all bands')
