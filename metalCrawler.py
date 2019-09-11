@@ -579,7 +579,7 @@ def cook_soup(link, retry_count=5):
         web_page = http.request('GET', link)
         web_page_string = web_page.data.decode("utf-8")
 
-        if "Forbidden." in web_page_string:
+        if "Forbidden.\n" == web_page_string:
             time.sleep(.5)
             retry_count -= 1
             logger.debug(f"  Trying again... ({retry_count} to go)")
