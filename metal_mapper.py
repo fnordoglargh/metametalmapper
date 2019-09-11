@@ -1,4 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+"""_Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to access data of
+[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (MA) and query said data.
+"""
+
 import sys
 import getopt
 import logging.config
@@ -11,6 +16,12 @@ from graph.exportGraph import *
 from global_helpers import *
 from country_helper import REGIONS, print_regions, print_countries
 from genre import save_genres
+
+__author__ = "Martin Woelke"
+__copyright__ = "Copyright 2019, D-Test AG"
+__license__ = ""
+__version__ = "0.19"
+__status__ = "Development"
 
 countries = {}
 
@@ -110,7 +121,7 @@ def main(argv):
     os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
     logger.debug('***************************************************************')
-    logger.debug('Starting up...')
+    logger.info(f'metal mapper {__version__}')
     mode = CrawlMode.Error
     filenames = []
 
