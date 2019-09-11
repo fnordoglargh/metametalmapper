@@ -1,5 +1,5 @@
 # Metal Mapper
-_Metal Mapper_ is Python3 program and intended to be the basis to develop a toolset to access data of 
+_Metal Mapper_ is a Python3 program and intended to be the basis for a toolset to access data of 
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (MA) and query said data. The
 _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) links to two projects showcasing
 interesting ways to visualize the _Metal Archives'_ data:
@@ -7,6 +7,9 @@ interesting ways to visualize the _Metal Archives'_ data:
 * [Metal Map](https://metal-map.com/): A visualization of bands by country displayed on a map, with data from M-A.
 * [Metal Graph](http://metal-graph.com/): A graph showing the connections between Norwegian black metal bands, 
     with data from M-A. 
+    
+Neither project mentions _how_ they get the presented data. _Metal Mapper_ aims at closing the gap for your own
+projects.  
 
 ## Highlights
 
