@@ -80,5 +80,9 @@ class TestInstrumentCutting(unittest.TestCase):
         self.assertEqual(expected_cut, result)
 
         result = cut_instruments('Vocals (lead)(?-?, 2014 - present)')
-        expected_cut = [('Vocals (lead)', [(2014, 'present')])]
+        expected_cut = [('Vocals (lead)', [('?', '?'), (2014, 'present')])]
+        self.assertEqual(expected_cut, result)
+
+        result = cut_instruments('Bass (2004-2009, ?-?)')
+        expected_cut = [('Bass', [(2004, 2009), ('?', '?')])]
         self.assertEqual(expected_cut, result)
