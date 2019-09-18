@@ -1,3 +1,4 @@
+from collections import defaultdict
 from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
     RelationshipFrom, StructuredRel, config, core
 from neomodel.match import *
@@ -323,14 +324,12 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         self.logger.debug('>>> Getting all bands.')
         bands_all = Band.nodes.all()
         self.logger.debug('<<< Prep done.')
-        bands_filtered = {}
+        bands_filtered = defaultdict(list)
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
         # e.g. percentages.
         if len(country_shorts) is 0:
             for band in bands_all:
-                if band.country not in bands_filtered.keys():
-                    bands_filtered[band.country] = []
                 bands_filtered[band.country].append(band)
         else:
             for short in country_shorts:
@@ -339,14 +338,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 if len(temp_bands) > 0:
                     bands_filtered[short] = temp_bands
 
-        genres = {}
+        genres = defaultdict(int)
 
         for band in bands_all:
             for genre in band.genres:
-                if genre not in genres.keys():
-                    genres[genre] = 1
-                else:
-                    genres[genre] += 1
+                genres[genre] += 1
 
         db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
