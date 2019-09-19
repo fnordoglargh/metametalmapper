@@ -197,7 +197,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             genders[gender] = 0
 
         genres = {}
-        gender_per_country = {}
+        gender_per_country = defaultdict(int)
 
         for band in bands:
             for genre in band.genres:
@@ -212,10 +212,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     # TODO: Fix multiple counting of artists.
                     genders[member.gender] += 1
                     member_counter += 1
-                    if member.origin not in gender_per_country:
-                        gender_per_country[member.origin] = 1
-                    else:
-                        gender_per_country[member.origin] += 1
+                    gender_per_country[member.origin] += 1
 
             band_counter += 1
             progress_bar.update(band_counter)
@@ -263,14 +260,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         band_counter = 0
         member_counter = 0
         print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
-        genres = {}
+        genres = defaultdict(int)
 
         for band in bands:
             for genre in band.genres:
-                if genre not in genres.keys():
-                    genres[genre] = 1
-                else:
-                    genres[genre] += 1
+                genres[genre] += 1
             # Get the relationships of all members linked to the actual band.
             for member in band.current_lineup:
                 if member.emid not in unique_members.keys():
@@ -303,7 +297,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         genders = {}
         artists_total = 0
-        artists_per_country = {}
+        artists_per_country = defaultdict(int)
 
         self.logger.debug('>>> Getting all artists.')
 
@@ -311,10 +305,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             artists = Member.nodes.filter(gender__exact=gender_key)
 
             for artist in artists:
-                if artist.origin not in artists_per_country:
-                    artists_per_country[artist.origin] = 1
-                else:
-                    artists_per_country[artist.origin] += 1
+                artists_per_country[artist.origin] += 1
 
             genders[gender_key] = len(artists)
             artists_total += genders[gender_key]
