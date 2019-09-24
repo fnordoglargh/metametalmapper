@@ -1,3 +1,4 @@
+from collections import defaultdict
 from graph.choices import GENDER
 from global_helpers import get_export_path
 from genre import GENRE_CORE_MA
@@ -292,3 +293,20 @@ class DatabaseReport:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
 
         return report + country_report_str
+
+
+class AlbumReport:
+
+    def __init__(self, workable_types):
+        self.workable_types = workable_types
+        self.country_releases = defaultdict(lambda: defaultdict(int))
+
+    def process_release(self, country_iso, band_id, band_name, release_name, release_type, year, ratings):
+        if ratings is -1:
+            return
+        if len(country_iso) is not 2 or len(band_name) < 1:
+             return
+        elif release_type not in self.workable_types:
+            return
+
+        self.country_releases[country_iso][release_type] += 1

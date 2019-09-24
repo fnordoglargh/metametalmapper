@@ -9,7 +9,7 @@ from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 import logging
 import settings
 import progressbar
-from graph.report import CountryReport, DatabaseReport
+from graph.report import CountryReport, DatabaseReport, AlbumReport
 
 
 class MemberRelationship(StructuredRel):
@@ -198,8 +198,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         genres = {}
         gender_per_country = defaultdict(int)
+        album_report = AlbumReport(['F', 'E', 'D'])
 
         for band in bands:
+            self.get_albums(band, album_report)
             for genre in band.genres:
                 if genre not in genres.keys():
                     genres[genre] = 1
@@ -287,6 +289,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
+    def get_albums(self, band, album_report):
+        for release in band.releases:
+            album_report.process_release(band.country, band.emid, band.name, release.name, release.type, release.release_date, release.rating)
     def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
