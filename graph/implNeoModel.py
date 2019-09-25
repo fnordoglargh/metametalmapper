@@ -198,10 +198,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         genres = {}
         gender_per_country = defaultdict(int)
-        album_report = AlbumReport(['F', 'E', 'D'])
 
         for band in bands:
-            self.get_albums(band, album_report)
             for genre in band.genres:
                 if genre not in genres.keys():
                     genres[genre] = 1
@@ -291,7 +289,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def get_albums(self, band, album_report):
         for release in band.releases:
-            album_report.process_release(band.country, band.emid, band.name, release.name, release.type, release.release_date, release.rating)
+            album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name, RELEASE_TYPES[release.type], release.release_date, release.rating)
     def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
@@ -336,11 +334,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         genres = defaultdict(int)
 
+        album_report = AlbumReport([RELEASE_TYPES['F'], RELEASE_TYPES['E'], RELEASE_TYPES['D']])
+
         for band in bands_all:
             for genre in band.genres:
                 genres[genre] += 1
+            self.get_albums(band, album_report)
 
-        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres)
+        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, album_report)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:

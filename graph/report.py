@@ -159,15 +159,15 @@ class CountryReport:
 class DatabaseReport:
     """A DatabaseReport stores the analysis of the entire database plus the attached CountryReport objects. It always
         contains e.g. the amount of _all_ artists and which genders they have.
-
     """
-    def __init__(self, band_count, genders, artist_count, artists_per_country, genres):
+    def __init__(self, band_count, genders, artist_count, artists_per_country, genres, album_report):
         self._band_count = band_count
         self._genders = {}
         self._country_reports = []
         self._genres = []
         self._amount_artists = 0
         self._artists_per_country = []
+        self.album_report = album_report
 
         for gender in genders:
             self._amount_artists += genders[gender]
@@ -300,13 +300,29 @@ class AlbumReport:
     def __init__(self, workable_types):
         self.workable_types = workable_types
         self.country_releases = defaultdict(lambda: defaultdict(int))
+        self.releases_total = defaultdict(int)
 
-    def process_release(self, country_iso, band_id, band_name, release_name, release_type, year, ratings):
+    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings):
         if ratings is -1:
             return
-        if len(country_iso) is not 2 or len(band_name) < 1:
-             return
+        if len(country_name) is 0 or len(band_name) < 1:
+            return
         elif release_type not in self.workable_types:
             return
 
-        self.country_releases[country_iso][release_type] += 1
+        self.country_releases[country_name][release_type] += 1
+        self.releases_total[release_type] += 1
+
+    def __str__(self):
+        report = 'Release Report (percentages in relation to totals)\n  Totals\n'
+
+        for release_type, count in self.releases_total.items():
+            report += f'    {release_type}s: {count}\n'
+
+        for country, releases in self.country_releases.items():
+            report += f'  {country}\n'
+            for release_type, count in releases.items():
+                percentage = (count / self.releases_total[release_type]) * 100
+                report += f'    {release_type}s: {count} ({percentage:.2f}%)\n'
+
+        return report
