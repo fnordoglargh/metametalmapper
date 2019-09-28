@@ -373,22 +373,27 @@ class VisitBandThread(threading.Thread):
             album_name = cells[0].text
             album_type = get_dict_key(RELEASE_TYPES, cells[1].text)
             album_year = cells[2].text
-            album_rating = cells[3].text.rstrip().strip()
-            parenthesis_open = album_rating.find('(')
+            album_rating_raw = cells[3].text.rstrip().strip()
+            parenthesis_open = album_rating_raw.find('(')
+
+            album_rating = -1
+            review_count = 0
 
             if parenthesis_open != -1:
-                parenthesis_close = album_rating.find(')')
-                # Get int value from a string looking like this: '8 (64%)'
-                album_rating = int(album_rating[parenthesis_open + 1:parenthesis_close - 1])
-            else:
-                album_rating = -1
+                split_rating = album_rating_raw.split('(')
+
+                # Get the average rating and review count from a string looking like this: '8 (64%)'
+                if len(split_rating) is 2:
+                    review_count = int(split_rating[0].rstrip())
+                    album_rating = int(split_rating[1][:-2])
 
             band_data[band_id]['releases'].append({
                 'emid': album_id,
                 'name': album_name,
                 'type': album_type,
                 'release_date': album_year,
-                'rating': album_rating
+                'rating': album_rating,
+                'review_count': review_count
             })
 
         logger.debug(f'<<< Crawling [{band_short_link}]')

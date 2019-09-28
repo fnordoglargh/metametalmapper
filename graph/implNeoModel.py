@@ -50,6 +50,7 @@ class Release(StructuredNode):
     name = StringProperty()
     type = StringProperty(max_lenght=1, choices=RELEASE_TYPES)
     rating = IntegerProperty()
+    review_count = IntegerProperty()
     release_date = DateProperty()
     recorded_by = RelationshipFrom('Band', 'RECORDED')
     # released_on = RelationshipTo('Label', 'RELEASED_ON')
