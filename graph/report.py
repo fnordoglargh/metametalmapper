@@ -292,7 +292,7 @@ class DatabaseReport:
         for genre in self._genres:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
 
-        return report + country_report_str
+        return report + country_report_str + str(self.album_report)
 
 
 class AlbumReport:
