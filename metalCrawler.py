@@ -7,6 +7,7 @@ import threading
 import queue
 import time
 import progressbar
+from settings import CRAWLER_THREAD_COUNT
 from bs4 import BeautifulSoup, NavigableString, Tag
 import re
 from graph.choices import *
@@ -22,9 +23,6 @@ bandsQueue = queue.Queue()
 ajaxLinks = queue.Queue()
 entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
 lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
-
-# 8 might be a bit high (leaves some forbidden messages on getting the JSON data or the bands).
-THREAD_COUNT = 8
 
 
 class VisitBandThread(threading.Thread):
@@ -771,10 +769,13 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
 
     threads = []
     lock = threading.Lock()
-    thread_count = THREAD_COUNT
+    thread_count = CRAWLER_THREAD_COUNT
 
-    if len(band_links) < THREAD_COUNT:
+    if len(band_links) < CRAWLER_THREAD_COUNT:
         thread_count = len(band_links)
+    elif thread_count < 1 or thread_count > 8:
+        logger.error("Thread count is outside safe range from 1 to 8.")
+        exit(-7)
 
     unrecoverable_bands = {}
     # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
