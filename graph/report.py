@@ -1,7 +1,8 @@
 from collections import defaultdict
-from graph.choices import GENDER
+from graph.choices import GENDER, RELEASE_TYPES
 from global_helpers import get_export_path
 from genre import GENRE_CORE_MA
+from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -301,8 +302,9 @@ class AlbumReport:
         self.workable_types = workable_types
         self.country_releases = defaultdict(lambda: defaultdict(int))
         self.releases_total = defaultdict(int)
+        self.releases_per_year = defaultdict(lambda: defaultdict(list))
 
-    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings):
+    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings, review_count):
         if ratings is -1:
             return
         if len(country_name) is 0 or len(band_name) < 1:
@@ -310,9 +312,14 @@ class AlbumReport:
         elif release_type not in self.workable_types:
             return
 
+        # Collect release counts per type (and total).
         self.country_releases[country_name][release_type] += 1
         self.releases_total[release_type] += 1
 
+        # Collect releases in a tuple. We filter by the minimum values for average percentage and review count from the
+        # settings file.
+        if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
+            self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings))
     def __str__(self):
         report = 'Release Report (percentages in relation to totals)\n  Totals\n'
 
@@ -324,5 +331,19 @@ class AlbumReport:
             for release_type, count in releases.items():
                 percentage = (count / self.releases_total[release_type]) * 100
                 report += f'    {release_type}s: {count} ({percentage:.2f}%)\n'
+
+        top = 5
+        releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
+
+        for year, releases in releases_per_year.items():
+            top_temp = top
+            if len(releases[RELEASE_TYPES['F']]) < top:
+                top_temp = len(releases[RELEASE_TYPES['F']])
+
+            report += f'  Best releases in {year} (TOP {top_temp} of {len(releases[RELEASE_TYPES["F"]])}):\n'
+
+            for i in range(0, top_temp):
+                report += f'    {releases[RELEASE_TYPES["F"]][i][0]} ({releases[RELEASE_TYPES["F"]][i][2]}%) '
+                report += f'by {releases[RELEASE_TYPES["F"]][i][1]}\n'
 
         return report

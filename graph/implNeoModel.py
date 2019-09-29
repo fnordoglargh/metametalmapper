@@ -290,7 +290,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def get_albums(self, band, album_report):
         for release in band.releases:
-            album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name, RELEASE_TYPES[release.type], release.release_date, release.rating)
+            album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name,
+                                         RELEASE_TYPES[release.type], release.release_date, release.rating,
+                                         release.review_count)
     def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
