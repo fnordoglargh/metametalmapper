@@ -321,7 +321,7 @@ class AlbumReport:
         if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
             self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings))
     def __str__(self):
-        report = 'Release Report (percentages in relation to totals)\n  Totals\n'
+        report = 'Release Report (percentages in relation to totals):\n  Totals\n'
 
         for release_type, count in self.releases_total.items():
             report += f'    {release_type}s: {count}\n'
@@ -334,16 +334,22 @@ class AlbumReport:
 
         top = 5
         releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
+        report += 'Best releases per year:\n'
 
         for year, releases in releases_per_year.items():
             top_temp = top
             if len(releases[RELEASE_TYPES['F']]) < top:
                 top_temp = len(releases[RELEASE_TYPES['F']])
 
-            report += f'  Best releases in {year} (TOP {top_temp} of {len(releases[RELEASE_TYPES["F"]])}):\n'
+            # No full-length releases in this year.
+            if top_temp is 0:
+                continue
+
+            sorted_releases = sorted(releases[RELEASE_TYPES["F"]], key=lambda x: x[2], reverse=True)
+            report += f'  Best releases in {year} (TOP {top_temp} of {len(sorted_releases)}):\n'
 
             for i in range(0, top_temp):
-                report += f'    {releases[RELEASE_TYPES["F"]][i][0]} ({releases[RELEASE_TYPES["F"]][i][2]}%) '
-                report += f'by {releases[RELEASE_TYPES["F"]][i][1]}\n'
+                report += f'    {sorted_releases[i][0]} ({sorted_releases[i][2]}%) '
+                report += f'by {sorted_releases[i][1]}\n'
 
         return report
