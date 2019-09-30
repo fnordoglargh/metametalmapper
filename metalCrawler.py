@@ -793,13 +793,15 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     prep_report = f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.'
     logger.info(prep_report)
     print(prep_report)
+    print(f'Crawling {local_bands_queue.qsize()} bands. This is going to take a while.')
     progress_bar = progressbar.ProgressBar(max_value=local_bands_queue.qsize())
     visited_bands = []
 
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, progress_bar, visited_bands, is_detailed)
+            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, progress_bar,
+            visited_bands, is_detailed)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
