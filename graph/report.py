@@ -304,7 +304,8 @@ class AlbumReport:
         self.releases_total = defaultdict(int)
         self.releases_per_year = defaultdict(lambda: defaultdict(list))
 
-    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings, review_count):
+    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings,
+                        review_count):
         if ratings is -1:
             return
         if len(country_name) is 0 or len(band_name) < 1:
@@ -320,6 +321,69 @@ class AlbumReport:
         # settings file.
         if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
             self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings))
+
+    @staticmethod
+    def get_release_tuple_string(release_tuple):
+        if len(release_tuple) is 3:
+            return f'{release_tuple[0]} ({release_tuple[2]}%) by {release_tuple[1]}'
+        else:
+            return ''
+
+    def get_csv_header(self):
+        csv_header = 'year;'
+
+        for release_type in self.workable_types:
+            csv_header += f'{release_type};'
+
+        csv_header += '\n'
+
+        return csv_header
+
+    def get_sort_key(self, item):
+        return item[2]
+
+    def export_csv_releases(self):
+        export_text = self.get_csv_header()
+        releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
+
+        for year, release_types in releases_per_year.items():
+            export_text += f'{year};'
+
+            # for type
+
+            # Types will be exported in columns. First we determine the maximum amount of elements in the largest
+            # category.
+            type_size = 0
+            sorted_types = {}
+
+            for release_type, releases in release_types.items():
+                if len(releases) > type_size:
+                    type_size = len(releases)
+                sorted_types[release_type] = sorted(releases, key=self.get_sort_key, reverse=True)
+
+            for i in range(0, type_size):
+                if i > 0:
+                    export_text += ';'
+                # We use the workable types to check existence and control the order.
+                for type_name in self.workable_types:
+                    if type_name not in release_types:
+                        continue
+
+                    # Add the actual element.
+                    if i < len(release_types[type_name]):
+                        export_text += f'{self.get_release_tuple_string(sorted_types[type_name][i])};'
+                    # Add an empty cell because there no elements anymore.
+                    else:
+                        export_text += ';'
+
+                export_text += '\n'
+
+        export_text += '\n'
+        export_file = get_export_path('releases_per_year', 'csv')
+        export_file.write_text(export_text, encoding="utf-8")
+
+        return export_file
+
     def __str__(self):
         report = 'Release Report (percentages in relation to totals):\n  Totals\n'
 
@@ -349,7 +413,6 @@ class AlbumReport:
             report += f'  Best releases in {year} (TOP {top_temp} of {len(sorted_releases)}):\n'
 
             for i in range(0, top_temp):
-                report += f'    {sorted_releases[i][0]} ({sorted_releases[i][2]}%) '
-                report += f'by {sorted_releases[i][1]}\n'
+                report += f'    {self.get_release_tuple_string(sorted_releases[i])}\n'
 
         return report

@@ -194,6 +194,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Init genders dict outside. Will be set in CountryReport object manually.
         genders = {}
+
         for gender in GENDER:
             genders[gender] = 0
 
@@ -219,7 +220,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             progress_bar.update(band_counter)
 
         progress_bar.finish()
-
         genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
         report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres)
 

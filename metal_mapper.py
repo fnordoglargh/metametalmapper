@@ -263,6 +263,7 @@ def main(argv):
         print(raw_report)
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
         genre_export_paths = raw_report.export_csv_genres()
+        raw_report.album_report.export_csv_releases()
         logger.info(f'Genre reports saved to: \n  All : {genre_export_paths[0]}\n  Core: {genre_export_paths[1]}')
         export_handle = GraphExportContext(GraphMLExporter())
         relationships = db_handle.export_bands_network(cleaned_shorts)
