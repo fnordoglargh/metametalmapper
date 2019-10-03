@@ -2,7 +2,7 @@ from collections import defaultdict
 from graph.choices import GENDER, RELEASE_TYPES
 from global_helpers import get_export_path
 from genre import GENRE_CORE_MA
-from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN
+from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -143,7 +143,8 @@ class CountryReport:
         for gender, value_pair in self._genders.items():
             report += f'      {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
 
-        top = 5
+        # Take the maximum from the settings file.
+        top = TOP
 
         # Make sure we only print the amount available (until maximum defined above).
         if len(self._genres) < top:
@@ -396,7 +397,8 @@ class AlbumReport:
                 percentage = (count / self.releases_total[release_type]) * 100
                 report += f'    {release_type}s: {count} ({percentage:.2f}%)\n'
 
-        top = 5
+        # Take the maximum from the settings file.
+        top = TOP
         releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
         report += 'Best releases per year:\n'
 
