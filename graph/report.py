@@ -330,7 +330,7 @@ class AlbumReport:
             return ''
 
     def get_csv_header(self):
-        csv_header = 'year;'
+        csv_header = 'Year;'
 
         for release_type in self.workable_types:
             csv_header += f'{release_type};'
