@@ -8,3 +8,6 @@ CRAWLER_THREAD_COUNT = 8
 # Minimum values for releases to appear in the reports.
 RELEASE_REVIEW_COUNT_MIN = 3
 RELEASE_AVERAGE_MIN = 80
+
+# Maximum number for all reports using a TOP X
+TOP = 5
