@@ -269,11 +269,9 @@ class DatabaseReport:
 
         return export_file_all, export_file_core
 
-    def get_csv_header(self):
+    @staticmethod
+    def get_csv_header():
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
-
-    def get_csv_data(self):
-        return f''
 
     def __str__(self):
         report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '

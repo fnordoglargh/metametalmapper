@@ -1,19 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
 import logging
 from global_helpers import get_export_path
-from graph.choices import GENDER
-from graph.metalGraph import POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
-from genre import GENRE_CORE_MAP
-
-
-def get_genres(raw_data) -> dict:
-    genres = {}
-
-    for genre in GENRE_CORE_MAP.keys():
-        pass
-
-    return genres
 
 
 class GraphExportContext:
