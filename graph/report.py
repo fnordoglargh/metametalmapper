@@ -385,9 +385,6 @@ class AlbumReport:
 
                 # We use the workable types to check existence and control the order.
                 for type_name in self.workable_types:
-                    if type_name not in release_types:
-                        continue
-
                     # Add the actual element.
                     if i < len(release_types[type_name]):
                         export_text += f'{self.get_release_tuple_string(sorted_types[type_name][i])};'
