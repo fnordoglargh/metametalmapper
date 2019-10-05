@@ -31,7 +31,7 @@ A Python3 installation >= 3.6 is needed to execute Metal Mapper.
 
 If you see output like this
 
-      File "metalMapper.py", line 36
+      File "metal_mapper.py", line 36
         f'Supported modes:\n'
                             ^
     SyntaxError: invalid syntax
@@ -88,7 +88,7 @@ This hack needs to import `rfc3986` to function.
 
 ### Metal Mapper
 
-Clone this repo and execute `python metalMapper.py` (see _How to use_ section). 
+Clone this repo and execute `python metal_mapper.py` (see _How to use_ section). 
 
 ## Basics
 
@@ -117,16 +117,16 @@ like what pseudonym a member used in a certain band or what instruments were pla
 
 ## How to use
 
-`metalMaper.py`, when called without switches, shows a list of compiler switches and some hints
+`metal_mapper.py`, when called without switches, shows a list of compiler switches and some hints
 how to use them. The program does not have an interactive mode. Every function (but the
 bootstrapping) needs data from previous runs.
 
 ### Use Case: Crawl and Analyse Norway
 
-1. Get all known Norwegian band links from MA: `metalMapper.py -c NO`
-2. Crawl all Norwegian bands: `metalMapper.py -b -f links/NO.lnks`
+1. Get all known Norwegian band links from MA: `metal_mapper.py -c NO`
+2. Crawl all Norwegian bands: `metal_mapper.py -b -f links/NO.lnks`
 3. Open Neo4j Desktop and look at the graph.
-4. Print raw analysis in the terminal and export a `.graphml` file: `metalMapper.py -z NO`
+4. Print raw analysis in the terminal and export a `.graphml` file: `metal_mapper.py -z NO`
 
 ### Bootstrapping: Crawl _all_ available countries
 
@@ -176,7 +176,66 @@ a pull request.
 
 ### Analysis
 
-Two switches are available to analyze data and export `.graphml` networks:
+After e.g. crawling a region or a country, you can start analyzing the data. Running the program with
+either of the available switches prints some information on the command line. Far more interesting are
+the exported CSV and GraphML files. They are named after their general category followed by a timestamp
+(depicted by a * in the following sections).
+
+#### Countries
+
+List countries and their properties like total number of bands, bands per 100k people, a gender breakdown and the TOP
+genre.
+
+The file pattern is `countries_*`.
+
+| Country | Population | Bands | Bands per 100k | # Total | # Male | % Male | # Female | % Female | # Unknown | % Unknown | TOP genre |
+| ------------- |---------------|------|------|------|------|------|------|------|------|------|------|
+| Norway | 5378857 | 1702 | 31,64 | 5782 | 5523 | 95,52 | 240 | 4,15 | 19 | 0,33 | Black Metal |
+| Denmark | 5771876 | 999 | 17,31 | 3623 | 3545 | 97,85 | 77 | 2,13 | 1 | 0,03 | Death Metal |
+
+
+#### All genres
+ 
+List all known genres and the count for each one per country.
+
+The file pattern is `genres_all_*`.
+
+| Genre | Total | Norway | Denmark |
+|---|---|---|---|
+| Black | 1135 | 862 | 271 |
+| Death | 732 | 381 | 351 |
+| Thrash | 441 | 249 | 192 |
+| Heavy | 316 | 147 | 169 |
+| Doom/Stoner/Sludge | 298 | 178 | 120 |
+
+#### All core genres
+
+_Core_ does not mean what you might think in this context. It's the merely the most 
+[common genre names](https://www.metal-archives.com/browse/genre) as MA defines them.
+
+The CSV contains the core genres and the count for each one per country.   
+    
+The file pattern is `genres_core_*`.
+
+It looks similar to the _all genres_ table.
+
+#### Releases per year
+
+This CSV groups releases on a per year basis. Most recent year on the top. The releases per year are grouped descending
+on their rating. Release entries in the database store the average rating of e.g. a full length album or demo. The other
+metric is the number of reviews. I arbitrarily tried cut-off values to filter releases:
+
+* `RELEASE_REVIEW_COUNT_MIN`: The minimum amount of reviews a release needs to be considered for the export (default 3).
+* `RELEASE_AVERAGE_MIN`: The minimum average score a release needs (default 80),
+   
+If you don't like the standard settings from `settings.py`, try to change the properties to something that works for 
+.you
+
+The file pattern is `releases_per_year_*`.
+
+#### Usage and output example
+
+Two switches are available to analyze data, print to the command line, and export `.graphml` networks:
 
 * `-y`: Analyze the entire database.
 * `-z NN`: Analyze only the given country.
@@ -207,9 +266,11 @@ The country analysis for all Norwegian band might look similar to this:
 
 ## Backlog
 
+* Notify user on calling analysis if a country has not been mapped entirely. 
 * Allow fine tuning the band relationships (e.g. don't connect bands through artists who were only part
     of the live line-up).
 * Implement a flag to overwrite data unconditionally.
 * Implement option to overwrite data based on how old it is.
-* Connecting releases with labels. The screenshot shows a few nodes from prototyping.
-![Prototype including labels and Albums](img/intro_graph_2.png)
+* Connecting releases with labels. The screenshot shows additional label nodes (and their connections)
+    from prototyping.
+    ![Prototype including labels and Albums](img/intro_graph_2.png)

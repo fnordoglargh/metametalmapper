@@ -288,8 +288,8 @@ class DatabaseReport:
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
 
-        report += f'  {self._band_count} bands play {len(self._genres)} genres (there are more genres than bands; a '
-        report += 'band playing Atmospheric Black Metal counts as both "Atmospheric Black" and "Black"):\n'
+        report += f'  {self._band_count} bands play {len(self._genres)} genres (there might be more genres than bands; '
+        report += 'a band playing Atmospheric Black Metal counts as both "Atmospheric Black" and "Black"):\n'
 
         for genre in self._genres:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
@@ -298,8 +298,22 @@ class DatabaseReport:
 
 
 class AlbumReport:
+    """An AlbumReport stores the data for releases and prints it to he command line and/or exports it to a CSV file.
+    """
 
-    def __init__(self, workable_types):
+    def __init__(self, workable_types: list):
+        """The constructor needs a list of release types to work with. The types must be written exactly as any of the
+            values in RELEASE_TYPES. Raises ValueError if the `workable_types` list is invalid.
+
+        :param workable_types: List of release types to consider when `process_release` is called.
+        """
+        if len(workable_types) is 0:
+            raise ValueError('List or workable types was empty.')
+
+        for workable_type in workable_types:
+            if workable_type not in RELEASE_TYPES.values():
+                raise ValueError(f'The type {workable_type} is not recognized.')
+
         self.workable_types = workable_types
         self.country_releases = defaultdict(lambda: defaultdict(int))
         self.releases_total = defaultdict(int)
@@ -340,7 +354,13 @@ class AlbumReport:
 
         return csv_header
 
-    def get_sort_key(self, item):
+    @staticmethod
+    def _get_sort_key(item):
+        """This strange-looking function serves the sorting of releases in `export_csv_releases`.
+
+        :param item: A release tuple.
+        :return: The score element of a release tuple.
+        """
         return item[2]
 
     def export_csv_releases(self):
@@ -350,8 +370,6 @@ class AlbumReport:
         for year, release_types in releases_per_year.items():
             export_text += f'{year};'
 
-            # for type
-
             # Types will be exported in columns. First we determine the maximum amount of elements in the largest
             # category.
             type_size = 0
@@ -360,11 +378,13 @@ class AlbumReport:
             for release_type, releases in release_types.items():
                 if len(releases) > type_size:
                     type_size = len(releases)
-                sorted_types[release_type] = sorted(releases, key=self.get_sort_key, reverse=True)
+                sorted_types[release_type] = sorted(releases, key=self._get_sort_key, reverse=True)
 
             for i in range(0, type_size):
+                # We want the the year column to be empty and only contain the year.
                 if i > 0:
                     export_text += ';'
+
                 # We use the workable types to check existence and control the order.
                 for type_name in self.workable_types:
                     if type_name not in release_types:
@@ -373,13 +393,12 @@ class AlbumReport:
                     # Add the actual element.
                     if i < len(release_types[type_name]):
                         export_text += f'{self.get_release_tuple_string(sorted_types[type_name][i])};'
-                    # Add an empty cell because there no elements anymore.
+                    # Add an empty cell because there are no elements anymore.
                     else:
                         export_text += ';'
 
                 export_text += '\n'
 
-        export_text += '\n'
         export_file = get_export_path('releases_per_year', 'csv')
         export_file.write_text(export_text, encoding="utf-8")
 
