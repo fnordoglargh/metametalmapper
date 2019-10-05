@@ -592,7 +592,7 @@ def cook_soup(link, retry_count=5):
     if retry_count is 0:
         return None
 
-    return BeautifulSoup(web_page.data, "html.parser")
+    return BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
 
 
 def display_children(c):
