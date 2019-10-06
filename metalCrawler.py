@@ -265,6 +265,7 @@ class VisitBandThread(threading.Thread):
         for i in range(1, len(actual_category), 2):
             actual_row = actual_category[i]
             last_found_header = actual_row.attrs["class"][0]
+            header_category = ""
 
             # Normal case.
             if last_found_header == "lineupHeaders":
@@ -280,8 +281,13 @@ class VisitBandThread(threading.Thread):
                     header_category = lineup_mapping[test_header2]
                     logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
 
-            if header_category not in band_data[band_id]["lineup"]:
+            if header_category == "":
+                logger.error('The header category was empty.')
+                return -1
+            elif header_category not in band_data[band_id]["lineup"]:
                 band_data[band_id]["lineup"][header_category] = []
+            else:
+                pass
 
             # Five elements for artists.
             if len(actual_row) is 5:
@@ -355,10 +361,12 @@ class VisitBandThread(threading.Thread):
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
         disco_soup = cook_soup(link_disco)
+
         if disco_soup is None:
             logger.error(f"  Unable to get the discography for {band_short_link}.")
             # We have to throw everything away and start anew.
             return -1
+
         table = disco_soup.find('table', attrs={'class': 'display discog'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
