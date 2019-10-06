@@ -262,7 +262,7 @@ def main(argv):
         raw_report = db_handle.generate_report(cleaned_shorts)
         print(raw_report)
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
-        release_export_path = raw_report.album_report.export_csv_releases()
+        release_export_path = raw_report.album_report.export_csv_releases_per_year()
         logger.info(f'Release report saved to: {release_export_path}')
         genre_export_paths = raw_report.export_csv_genres()
         logger.info(f'Genre reports saved to:')

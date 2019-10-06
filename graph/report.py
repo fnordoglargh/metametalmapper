@@ -342,16 +342,6 @@ class AlbumReport:
         else:
             return ''
 
-    def get_csv_header(self):
-        csv_header = 'Year;'
-
-        for release_type in self.workable_types:
-            csv_header += f'{release_type};'
-
-        csv_header += '\n'
-
-        return csv_header
-
     @staticmethod
     def _get_sort_key(item):
         """This strange-looking function serves the sorting of releases in `export_csv_releases`.
@@ -361,8 +351,14 @@ class AlbumReport:
         """
         return item[2]
 
-    def export_csv_releases(self):
-        export_text = self.get_csv_header()
+    def export_csv_releases_per_year(self):
+        # Prep the CSV header.
+        export_text = 'Year;'
+
+        for release_type in self.workable_types:
+            export_text += f'{release_type};'
+
+        export_text += '\n'
         releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
 
         for year, release_types in releases_per_year.items():
