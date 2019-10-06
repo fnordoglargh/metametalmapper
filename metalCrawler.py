@@ -234,9 +234,14 @@ class VisitBandThread(threading.Thread):
                 label_id = label_name
             label_link = ""
         else:
-            label_name = label_node.contents[0]
-            label_link = label_node.attrs["href"][len(em_link_label):]
-            label_id = label_link[label_link.find('/') + 1:]
+            if len(label_node.contents) > 0:
+                label_name = label_node.contents[0]
+                label_link = label_node.attrs["href"][len(em_link_label):]
+                label_id = label_link[label_link.find('/') + 1:]
+            else:
+                logger.error("Label node appears to empty; dumping parent parent node.")
+                logger.error(str(s[3]))
+                raise ValueError('Label node must not be empty.')
 
         band_data[band_id]["label"] = label_id
         label_data = {label_id: {"name": label_name, "link": label_link}}
