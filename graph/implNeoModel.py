@@ -288,11 +288,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
-    def get_albums(self, band, album_report):
-        for release in band.releases:
-            album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name,
-                                         RELEASE_TYPES[release.type], release.release_date, release.rating,
-                                         release.review_count)
     def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
@@ -335,7 +330,12 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     bands_filtered[short] = temp_bands
 
         genres = defaultdict(int)
-        album_report = AlbumReport([RELEASE_TYPES['F'], RELEASE_TYPES['E'], RELEASE_TYPES['D']])
+        release_types = []
+
+        for release_type in settings.RELEASE_TYPES_REVIEW:
+            release_types.append(RELEASE_TYPES[release_type])
+
+        album_report = AlbumReport(release_types)
         print('  Prep done. Processing releases and genres.')
         progress_bar = progressbar.ProgressBar(max_value=len(bands_all))
         band_counter = 0
@@ -343,7 +343,12 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for band in bands_all:
             for genre in band.genres:
                 genres[genre] += 1
-            self.get_albums(band, album_report)
+
+            for release in band.releases:
+                album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name,
+                                             RELEASE_TYPES[release.type], release.release_date, release.rating,
+                                             release.review_count)
+
             band_counter += 1
             progress_bar.update(band_counter)
 

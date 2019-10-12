@@ -226,7 +226,9 @@ on their rating. Release entries in the database store the average rating of e.g
 metric is the number of reviews. I arbitrarily tried cut-off values to filter releases:
 
 * `RELEASE_REVIEW_COUNT_MIN`: The minimum amount of reviews a release needs to be considered for the export (default 3).
-* `RELEASE_AVERAGE_MIN`: The minimum average score a release needs (default 80),
+* `RELEASE_AVERAGE_MIN`: The minimum average score a release needs (default 80).
+* `RELEASE_TYPES_REVIEW`: By default we consider Albums (F), EPs (E) and Demos (D). Other valid types can
+    be found in `RELEASE_TYPES`(see `choices.py`).
    
 If you don't like the standard settings from `settings.py`, try to change the properties to something that works for 
 .you
