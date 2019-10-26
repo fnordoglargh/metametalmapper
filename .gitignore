@@ -14,3 +14,4 @@ databases/
 crawler.log*
 exports/
 genre_cache.json
+reports/

@@ -12,7 +12,7 @@ REGIONS = {
 }
 
 # Hardcoded file paths for the countries.
-COUNTRY_FILE_PATH = Path('iso_countries.csv')
+COUNTRY_FILE_PATH = Path('data/iso_countries.csv')
 
 
 def load_data_file(file_name: Path, value_column, key_column=0):
