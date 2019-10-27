@@ -269,7 +269,6 @@ class VisitBandThread(threading.Thread):
         for i in range(1, len(actual_category), 2):
             actual_row = actual_category[i]
             last_found_header = actual_row.attrs["class"][0]
-            header_category = ""
 
             # Normal case.
             if last_found_header == "lineupHeaders":
@@ -287,14 +286,8 @@ class VisitBandThread(threading.Thread):
             elif last_found_header == "lineupBandsRow":
                 pass
 
-            if header_category == "":
-                logger.error('The header category was empty.')
-                return -1
-            elif header_category not in band_data[band_id]["lineup"]:
-                # Add an empty lineup list for the found header_category if it was not in before.
-                band_data[band_id]["lineup"][header_category] = []
-            else:
-                pass
+            # Add an empty lineup list for the found header_category if it was not in before.
+            band_data[band_id]["lineup"][header_category] = []
 
             # Five elements for artists.
             if len(actual_row) is 5:
