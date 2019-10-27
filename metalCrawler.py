@@ -259,13 +259,16 @@ class VisitBandThread(threading.Thread):
         if len(lineup_finder) == 0:
             is_lineup_diverse = False
 
-        # The elements alternate from a band member to bands or member to
-        # member if it's the only band for the latter.
-        # Category (like current or past) are found at index.
+        # The contents of actual_category starts with a LF (`Navigable String`) and has a LF at every even position.
+        # So we start at index 1 with actual payload and only take data from uneven indexes.
+        # Data at even indexes are from one of three categories:
+        #   * lineupHeaders: A header category like "Current" or "Past".
+        #   * lineupRow: An artist including instruments and time spans.
+        #   * lineupBandsRow: Other bands an artist played in. We do not need to parse this as we connect each band
+        #     member with the actual band.
         for i in range(1, len(actual_category), 2):
             actual_row = actual_category[i]
             last_found_header = actual_row.attrs["class"][0]
-            header_category = ""
 
             # Normal case.
             if last_found_header == "lineupHeaders":
@@ -280,14 +283,11 @@ class VisitBandThread(threading.Thread):
                     test_header2 = str(band_soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                     header_category = lineup_mapping[test_header2]
                     logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
-
-            if header_category == "":
-                logger.error('The header category was empty.')
-                return -1
-            elif header_category not in band_data[band_id]["lineup"]:
-                band_data[band_id]["lineup"][header_category] = []
-            else:
+            elif last_found_header == "lineupBandsRow":
                 pass
+
+            # Add an empty lineup list for the found header_category if it was not in before.
+            band_data[band_id]["lineup"][header_category] = []
 
             # Five elements for artists.
             if len(actual_row) is 5:

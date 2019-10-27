@@ -50,7 +50,7 @@ bands.
     This raw analysis contains data of 219 bands from 1 countries. That is the entire database.
       India
         Bands: 219
-        Population: 1366417754
+        Population: 1.366.417.754
         Bands per 100k people: 0.02
         Artists: 1165
           Male: 1155 (99.14%).
