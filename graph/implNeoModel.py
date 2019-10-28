@@ -48,6 +48,7 @@ class Label(StructuredNode):
 class Release(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
+    link = StringProperty()
     type = StringProperty(max_lenght=1, choices=RELEASE_TYPES)
     rating = IntegerProperty()
     review_count = IntegerProperty()
@@ -345,9 +346,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 genres[genre] += 1
 
             for release in band.releases:
-                album_report.process_release(COUNTRY_NAMES[band.country], band.emid, band.name, release.name,
-                                             RELEASE_TYPES[release.type], release.release_date, release.rating,
-                                             release.review_count)
+                album_report.process_release(
+                    COUNTRY_NAMES[band.country], band.emid, band.name, release.name, release.link,
+                    RELEASE_TYPES[release.type], release.release_date, release.rating, release.review_count
+                )
 
             band_counter += 1
             progress_bar.update(band_counter)

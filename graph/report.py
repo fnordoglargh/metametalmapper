@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from graph.choices import GENDER, RELEASE_TYPES
 from global_helpers import get_export_path
@@ -317,7 +318,7 @@ class AlbumReport:
         self.releases_total = defaultdict(int)
         self.releases_per_year = defaultdict(lambda: defaultdict(list))
 
-    def process_release(self, country_name, band_id, band_name, release_name, release_type, year, ratings,
+    def process_release(self, country_name, band_id, band_name, release_name, link, release_type, year, ratings,
                         review_count):
         if ratings is -1:
             return
@@ -333,11 +334,11 @@ class AlbumReport:
         # Collect releases in a tuple. We filter by the minimum values for average percentage and review count from the
         # settings file.
         if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
-            self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings))
+            self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings, link))
 
     @staticmethod
     def get_release_tuple_string(release_tuple):
-        if len(release_tuple) is 3:
+        if len(release_tuple) >= 3:
             return f'{release_tuple[0]} ({release_tuple[2]}%) by {release_tuple[1]}'
         else:
             return ''
@@ -392,6 +393,14 @@ class AlbumReport:
 
         export_file = get_export_path('releases_per_year', 'csv')
         export_file.write_text(export_text, encoding="utf-8")
+
+        return export_file
+
+    def export_json_releases_per_year(self):
+        # convert into JSON:
+        json_export = json.dumps(self.releases_per_year)
+        export_file = get_export_path('releases_per_year', 'json')
+        export_file.write_text(json_export, encoding="utf-8")
 
         return export_file
 

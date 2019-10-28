@@ -382,13 +382,16 @@ class VisitBandThread(threading.Thread):
 
             # TODO: Visit release page to get details like the actual release date instead of only the year.
             album_id = cells[0].contents[0].attrs['href']
+            # We don't need the fixed part of the link (https://www.metal-archives.com/albums/).
+            album_link = album_id[38:]
+            # Get the ID just to be sure.
             album_id = album_id[album_id.rfind('/') + 1:]
             album_name = cells[0].text
             album_type = get_dict_key(RELEASE_TYPES, cells[1].text)
             album_year = cells[2].text
             album_rating_raw = cells[3].text.rstrip().strip()
             parenthesis_open = album_rating_raw.find('(')
-
+            # Instantiate with data for invalid review and and ratings.
             album_rating = -1
             review_count = 0
 
@@ -406,7 +409,8 @@ class VisitBandThread(threading.Thread):
                 'type': album_type,
                 'release_date': album_year,
                 'rating': album_rating,
-                'review_count': review_count
+                'review_count': review_count,
+                'link': album_link
             })
 
         logger.debug(f'<<< Crawling [{band_short_link}]')

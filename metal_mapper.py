@@ -264,6 +264,8 @@ def main(argv):
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
         release_export_path = raw_report.album_report.export_csv_releases_per_year()
         logger.info(f'Release report saved to: {release_export_path}')
+        release_json_export_path = raw_report.album_report.export_json_releases_per_year()
+        logger.info(f'Release export saved to: {release_json_export_path}')
         genre_export_paths = raw_report.export_csv_genres()
         logger.info(f'Genre reports saved to:')
         logger.info(f'  All : {genre_export_paths[0]}')

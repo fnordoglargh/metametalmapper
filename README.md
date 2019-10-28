@@ -233,7 +233,7 @@ metric is the number of reviews. I arbitrarily tried cut-off values to filter re
 If you don't like the standard settings from `settings.py`, try to change the properties to something that works for 
 .you
 
-The file pattern is `releases_per_year_*`.
+The file pattern is `releases_per_year_*`. Note that a JSON file of the release data is also exported.
 
 #### Usage and output example
 
