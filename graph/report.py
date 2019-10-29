@@ -397,8 +397,31 @@ class AlbumReport:
         return export_file
 
     def export_json_releases_per_year(self):
+        export_releases = []
+        # Sort the existing dict by year (descending) and use copy from now on.
+        releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
+
+        for year, release_types in releases_per_year.items():
+            export_releases.append({"year": year})
+
+            for release_type, releases in release_types.items():
+                # Sort releases of the actual type by average score (descending).
+                sorted_releases = sorted(releases, key=lambda x: x[2], reverse=True)
+                temp_releases = []
+
+                for release in sorted_releases:
+                    temp_release = {
+                        "name": release[0],
+                        "band": release[1],
+                        "rating": release[2],
+                        "link": release[3],
+                    }
+                    temp_releases.append(temp_release)
+                # It's safe to use the length here because a year was added.
+                export_releases[len(export_releases)-1][release_type] = temp_releases
+
         # convert into JSON:
-        json_export = json.dumps(self.releases_per_year)
+        json_export = json.dumps(export_releases)
         export_file = get_export_path('releases_per_year', 'json')
         export_file.write_text(json_export, encoding="utf-8")
 
