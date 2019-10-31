@@ -334,6 +334,10 @@ class AlbumReport:
         # Collect releases in a tuple. We filter by the minimum values for average percentage and review count from the
         # settings file.
         if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
+            # Instantiate release types in the order we like (so that the JSON export is consistent).
+            if str(year)[0:4] not in self.releases_per_year:
+                for temp_type in self.workable_types:
+                    self.releases_per_year[str(year)[0:4]][temp_type] = []
             self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings, link))
 
     @staticmethod
