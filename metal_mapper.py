@@ -16,6 +16,7 @@ from graph.exportGraph import *
 from global_helpers import *
 from country_helper import REGIONS, print_regions, print_countries
 from genre import save_genres
+from html_exporter import generate_html_report
 
 __author__ = "Martin Woelke"
 __copyright__ = "Copyright 2019, D-Test AG"
@@ -266,6 +267,9 @@ def main(argv):
         logger.info(f'Release report saved to: {release_export_path}')
         release_json_export_path = raw_report.album_report.export_json_releases_per_year()
         logger.info(f'Release export saved to: {release_json_export_path}')
+        export_data = [(release_json_export_path, "marker_releases")]
+        html_report_location = generate_html_report(export_data)
+        logger.info(f'HTML report saved to: {html_report_location}')
         genre_export_paths = raw_report.export_csv_genres()
         logger.info(f'Genre reports saved to:')
         logger.info(f'  All : {genre_export_paths[0]}')
