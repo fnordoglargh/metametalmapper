@@ -317,6 +317,7 @@ class AlbumReport:
         self.country_releases = defaultdict(lambda: defaultdict(int))
         self.releases_total = defaultdict(int)
         self.releases_per_year = defaultdict(lambda: defaultdict(list))
+        self.all_releases = defaultdict(list)
 
     def process_release(self, country_name, band_id, band_name, release_name, link, release_type, year, ratings,
                         review_count):
@@ -339,6 +340,15 @@ class AlbumReport:
                 for temp_type in self.workable_types:
                     self.releases_per_year[str(year)[0:4]][temp_type] = []
             self.releases_per_year[str(year)[0:4]][release_type].append((release_name, band_name, ratings, link))
+            self.all_releases[release_type].append(
+                {
+                    "release_name": release_name,
+                    "country_name": country_name,
+                    "link": link,
+                    "ratings": ratings,
+                    "band_name": band_name
+                }
+            )
 
     @staticmethod
     def get_release_tuple_string(release_tuple):
@@ -399,6 +409,40 @@ class AlbumReport:
         export_file.write_text(export_text, encoding="utf-8")
 
         return export_file
+
+    def export_all_releases(self):
+        export_releases = {}
+
+        for temp_type in self.workable_types:
+            export_releases[temp_type] = []
+
+        for release_type, releases in self.all_releases.items():
+            # Sort the releases by the ratings property in each dict of the releases list.
+            sorted_releases = sorted(releases, key=lambda x: x['ratings'], reverse=True)
+            counter = 1
+            last_used_number = 0
+
+            # No release can be better than 100%. But it ensures that the conditions inside the loop works even if the
+            # first ratings value is 100.
+            last_rating = 101
+
+            for temp_release in sorted_releases:
+                # Use counter as actual number.
+
+                if temp_release['ratings'] < last_rating:
+                    last_used_number = counter
+                elif temp_release['ratings'] is last_rating:
+                    pass
+
+                counter += 1
+                temp_release['rank'] = last_used_number
+                export_releases[release_type].append(temp_release)
+                # Save the current ratings value.
+                last_rating = temp_release['ratings']
+
+        json_export = json.dumps(export_releases)
+        export_file = get_export_path('all_releases', 'json')
+        export_file.write_text(json_export, encoding="utf-8")
 
     def export_json_releases_per_year(self):
         export_releases = []
