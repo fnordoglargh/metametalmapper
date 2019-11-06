@@ -16,6 +16,7 @@
                 <button class="w3-button mw-blood" onclick="appendData(releases)">Test 1</button>
                 <button class="w3-button mw-blood" onclick="appendData(countries)">Test 2</button>
                 <button class="w3-button mw-blood" onclick="displayRelease(releases_per_year)">Releases (per year)</button>
+                <button class="w3-button mw-blood" onclick="displayReleaseAll(releases_all)">Releases (all)</button>
             </div>
         </div>
         
@@ -44,7 +45,8 @@
                 }]
             }]
 
-            var releases_per_year = marker_releases
+            var releases_per_year = marker_releases_year
+            var releases_all = marker_releases_all
 
             function appendData(data) {
                 var mainContainer = document.getElementById("myData");
@@ -70,6 +72,7 @@
                 var mainContainer = document.getElementById("myData");
                 mainContainer.innerHTML = "";
 
+                // TODO: Refactor this into a variable of its own.
                 // The first element always contains the available release types.
                 amount_release_types = data[0].categories.length;
 
@@ -88,22 +91,58 @@
                         column.className = "w3-col m4 l4";
                         row.appendChild(column);
                         // Add the release category on top.
-                        column.innerHTML = '<h3>' + key+ '</h3>';
+                        column.innerHTML = '<h3>' + key + '</h3>';
                         var list = document.createElement("ol");
                         column.appendChild(list);
                         releases = data[i];
 
                         for (var k = 0; k < releases[key].length; k++) {
-                            console.log(k);
                             var list_element = document.createElement("li");
                             var link = '"' + release_link + releases[key][k].link + '"';
                             list_element.innerHTML = '<a href=' + link + '>' + releases[key][k].name + '</a> (' + releases[key][k].rating + '%) by ' + releases[key][k].band;
-                            //list_element.innerHTML = releases[key][k].name;
                             list.appendChild(list_element);
                         }
                     }
                 }
             }
+
+            function displayReleaseAll(data) {
+                var mainContainer = document.getElementById("myData");
+                mainContainer.innerHTML = "";
+
+                // TODO: Refactor this into a variable of its own.
+                amount_release_types = 3;
+
+                var div_outer = document.createElement("div");
+                div_outer.innerHTML = '<h2>All releases by rating</h2>';
+                mainContainer.appendChild(div_outer);
+                var row = document.createElement("div");
+                row.className = "w3-row";
+                mainContainer.appendChild(row);
+
+                // Construct the columns, each containing an ordered list.
+                for (key in data) {
+                    var column = document.createElement("div");
+                    column.className = "w3-col m4 l4";
+                    row.appendChild(column);
+                    // Add the release category on top.
+                    column.innerHTML = '<h3>' + key + '</h3>';
+                    //var list = document.createElement("ol");
+                    //column.appendChild(list);
+                    releases = data;
+
+                    for (var k = 0; k < releases[key].length; k++) {
+                        var list_element = document.createElement("div");
+                        var link = '"' + release_link + releases[key][k].link + '"';
+                        list_element.innerHTML = releases[key][k].rank + '. <a href=' + link + '>' + releases[key][k].release_name + '</a> (' + releases[key][k].ratings + '%) by ' + releases[key][k].band_name;
+                        column.appendChild(list_element);
+                        //list.appendChild(list_element);
+                    }
+
+                    mainContainer.appendChild(column);
+                }
+            }
+
         </script>
     </body>
 </html>

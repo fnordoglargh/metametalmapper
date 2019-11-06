@@ -443,6 +443,7 @@ class AlbumReport:
         json_export = json.dumps(export_releases)
         export_file = get_export_path('all_releases', 'json')
         export_file.write_text(json_export, encoding="utf-8")
+        return export_file
 
     def export_json_releases_per_year(self):
         export_releases = []

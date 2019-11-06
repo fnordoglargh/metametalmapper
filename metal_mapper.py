@@ -262,12 +262,18 @@ def main(argv):
 
         raw_report = db_handle.generate_report(cleaned_shorts)
         print(raw_report)
+
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
         release_export_path = raw_report.album_report.export_csv_releases_per_year()
         logger.info(f'Release report saved to: {release_export_path}')
         release_json_export_path = raw_report.album_report.export_json_releases_per_year()
         logger.info(f'Release export saved to: {release_json_export_path}')
-        export_data = [(release_json_export_path, "marker_releases")]
+        release_all_json_export_path = raw_report.album_report.export_all_releases()
+        logger.info(f'Release export saved to: {release_all_json_export_path}')
+        export_data = [
+            (release_json_export_path, "marker_releases_year"),
+            (release_all_json_export_path, "marker_releases_all")
+        ]
         html_report_location = generate_html_report(export_data)
         logger.info(f'HTML report saved to: {html_report_location}')
         genre_export_paths = raw_report.export_csv_genres()
