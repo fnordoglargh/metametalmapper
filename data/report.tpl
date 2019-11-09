@@ -71,7 +71,8 @@
             function displayRelease(data) {
                 var mainContainer = document.getElementById("myData");
                 mainContainer.innerHTML = "";
-
+                mainContainer.className ="w3-container"
+                
                 // TODO: Refactor this into a variable of its own.
                 // The first element always contains the available release types.
                 amount_release_types = data[0].categories.length;
@@ -109,7 +110,8 @@
             function displayReleaseAll(data) {
                 var mainContainer = document.getElementById("myData");
                 mainContainer.innerHTML = "";
-
+                mainContainer.className ="w3-container"
+                
                 // TODO: Refactor this into a variable of its own.
                 amount_release_types = 3;
 
