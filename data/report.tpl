@@ -13,63 +13,21 @@
 
         <div class="w3-container mw-dark-blood">
              <div class="w3-bar">
-                <button class="w3-button mw-blood" onclick="appendData(releases)">Test 1</button>
-                <button class="w3-button mw-blood" onclick="appendData(countries)">Test 2</button>
                 <button class="w3-button mw-blood" onclick="displayRelease(releases_per_year)">Releases (per year)</button>
                 <button class="w3-button mw-blood" onclick="displayReleaseAll(releases_all)">Releases (all)</button>
             </div>
         </div>
         
-        <div id="myData"></div>
+        <div id="metalData"></div>
+
         <script>
+
             var release_link = 'https://www.metal-archives.com/albums/'
-            var releases = [{
-                "year": 1991,
-                "releases": [{
-                    "id": "1",
-                    "release_name": "Soulside Journey",
-                    "rating": 87,
-                    "band_name": "Darkthrone",
-                    "short_link": "Soulside_Journey/441258"
-                }]
-            }]
-
-            var countries = [{
-                "year": 1991,
-                "releases": [{
-                    "id": "1",
-                    "release_name": "Test",
-                    "rating": 87,
-                    "band_name": "Darkthrone",
-                    "short_link": "Soulside_Journey/441258"
-                }]
-            }]
-
             var releases_per_year = marker_releases_year
             var releases_all = marker_releases_all
 
-            function appendData(data) {
-                var mainContainer = document.getElementById("myData");
-                mainContainer.innerHTML = ""
-
-                for (var j = 0; j < data.length; j++) {
-                    var div_outer = document.createElement("div");
-                    div_outer.innerHTML = '<h1>' + data[j].year + '</h1>'
-                    mainContainer.appendChild(div_outer);
-                    var list = document.createElement("ol");
-                    mainContainer.appendChild(list);
-                    for (var i = 0; i < data[j].releases.length; i++) {
-                        console.log(i)
-                        var div = document.createElement("li");
-                        var link = '"' + release_link + data[j].releases[i].band_name + '/' + data[j].releases[i].short_link + '"';
-                        div.innerHTML = '<a href=' + link + '>' + data[j].releases[i].release_name + '</a> (' + data[j].releases[i].rating + '%) by ' + data[j].releases[i].band_name;
-                        list.appendChild(div);
-                    }
-                }
-            }
-
             function displayRelease(data) {
-                var mainContainer = document.getElementById("myData");
+                var mainContainer = document.getElementById("metalData");
                 mainContainer.innerHTML = "";
                 mainContainer.className ="w3-container"
                 
@@ -108,7 +66,7 @@
             }
 
             function displayReleaseAll(data) {
-                var mainContainer = document.getElementById("myData");
+                var mainContainer = document.getElementById("metalData");
                 mainContainer.innerHTML = "";
                 mainContainer.className ="w3-container"
                 
