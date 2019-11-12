@@ -12,3 +12,6 @@ RELEASE_TYPES_REVIEW = ["F", "E", "D"]
 
 # Maximum number for all reports using a TOP X
 TOP = 5
+
+# Filter options for graph exports.
+FILTER_UNCONNECTED = False

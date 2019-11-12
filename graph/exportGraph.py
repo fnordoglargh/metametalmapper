@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
 from global_helpers import get_export_path, escape_band_names
+from settings import FILTER_UNCONNECTED
 
 
 class GraphExportContext:
@@ -48,6 +49,8 @@ class GraphMLExporter(GraphExportStrategy):
 
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
+            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+                continue
 
             band_name = escape_band_names(payload["name"])
 
@@ -56,8 +59,8 @@ class GraphMLExporter(GraphExportStrategy):
                 f'<data key="d1">{payload["country"]}</data></node>\n'
             )
 
-        # Only in a second run we write the connections. This might seem odd but Cytoscape does not like the connections
-        # between the nodes.
+        # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
+        # connections mixed with the nodes.
         counter = 0
 
         for node, payload in data_dict.items():
