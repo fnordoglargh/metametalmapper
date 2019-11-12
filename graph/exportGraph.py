@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import logging
-from global_helpers import get_export_path
+from global_helpers import get_export_path, escape_band_names
 
 
 class GraphExportContext:
@@ -48,14 +48,8 @@ class GraphMLExporter(GraphExportStrategy):
 
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
-            band_name = payload["name"]
 
-            if '&' in band_name:
-                band_name = band_name.replace('&', '&amp;')
-            elif '\'' in band_name:
-                band_name = band_name.replace('\'', '&apos;')
-            elif '"' in band_name:
-                band_name = band_name.replace('"', '&quot;')
+            band_name = escape_band_names(payload["name"])
 
             export_file.write(
                 f'<node id="n{node}"><data key="d0">{band_name}</data>'
