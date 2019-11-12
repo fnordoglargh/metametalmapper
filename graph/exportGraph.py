@@ -46,18 +46,19 @@ class GraphMLExporter(GraphExportStrategy):
         db_path = get_export_path('bands', '.graphml')
         export_file = open(db_path, "w", encoding="utf-8")
         export_file.write(header)
+        filtered_nodes = []
 
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
             if FILTER_UNCONNECTED and len(payload['relations']) is 0:
-                continue
+                filtered_nodes.append(node)
+            else:
+                band_name = escape_band_names(payload["name"])
 
-            band_name = escape_band_names(payload["name"])
-
-            export_file.write(
-                f'<node id="n{node}"><data key="d0">{band_name}</data>'
-                f'<data key="d1">{payload["country"]}</data></node>\n'
-            )
+                export_file.write(
+                    f'<node id="n{node}"><data key="d0">{band_name}</data>'
+                    f'<data key="d1">{payload["country"]}</data></node>\n'
+                )
 
         # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
         # connections mixed with the nodes.
@@ -65,8 +66,9 @@ class GraphMLExporter(GraphExportStrategy):
 
         for node, payload in data_dict.items():
             for relation in payload['relations']:
-                export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
-                counter += 1
+                if relation not in filtered_nodes:
+                    export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
+                    counter += 1
 
         export_file.write(footer)
         export_file.close()
