@@ -151,6 +151,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         self.logger.info('Starting export of band network...')
         progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_relationships = {}
+        relationship_filter = []
+
+        # If IS_LIVE_MEMBER_IN_BAND is False all entries containing 'Live' will be filtered.
+        for key, value in MEMBER_STATUS.items():
+            if not settings.IS_LIVE_MEMBER_IN_BAND and 'Live' in value:
+                pass
+            else:
+                relationship_filter.append(key)
 
         for band in bands:
             # We have a band; let's create an entry and see if it's linked to anything.
@@ -161,7 +169,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             }
 
             # Iterate over all members linked to the actual band and see if they're connected to other bands.
-            for member in band.current_lineup:
+            for member in band.current_lineup.match(status__in=relationship_filter):
                 for outer_band in member.played_in:
                     is_already_connected = band.emid is outer_band.emid
                     is_already_connected |= outer_band.emid in band_relationships.keys()

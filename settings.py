@@ -14,4 +14,5 @@ RELEASE_TYPES_REVIEW = ["F", "E", "D"]
 TOP = 5
 
 # Filter options for graph exports.
+IS_LIVE_MEMBER_IN_BAND = True
 FILTER_UNCONNECTED = False

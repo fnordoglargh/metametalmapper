@@ -260,6 +260,12 @@ The country analysis for all Norwegian band might look similar to this:
         Doom/Stoner/Sludge: 178 (10.43%)
         Progressive: 165 (9.67%)
 
+By default all bands are exported (even unconnected ones). Band members which played only live are considered to be part
+of a band. These options are available in `settings.py`:
+
+* `IS_LIVE_MEMBER_IN_BAND`
+* `FILTER_UNCONNECTED`
+
 ## Known Issues
 
 * `PLAYED_IN` relationships are be overwritten with the last found one. Means an artists which was a regular
