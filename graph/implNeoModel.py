@@ -171,8 +171,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             # Iterate over all members linked to the actual band and see if they're connected to other bands.
             for member in band.current_lineup.match(status__in=relationship_filter):
                 for outer_band in member.played_in.match(status__in=relationship_filter):
-                    is_already_connected = band.emid is outer_band.emid
-                    is_already_connected |= outer_band.emid in band_relationships.keys()
+                    is_already_connected = band.emid == outer_band.emid
+                    # WARNING: This makes the graph undirected. We deliberately connect only the first instance:
+                    # E.g. the connection from A to B is recorded but not the connection from B to A. This is extremely
+                    # Fragile and does not work well (exporting is more complicated and the order of the dict matters).
+                    # is_already_connected |= outer_band.emid in band_relationships.keys()
                     is_already_connected |= outer_band.emid in band_relationships[band.emid]['relations']
 
                     if not is_already_connected:

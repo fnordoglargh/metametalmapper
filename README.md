@@ -106,7 +106,7 @@ A list of all countries with at least one band is shown on calling with the swit
 A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
 are shown on calling with the switch `-l`.
 
-A popular region is the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
+A popular region is *NC*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
 Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
 
 ### Graph Databases

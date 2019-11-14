@@ -51,7 +51,7 @@ class GraphMLExporter(GraphExportStrategy):
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
             if FILTER_UNCONNECTED and len(payload['relations']) is 0:
-                filtered_nodes.append(node)
+                pass
             else:
                 band_name = escape_band_names(payload["name"])
 
@@ -60,13 +60,30 @@ class GraphMLExporter(GraphExportStrategy):
                     f'<data key="d1">{payload["country"]}</data></node>\n'
                 )
 
-        # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
-        # connections mixed with the nodes.
+        # Keeps track of connections we already made so that no two nodes are connected more than once.
+        connections_made = {}
         counter = 0
 
+        # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
+        # connections mixed with the nodes.
         for node, payload in data_dict.items():
+            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+                pass
+            else:
+                # Add an empty list for the actual ID (node).
+                if node not in connections_made:
+                    connections_made[node] = []
+
             for relation in payload['relations']:
-                if relation not in filtered_nodes:
+                if relation not in connections_made:
+                    connections_made[relation] = []
+
+                # Test if a connection already exists.
+                if relation in connections_made[node] or node in connections_made[relation]:
+                    pass
+                else:
+                    connections_made[node].append(relation)
+                    connections_made[relation].append(node)
                     export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
                     counter += 1
 
