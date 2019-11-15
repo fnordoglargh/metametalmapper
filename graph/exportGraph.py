@@ -16,7 +16,11 @@ class GraphExportContext:
 class GraphExportStrategy(metaclass=ABCMeta):
 
     @abstractmethod
-    def export_graph_interface(self, db_handle):
+    def export_graph_interface(self, export_data):
+        """Exports a graph from given data.
+
+        :param export_data: A dictionary with band IDs as keys and one list of band IDs as value.
+        """
         pass
 
 
