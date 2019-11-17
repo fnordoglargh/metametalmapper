@@ -4,10 +4,23 @@ REG_NC = ("NCO", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", 
 REG_SCA = ("SCA", "Scandinavia",  ["DK", "SE", "NO", "IS", "FI", "FO", "AX"])
 REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "LU", "MC", "NL", "GB"])
 REG_EUR_CENTRAL = ("CEU", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH"])
+
 REG_AMC_NORTH = ("NAM", "North America", ["US", "CA", "MX", "PR", "TC", "AG", "BS", "BB", "BZ", "CR", "CU", "DM", "DO", "SV", "GD", "GT", "HT", "HN", "JM", "NI", "PA", "KN", "LC", "VC", "TT"])
 REG_AMC_CENTRAL = ("CAM", "Central America", ["BZ", "CR", "SV", "GT", "HN", "NI", "PA"])
 REG_AMC_SOUTH = ("SAM", "South America", ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE"])
 REG_AMC = ("AMC", "Americas", list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
+
+# As of Nov 2019: No bands in TL (Timor Leste).
+REG_ASE = ("ASE", "South East Asia", ["BN", "KH", "ID", "LA", "MY", "MM", "PH", "SG", "TH", "VN"])
+# As of Nov 2019: No bands in Bhutan and Pakistan.
+REG_ASA = ("ASA", "South Asia", ["AF", "BD", "IN", "MV", "NP", "LK"])
+REG_ACA = ("ACA", "Central Asia", ["KZ", "KG", "TJ", "TM", "UZ"])
+# Will there ever be metal in North Korea?
+REG_AEA = ("AEA", "East Asia", ["CN", "JP", "MN", "KR", "TW"])
+# As of Nov 2019: No bands in Palestine and Yemen.
+REG_AWA = ("AWA", "Western Asia", ["AM", "AZ", "BH", "CY", "EG", "GE", "IR", "IQ", "IL", "JO", "KW", "LB", "OM", "QA", "SA", "SY", "TR", "AE"])
+REG_ASIA = ("ASIA", "Asia", list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
+
 REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
 
 REGIONS = {
@@ -19,6 +32,12 @@ REGIONS = {
     REG_AMC_CENTRAL[0]: REG_AMC_CENTRAL,
     REG_AMC_SOUTH[0]: REG_AMC_SOUTH,
     REG_AMC[0]: REG_AMC,
+    REG_ASE[0]: REG_ASE,
+    REG_ASA[0]: REG_ASA,
+    REG_ACA[0]: REG_ACA,
+    REG_AEA[0]: REG_AEA,
+    REG_AWA[0]: REG_AWA,
+    REG_ASIA[0]: REG_ASIA,
     REG_TST[0]: REG_TST
 }
 
