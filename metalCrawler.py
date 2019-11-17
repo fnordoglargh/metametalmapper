@@ -662,7 +662,7 @@ def cut_instruments(instrument_string):
                             if time_span[0] == '?' and time_span[-1:] == '?':
                                 years = ('?', '?')
                             elif time_span[0] == '?':
-                                if 'present' in time_span:
+                                if re.search('[Pp]resent', time_span):
                                     years = ('?', 'present')
                                 else:
                                     years = ('?', int(time_span[2:]))
@@ -671,7 +671,7 @@ def cut_instruments(instrument_string):
                             else:
                                 years = ()
                         # (5)
-                        elif not time_span.isdigit() and 'present' not in time_span:
+                        elif not time_span.isdigit() and not re.search('[Pp]resent', time_span):
                             continue
                         # (3)
                         else:
