@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
 from global_helpers import get_export_path, escape_band_names
-from settings import FILTER_UNCONNECTED
+from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
 
 class GraphExportContext:
@@ -79,7 +79,12 @@ class GraphMLExporter(GraphExportStrategy):
                     connections_made[node] = []
 
             for relation in payload['relations']:
-                if relation not in connections_made:
+                # Check if the relation is valid for this export. E.g. While exporting a Norwegian-only graph,
+                # every other country is invalid. Another special case is inconsistencies in raw data; one relation is
+                # reported as core member and another is a live member.
+                if relation not in data_dict and not FIND_MA_INCONSISTENCIES:
+                    continue
+                elif relation not in connections_made:
                     connections_made[relation] = []
 
                 # Test if a connection already exists.
