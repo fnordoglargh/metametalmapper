@@ -1,13 +1,24 @@
 from pathlib import Path
 
-REG_NORDIC = ("NC", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
-REG_EU_WEST = ("WE", "Western Europe", ["BE", "FR", "IE", "LU", "MC", "NL", "GB"])
-REG_EU_CENTRAL = ("CE", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH"])
+REG_NC = ("NCO", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
+REG_SCA = ("SCA", "Scandinavia",  ["DK", "SE", "NO", "IS", "FI", "FO", "AX"])
+REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "LU", "MC", "NL", "GB"])
+REG_EUR_CENTRAL = ("CEU", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH"])
+REG_AMC_NORTH = ("NAM", "North America", ["US", "CA", "MX", "PR", "TC", "AG", "BS", "BB", "BZ", "CR", "CU", "DM", "DO", "SV", "GD", "GT", "HT", "HN", "JM", "NI", "PA", "KN", "LC", "VC", "TT"])
+REG_AMC_CENTRAL = ("CAM", "Central America", ["BZ", "CR", "SV", "GT", "HN", "NI", "PA"])
+REG_AMC_SOUTH = ("SAM", "South America", ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE"])
+REG_AMC = ("AMC", "Americas", list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
+
 REGIONS = {
-    REG_NORDIC[0]: REG_NORDIC,
-    REG_EU_WEST[0]: REG_EU_WEST,
-    REG_EU_CENTRAL[0]: REG_EU_CENTRAL,
+    REG_NC[0]: REG_NC,
+    REG_SCA[0]: REG_SCA,
+    REG_EUR_WEST[0]: REG_EUR_WEST,
+    REG_EUR_CENTRAL[0]: REG_EUR_CENTRAL,
+    REG_AMC_NORTH[0]: REG_AMC_NORTH,
+    REG_AMC_CENTRAL[0]: REG_AMC_CENTRAL,
+    REG_AMC_SOUTH[0]: REG_AMC_SOUTH,
+    REG_AMC[0]: REG_AMC,
     REG_TST[0]: REG_TST
 }
 

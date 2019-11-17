@@ -106,8 +106,9 @@ A list of all countries with at least one band is shown on calling with the swit
 A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
 are shown on calling with the switch `-l`.
 
-A popular region is *NC*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
-Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
+Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
+Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_
+Åland Islands, Svalbard and Jan Mayen).
 
 ### Graph Databases
 
@@ -150,8 +151,11 @@ with at least one band entry.
 
 If you're not interested in getting the band links for all countries you can either 
 
-* start with the switch `-c NN` to crawl all bands in exactly one country **or** 
-* call with `-r NN` where NN is the key of the region you want to crawl.
+* start with the switch `-c NNN` to crawl all bands in exactly one country **or** 
+* call with `-r NNN` where NNN is the key of the region you want to crawl.
+
+Region codes should always have three letters (or more) so that no country link files will be overwritten in
+a crawl.
 
 ### Crawl bands
 
