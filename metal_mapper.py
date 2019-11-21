@@ -255,7 +255,7 @@ def main(argv):
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
         if len(cleaned_shorts) is 0:
-            print(f'{country_info} Entire database.')
+            print(f'{country_info}Entire database.')
         else:
             print(country_info[:-2])
 
