@@ -6,7 +6,7 @@ REG_SCA = ("SCA", "Scandinavia",  ["DK", "SE", "NO", "IS", "FI", "FO", "AX"])
 
 # Europe's region definitions: https://en.wikipedia.org/wiki/Central_Europe#/media/File:Grossgliederung_Europas-en.svg
 REG_EUR_NORTH = ("NEU", "Northern Europe", ["DK", "SE", "NO", "IS", "FI"])
-REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "MC", "NL", "GB", "MC", "AD"])
+REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "MC", "NL", "GB", "MC", "AD", "GG"])
 REG_EUR_CENTRAL = ("CEU", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH", "LU", "EE", "LV", "LT", "HR", "SI"])
 REG_EUR_SOUTH = ("SEU", "Southern Europe", ["PT", "ES", "IT", "SM", "MT"])
 REG_EUR_EAST = ("EEU", "Eastern Europe", ["AU", "BY", "RU"])
