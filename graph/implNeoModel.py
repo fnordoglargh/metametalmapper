@@ -326,6 +326,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         band_count = len(Band.nodes.all())
         bands_all = Band.nodes.all()
         bands_filtered = defaultdict(list)
+        print('  Filtering bands.')
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
         # e.g. percentages.
@@ -333,7 +334,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             for band in bands_all:
                 bands_filtered[band.country].append(band)
         else:
-            print('  Filtering bands.')
             for short in country_shorts:
                 temp_bands = Band.nodes.filter(country__exact=short)
                 # This guarantees that every key also has data behind it.
