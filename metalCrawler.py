@@ -785,16 +785,6 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    threads = []
-    lock = threading.Lock()
-    thread_count = CRAWLER_THREAD_COUNT
-
-    if len(band_links) < CRAWLER_THREAD_COUNT:
-        thread_count = len(band_links)
-    elif thread_count < 1 or thread_count > 8:
-        logger.error("Thread count is outside safe range from 1 to 8.")
-        exit(-7)
-
     unrecoverable_bands = {}
     # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
     # took longer and longer the larger the database got.
@@ -809,6 +799,16 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     print(f'Crawling {local_bands_queue.qsize()} bands. This is going to take a while.')
     progress_bar = progressbar.ProgressBar(max_value=local_bands_queue.qsize())
     visited_bands = []
+
+    threads = []
+    lock = threading.Lock()
+    thread_count = CRAWLER_THREAD_COUNT
+
+    if len(band_links) < CRAWLER_THREAD_COUNT:
+        thread_count = len(band_links)
+    elif thread_count < 1 or thread_count > 8:
+        logger.error("Thread count is outside safe range from 1 to 8. Overriding to 4.")
+        thread_count = 4
 
     # Create threads.
     for i in range(0, thread_count):
