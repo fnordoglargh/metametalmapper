@@ -427,10 +427,10 @@ class VisitBandListThread(threading.Thread):
     def run(self):
         self.logger.debug("Running " + self.name)
         link_counter = 0
+        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
         while self.countryLinks.qsize() != 0:
             link_country_temp = self.countryLinks.get_nowait()
-            http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
             country_json = http.request('GET', link_country_temp)
             json_data_string = country_json.data.decode("utf-8")
             json_data_string = json_data_string.replace("\"sEcho\": ,", '')
