@@ -418,29 +418,30 @@ class VisitBandListThread(threading.Thread):
     def __init__(self, thread_id, country_links, band_links):
         super(VisitBandListThread, self).__init__()
         self.threadID = thread_id
-        self.name = "BandListVisitor_" + thread_id
+        self.name = 'BandListVisitor_' + thread_id
         self.countryLinks = country_links
         self.bandLinks = band_links
         self.logger = logging.getLogger('Crawler')
-        self.logger.debug("Initializing " + self.name)
+        self.logger.debug('Initializing ' + self.name)
 
     def run(self):
-        self.logger.debug("Running " + self.name)
+        self.logger.debug('Running ' + self.name)
         link_counter = 0
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
         while self.countryLinks.qsize() != 0:
             link_country_temp = self.countryLinks.get_nowait()
+            self.logger.debug(f'  Working on: {link_country_temp}')
             country_json = http.request('GET', link_country_temp)
-            json_data_string = country_json.data.decode("utf-8")
-            json_data_string = json_data_string.replace("\"sEcho\": ,", '')
+            json_data_string = country_json.data.decode('utf-8')
+            # The data string might contain an incomplete data definition which prevents conversion to the dict below.
+            json_data_string = json_data_string.replace('"sEcho": ,', '')
             json_data = None
-            self.logger.debug(f"  Working on: {link_country_temp}")
 
             try:
                 json_data = json.loads(json_data_string)
             except Exception:
-                self.logger.error(f"  JSON error for [{link_country_temp}]. Putting it back in circulation...")
+                self.logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
                 self.countryLinks.put(link_country_temp)
 
             if json_data is not None:
@@ -456,7 +457,7 @@ class VisitBandListThread(threading.Thread):
                     self.bandLinks.put(band_link[37:len(band_link)])
                     link_counter += 1
 
-        self.logger.debug(f"Finished {self.name} and added {str(link_counter)} links.")
+        self.logger.debug(f'Finished {self.name} and added {str(link_counter)} links.')
 
 
 def apply_to_db(ma_dict, db_handle, is_detailed):
@@ -504,7 +505,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
         if temp_band_data[band]['formed'] != 'N/A':
             temp_band_dict['formed'] = date(int(temp_band_data[band]['formed']), 1, 1)
 
-        logger.debug(f"  Writing data for band {temp_band_dict['link']}.")
+        logger.debug(f'  Writing data for band {temp_band_dict["link"]}.')
         db_handle.add_band(temp_band_dict)
 
         for release in temp_band_data[band]['releases']:
@@ -512,7 +513,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
             release_copy = dict(release)
             # This is not the accurate date, only the year.
             release_copy['release_date'] = date(int(release_copy['release_date']), 1, 1)
-            logger.debug(f"  Writing data for release {release_copy['name']}.")
+            logger.debug(f'  Writing data for release {release_copy["name"]}.')
             db_handle.add_release(release_copy)
             db_handle.band_recorded_release(band, release['emid'])
 
