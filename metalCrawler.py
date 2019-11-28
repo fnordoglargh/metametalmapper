@@ -428,12 +428,23 @@ class VisitBandListThread(threading.Thread):
         self.logger.debug('Running ' + self.name)
         link_counter = 0
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+        band_links = []
+        # Used as a very crude way to see if duplicate data is sent by MA.
+        json_strings = []
 
         while self.countryLinks.qsize() != 0:
             link_country_temp = self.countryLinks.get_nowait()
             self.logger.debug(f'  Working on: {link_country_temp}')
             country_json = http.request('GET', link_country_temp)
             json_data_string = country_json.data.decode('utf-8')
+
+            if json_data_string not in json_strings:
+                json_strings.append(json_data_string)
+            else:
+                self.logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
+                self.countryLinks.put(link_country_temp)
+                continue
+
             # The data string might contain an incomplete data definition which prevents conversion to the dict below.
             json_data_string = json_data_string.replace('"sEcho": ,', '')
             json_data = None
@@ -443,19 +454,24 @@ class VisitBandListThread(threading.Thread):
             except Exception:
                 self.logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
                 self.countryLinks.put(link_country_temp)
+                time.sleep(.5)
 
-            if json_data is not None:
-                for band in json_data["aaData"]:
-                    index_first_apostrophe = band[0].find("'")
-                    index_second_apostrophe = band[0].find("'", index_first_apostrophe + 1)
-                    band_link = band[0][index_first_apostrophe + 1:index_second_apostrophe]
-                    index_first_closing_bracket = band[0].find(">")
-                    index_second_opening_bracket = band[0].find("<", index_first_closing_bracket)
-                    band_name = band[0][index_first_closing_bracket + 1:index_second_opening_bracket]
-                    self.logger.debug("    {}: {}".format(band_name, band_link))
-                    # We do not need the leading "https://www.metal-archives.com/bands/".
-                    self.bandLinks.put(band_link[37:len(band_link)])
-                    link_counter += 1
+            if json_data is None:
+                self.countryLinks.put(link_country_temp)
+                continue
+
+            for band in json_data["aaData"]:
+                # We do not need the leading "'<a href=\'https://www.metal-archives.com/bands/".
+                partial_link = band[0][46:band[0].rfind("'>")]
+                if partial_link not in band_links:
+                    band_links.append(partial_link)
+                    self.bandLinks.put(partial_link)
+                else:
+                    self.logger.error(f'  Worst case. Call returned invalid data from MA. Putting link back in circulation...')
+                    self.countryLinks.put(link_country_temp)
+                    break
+
+                link_counter += 1
 
         self.logger.debug(f'Finished {self.name} and added {str(link_counter)} links.')
 
@@ -727,7 +743,7 @@ def crawl_country(link_country):
     if amount_entries % display_constant > 0:
         needed_run_count += 1
 
-    thread_count = 8
+    thread_count = 1
 
     # Override number of threads in case we don't need all.
     if needed_run_count < thread_count:
