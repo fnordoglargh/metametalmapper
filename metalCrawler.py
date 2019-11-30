@@ -15,6 +15,7 @@ from datetime import date, datetime
 from pathlib import Path
 from genre import split_genres
 from global_helpers import get_dict_key
+from country_helper import COUNTRY_NAMES
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -690,18 +691,19 @@ def cut_instruments(instrument_string):
     return collection
 
 
-def crawl_country(link_country):
+def crawl_country(country_short):
     """Crawls the given country page for band links and returns the list of short band links.
 
     Depending on the total amount of bands in the given country, the pages will be fetched through
     MA's AJAX API in packages of up til 500 bands.
 
-    :param link_country: Address of a country to parse band links from.
+    :param country_short: A country's ISO code to parse band links from.
     :return An unsorted list of short band links.
     """
 
     logger = logging.getLogger('Crawler')
-    logger.debug(f">>> Crawling Country: {link_country}")
+    logger.debug(f">>> Crawling Country: {COUNTRY_NAMES[country_short]}")
+    link_country = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
     json_data_string = ""
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 

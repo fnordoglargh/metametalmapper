@@ -14,7 +14,7 @@ from graph.implNeoModel import *
 from graph.metalGraph import *
 from graph.exportGraph import *
 from global_helpers import *
-from country_helper import REGIONS, print_regions, print_countries
+from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES
 from genre import save_genres
 
 __author__ = "Martin Woelke"
@@ -81,9 +81,12 @@ def flush_queue(country_short, link_list):
             band_links_file.write(link + '\n')
             counter += 1
         band_links_file.close()
-        logger.info(f"Saved {str(counter)} bands of {country_short} in file '{country_filename}'.")
+        logger.info(
+            f"Saved {str(counter)} bands of {COUNTRY_NAMES[country_short]} ({country_short}) in"
+            f" file '{country_filename}'."
+        )
     else:
-        logger.warning(f"No bands in country {country_short}. To check country manually, use above link.")
+        logger.warning(f"No bands found for {COUNTRY_NAMES[country_short]} ({country_short}).")
 
     return country_filename
 
@@ -186,8 +189,7 @@ def main(argv):
             country_links = crawl_countries()
 
         for country_short in country_links:
-            country_link = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
-            link_list = crawl_country(country_link)
+            link_list = crawl_country(country_short)
             flush_queue(country_short, link_list)
     elif mode is CrawlMode.CrawlRegion:
         if region not in REGIONS:
@@ -197,9 +199,8 @@ def main(argv):
         else:
             print(f'Crawling region: {region}')
             link_list = []
-            for country in REGIONS[region][2]:
-                country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
-                link_list_temp = crawl_country(country_link)
+            for country_short in REGIONS[region][2]:
+                link_list_temp = crawl_country(country_short)
                 link_list = list(set(link_list_temp + link_list))
             flush_queue(region, link_list)
     elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
