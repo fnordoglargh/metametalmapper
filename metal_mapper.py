@@ -53,13 +53,14 @@ def print_help():
         f'  -y: Prints a raw data report of the active database and exports a GraphML file\n'
         f'    of all bands (including their implicit connections through artists).\n'
         f'  -z: Does the same as "-y" but expects a list of 1 to n countries or regions.\n'
-        f'    The list items must always be separated by commas without spaces or be '
+        f'    The list items must always be separated by commas without spaces or be\n'
         f'    enclosed by quotation-marks.\n'
         f'  -f <filename>: filename is a parameter to override the standard file name\n'
         f'    for -b or -c and is used either to write an output file or to read an\n'
         f'    input file.\n'
         f'  -l: List available countries and regions.\n'
-        f'  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NC).\n'
+        f'  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO\n'
+        f'    to get short links of all Nordic Countries.)\n'
     )
 
 
