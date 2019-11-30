@@ -19,7 +19,6 @@ from global_helpers import get_dict_key
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
 bands = 'bands/'
-bandsQueue = queue.Queue()
 ajaxLinks = queue.Queue()
 entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
 lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
@@ -413,67 +412,56 @@ class VisitBandThread(threading.Thread):
         return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
 
 
-class VisitBandListThread(threading.Thread):
+def make_band_list(country_links):
+    logger = logging.getLogger('Crawler')
+    logger.debug('Started Band List Visitor')
+    link_counter = 0
+    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    band_links = []
+    # Used as a very crude way to see if duplicate data is sent by MA.
+    json_strings = []
 
-    def __init__(self, thread_id, country_links, band_links):
-        super(VisitBandListThread, self).__init__()
-        self.threadID = thread_id
-        self.name = 'BandListVisitor_' + thread_id
-        self.countryLinks = country_links
-        self.bandLinks = band_links
-        self.logger = logging.getLogger('Crawler')
-        self.logger.debug('Initializing ' + self.name)
+    while country_links.qsize() != 0:
+        link_country_temp = country_links.get_nowait()
+        logger.debug(f'  Working on: {link_country_temp}')
+        country_json = http.request('GET', link_country_temp)
+        json_data_string = country_json.data.decode('utf-8')
 
-    def run(self):
-        self.logger.debug('Running ' + self.name)
-        link_counter = 0
-        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-        band_links = []
-        # Used as a very crude way to see if duplicate data is sent by MA.
-        json_strings = []
+        if json_data_string not in json_strings:
+            json_strings.append(json_data_string)
+        else:
+            logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
+            country_links.put(link_country_temp)
+            continue
 
-        while self.countryLinks.qsize() != 0:
-            link_country_temp = self.countryLinks.get_nowait()
-            self.logger.debug(f'  Working on: {link_country_temp}')
-            country_json = http.request('GET', link_country_temp)
-            json_data_string = country_json.data.decode('utf-8')
+        # The data string might contain an incomplete data definition which prevents conversion to the dict below.
+        json_data_string = json_data_string.replace('"sEcho": ,', '')
+        json_data = None
 
-            if json_data_string not in json_strings:
-                json_strings.append(json_data_string)
+        try:
+            json_data = json.loads(json_data_string)
+        except Exception:
+            logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
+            country_links.put(link_country_temp)
+            time.sleep(.5)
+
+        if json_data is None:
+            country_links.put(link_country_temp)
+            continue
+
+        for band in json_data["aaData"]:
+            # We do not need the leading "'<a href=\'https://www.metal-archives.com/bands/".
+            partial_link = band[0][46:band[0].rfind("'>")]
+            if partial_link not in band_links:
+                band_links.append(partial_link)
             else:
-                self.logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
-                self.countryLinks.put(link_country_temp)
-                continue
+                logger.error(f'  Worst case. Call returned invalid data from MA. Putting link back in circulation...')
+                country_links.put(link_country_temp)
+                break
 
-            # The data string might contain an incomplete data definition which prevents conversion to the dict below.
-            json_data_string = json_data_string.replace('"sEcho": ,', '')
-            json_data = None
+            link_counter += 1
 
-            try:
-                json_data = json.loads(json_data_string)
-            except Exception:
-                self.logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
-                self.countryLinks.put(link_country_temp)
-                time.sleep(.5)
-
-            if json_data is None:
-                self.countryLinks.put(link_country_temp)
-                continue
-
-            for band in json_data["aaData"]:
-                # We do not need the leading "'<a href=\'https://www.metal-archives.com/bands/".
-                partial_link = band[0][46:band[0].rfind("'>")]
-                if partial_link not in band_links:
-                    band_links.append(partial_link)
-                    self.bandLinks.put(partial_link)
-                else:
-                    self.logger.error(f'  Worst case. Call returned invalid data from MA. Putting link back in circulation...')
-                    self.countryLinks.put(link_country_temp)
-                    break
-
-                link_counter += 1
-
-        self.logger.debug(f'Finished {self.name} and added {str(link_counter)} links.')
+    return band_links
 
 
 def apply_to_db(ma_dict, db_handle, is_detailed):
@@ -703,14 +691,13 @@ def cut_instruments(instrument_string):
 
 
 def crawl_country(link_country):
-    """Crawls the given country page for band links and puts them into the global variable bandsQueue.
+    """Crawls the given country page for band links and returns the list of short band links.
 
     Depending on the total amount of bands in the given country, the pages will be fetched through
-    MA's AJAX API in packages of up til 500 bands. Parsing happens in eight threads.
-
-    TODO: Move global variable to smaller scope?
+    MA's AJAX API in packages of up til 500 bands.
 
     :param link_country: Address of a country to parse band links from.
+    :return An unsorted list of short band links.
     """
 
     logger = logging.getLogger('Crawler')
@@ -736,39 +723,16 @@ def crawl_country(link_country):
     logger.debug("  Country has [{}] entries.".format(amount_entries))
     # Limit imposed by MA.
     display_constant = 500
-    # Amount of runs needed.
-    needed_run_count = (amount_entries // display_constant)
-
-    # We need at least one and always one more (because of the division rounding down).
-    if amount_entries % display_constant > 0:
-        needed_run_count += 1
-
-    thread_count = 1
-
-    # Override number of threads in case we don't need all.
-    if needed_run_count < thread_count:
-        thread_count = needed_run_count
-
-    logger.debug(f"  Setting up to do [{str(needed_run_count)}] runs with [{str(thread_count)}] threads.")
     link_suffix = "/json/1?sEcho=1&iDisplayStart="
 
     # Prepare the AJAX links for the actual run.
     for i in range(0, amount_entries, display_constant):
         ajaxLinks.put_nowait(link_country + link_suffix + str(i))
-        logger.debug(f"    Prepping link: {str(i)}")
 
-    threads = []
-
-    # Create threads and let them run.
-    for i in range(0, thread_count):
-        thread = VisitBandListThread(str(i), ajaxLinks, bandsQueue)
-        thread.start()
-        threads.append(thread)
-
-    for t in threads:
-        t.join()
-
+    band_links = make_band_list(ajaxLinks)
     logger.debug("<<< Crawling Country")
+
+    return band_links
 
 
 def crawl_countries():

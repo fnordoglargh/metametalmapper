@@ -63,24 +63,22 @@ def print_help():
     )
 
 
-def flush_queue(country_short):
-    """Flushes the contents of ``bandsQueue`` (band addresses of a country or region) into the sub-folder named
+def flush_queue(country_short, link_list):
+    """Flushes the contents of ``link_list`` (band addresses of a country or region) into the sub-folder named
     ``links``.
 
-    The function effectively empties the bandsQueue and leaves it with zero items for further calls of
-    metalCrawler.crawl_country.
-
     :param country_short: ISO country code used in the file name.
+    :param link_list: A list of short band links.
     :return: A filename with the format ``links/NN.lnks``.
     """
     logger = logging.getLogger('Mapper')
     country_filename = Path(f"{FOLDER_LINKS}/" + BAND_LINK_FILE_NAME.format(country_short))
 
-    if bandsQueue.qsize() != 0:
+    if len(link_list) > 0:
         band_links_file = open(country_filename, "w", encoding="utf-8")
         counter = 0
-        while bandsQueue.qsize() != 0:
-            band_links_file.write(bandsQueue.get_nowait() + '\n')
+        for link in link_list:
+            band_links_file.write(link + '\n')
             counter += 1
         band_links_file.close()
         logger.info(f"Saved {str(counter)} bands of {country_short} in file '{country_filename}'.")
@@ -189,8 +187,8 @@ def main(argv):
 
         for country_short in country_links:
             country_link = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
-            crawl_country(country_link)
-            flush_queue(country_short)
+            link_list = crawl_country(country_link)
+            flush_queue(country_short, link_list)
     elif mode is CrawlMode.CrawlRegion:
         if region not in REGIONS:
             print(f'The region {region} is invalid. Try one from the following list:')
@@ -198,10 +196,12 @@ def main(argv):
             print(print_regions())
         else:
             print(f'Crawling region: {region}')
+            link_list = []
             for country in REGIONS[region][2]:
                 country_link = 'https://www.metal-archives.com/browse/ajax-country/c/' + country
-                crawl_country(country_link)
-            flush_queue(region)
+                link_list_temp = crawl_country(country_link)
+                link_list = list(set(link_list_temp + link_list))
+            flush_queue(region, link_list)
     elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
         sanitized_bands = []
 
