@@ -152,6 +152,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         self.logger.info('Starting export of band network...')
         progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_relationships = {}
+        relationship_filter = []
+
+        # If IS_LIVE_MEMBER_IN_BAND is False all entries containing 'Live' will be filtered.
+        for key, value in MEMBER_STATUS.items():
+            if not settings.IS_LIVE_MEMBER_IN_BAND and 'Live' in value:
+                pass
+            else:
+                relationship_filter.append(key)
 
         for band in bands:
             # We have a band; let's create an entry and see if it's linked to anything.
@@ -162,10 +170,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             }
 
             # Iterate over all members linked to the actual band and see if they're connected to other bands.
-            for member in band.current_lineup:
-                for outer_band in member.played_in:
-                    is_already_connected = band.emid is outer_band.emid
-                    is_already_connected |= outer_band.emid in band_relationships.keys()
+            for member in band.current_lineup.match(status__in=relationship_filter):
+                for outer_band in member.played_in.match(status__in=relationship_filter):
+                    is_already_connected = band.emid == outer_band.emid
+                    # WARNING: This makes the graph undirected. We deliberately connect only the first instance:
+                    # E.g. the connection from A to B is recorded but not the connection from B to A. This is extremely
+                    # Fragile and does not work well (exporting is more complicated and the order of the dict matters).
+                    # is_already_connected |= outer_band.emid in band_relationships.keys()
                     is_already_connected |= outer_band.emid in band_relationships[band.emid]['relations']
 
                     if not is_already_connected:
@@ -316,6 +327,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         band_count = len(Band.nodes.all())
         bands_all = Band.nodes.all()
         bands_filtered = defaultdict(list)
+        print('  Filtering bands.')
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
         # e.g. percentages.
@@ -323,7 +335,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             for band in bands_all:
                 bands_filtered[band.country].append(band)
         else:
-            print('  Filtering bands.')
             for short in country_shorts:
                 temp_bands = Band.nodes.filter(country__exact=short)
                 # This guarantees that every key also has data behind it.

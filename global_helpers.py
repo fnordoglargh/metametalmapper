@@ -47,3 +47,21 @@ def get_dict_key(source_dict, value):
     :return: The key for the provided value.
     """
     return list(source_dict.keys())[list(source_dict.values()).index(value)]
+
+
+def escape_band_names(unclean_band_name):
+    """Removes (some) XML/HTML control characters from the band name.
+
+    :param unclean_band_name: The band name which may be invalid for XML/HTML exports.
+    :return: A clean and valid band name.
+    """
+    clean_band_name = unclean_band_name
+
+    if '&' in clean_band_name:
+        clean_band_name = clean_band_name.replace('&', '&amp;')
+    elif '\'' in clean_band_name:
+        clean_band_name = clean_band_name.replace('\'', '&apos;')
+    elif '"' in clean_band_name:
+        clean_band_name = clean_band_name.replace('"', '&quot;')
+
+    return clean_band_name

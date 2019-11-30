@@ -20,8 +20,8 @@ projects.
     The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
     1000 nodes.
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
-* Head over to [examples](EXAMPLES.md) to see some networks.
-* Exports CSV files with country reports or database reports of all countries and their genres. 
+* Head over to the [examples](EXAMPLES.md) to see some networks.
+* Exports CSV files with country reports or database reports of all countries and their genres.
 
 ## Getting Started
 
@@ -106,8 +106,9 @@ A list of all countries with at least one band is shown on calling with the swit
 A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
 are shown on calling with the switch `-l`.
 
-A popular region is the nordic countries *NC* (containing Denmark, Sweden, Norway, Iceland, Finland, 
-Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen).
+Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
+Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_
+Åland Islands, Svalbard and Jan Mayen).
 
 ### Graph Databases
 
@@ -150,8 +151,11 @@ with at least one band entry.
 
 If you're not interested in getting the band links for all countries you can either 
 
-* start with the switch `-c NN` to crawl all bands in exactly one country **or** 
-* call with `-r NN` where NN is the key of the region you want to crawl.
+* start with the switch `-c NNN` to crawl all bands in exactly one country **or** 
+* call with `-r NNN` where NNN is the key of the region you want to crawl.
+
+Region codes should always have three letters (or more) so that no country link files will be overwritten in
+a crawl.
 
 ### Crawl bands
 
@@ -160,10 +164,9 @@ Two options are available to crawl bands from the above generated link files:
     a long time finish. Better use
 2.  `-b -f filename`: Crawls the bands in the given file.
 
-Data is applied immediately to the database and won't be overwritten.
-
-
-All data is stored in a [database](DATABASES.md).
+Eight threads are used by default to crawl for bands (See the 
+[performance analysis](DESIGN_NOTES.md) for the amount of crawling threads).
+Data is applied immediately to the [graph database](DATABASES.md) and won't be overwritten.
 
 #### Error cases
 
@@ -260,6 +263,12 @@ The country analysis for all Norwegian band might look similar to this:
         Doom/Stoner/Sludge: 178 (10.43%)
         Progressive: 165 (9.67%)
 
+By default all bands are exported (even unconnected ones). Band members which played only live are considered to be part
+of a band. These options are available in `settings.py`:
+
+* `IS_LIVE_MEMBER_IN_BAND`
+* `FILTER_UNCONNECTED`
+
 ## Known Issues
 
 * `PLAYED_IN` relationships are be overwritten with the last found one. Means an artists which was a regular
@@ -272,7 +281,7 @@ The country analysis for all Norwegian band might look similar to this:
 * Allow fine tuning the band relationships (e.g. don't connect bands through artists who were only part
     of the live line-up).
 * Implement a flag to overwrite data unconditionally.
-* Implement option to overwrite data based on how old it is.
+* Implement option to overwrite data based on its age.
 * Connecting releases with labels. The screenshot shows additional label nodes (and their connections)
     from prototyping.
     ![Prototype including labels and Albums](img/intro_graph_2.png)

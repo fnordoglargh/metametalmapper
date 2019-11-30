@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
-from global_helpers import get_export_path
+from global_helpers import get_export_path, escape_band_names
+from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
 
 class GraphExportContext:
@@ -15,7 +16,11 @@ class GraphExportContext:
 class GraphExportStrategy(metaclass=ABCMeta):
 
     @abstractmethod
-    def export_graph_interface(self, db_handle):
+    def export_graph_interface(self, export_data):
+        """Exports a graph from given data.
+
+        :param export_data: A dictionary with band IDs as keys and one list of band IDs as value.
+        """
         pass
 
 
@@ -45,31 +50,51 @@ class GraphMLExporter(GraphExportStrategy):
         db_path = get_export_path('bands', '.graphml')
         export_file = open(db_path, "w", encoding="utf-8")
         export_file.write(header)
+        filtered_nodes = []
 
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
-            band_name = payload["name"]
+            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+                pass
+            else:
+                band_name = escape_band_names(payload["name"])
 
-            if '&' in band_name:
-                band_name = band_name.replace('&', '&amp;')
-            elif '\'' in band_name:
-                band_name = band_name.replace('\'', '&apos;')
-            elif '"' in band_name:
-                band_name = band_name.replace('"', '&quot;')
+                export_file.write(
+                    f'<node id="n{node}"><data key="d0">{band_name}</data>'
+                    f'<data key="d1">{payload["country"]}</data></node>\n'
+                )
 
-            export_file.write(
-                f'<node id="n{node}"><data key="d0">{band_name}</data>'
-                f'<data key="d1">{payload["country"]}</data></node>\n'
-            )
-
-        # Only in a second run we write the connections. This might seem odd but Cytoscape does not like the connections
-        # between the nodes.
+        # Keeps track of connections we already made so that no two nodes are connected more than once.
+        connections_made = {}
         counter = 0
 
+        # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
+        # connections mixed with the nodes.
         for node, payload in data_dict.items():
+            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+                pass
+            else:
+                # Add an empty list for the actual ID (node).
+                if node not in connections_made:
+                    connections_made[node] = []
+
             for relation in payload['relations']:
-                export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
-                counter += 1
+                # Check if the relation is valid for this export. E.g. While exporting a Norwegian-only graph,
+                # every other country is invalid. Another special case is inconsistencies in raw data; one relation is
+                # reported as core member and another is a live member.
+                if relation not in data_dict and not FIND_MA_INCONSISTENCIES:
+                    continue
+                elif relation not in connections_made:
+                    connections_made[relation] = []
+
+                # Test if a connection already exists.
+                if relation in connections_made[node] or node in connections_made[relation]:
+                    pass
+                else:
+                    connections_made[node].append(relation)
+                    connections_made[relation].append(node)
+                    export_file.write(f'<edge id="e{counter}" source="n{node}" target="n{relation}"/>\n')
+                    counter += 1
 
         export_file.write(footer)
         export_file.close()
