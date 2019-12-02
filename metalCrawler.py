@@ -138,6 +138,7 @@ class VisitBandThread(threading.Thread):
                 # compatibility for writing files in underlying filesystems. The slash must be replaced of course.
                 db_path = Path(f"{actual_band_path}/{band['link'].replace('/', '_')}.json")
                 actual_band_file = open(db_path, "w", encoding="utf-8")
+                # TODO: Add try block for the dump. It crashed once because it found a Tag object.
                 json_database_string = json.dumps(crawl_result)
                 actual_band_file.write(json_database_string)
                 actual_band_file.close()
@@ -286,7 +287,8 @@ class VisitBandThread(threading.Thread):
             elif last_found_header == "lineupBandsRow":
                 pass
 
-            # Add an empty lineup list for the found header_category if it was not in before.
+            # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
+            # always have a valid value.
             band_data[band_id]["lineup"][header_category] = []
 
             # Five elements for artists.
@@ -300,6 +302,7 @@ class VisitBandThread(threading.Thread):
                 temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
                 logger.debug(f"    Recording artist data for {temp_artist_name}.")
 
+                # Don't visit known band members.
                 if temp_artist_link in self.visited_entities['artists']:
                     logger.debug(f"      Skipping band member {temp_artist_link}.")
                     artist_soup = None
