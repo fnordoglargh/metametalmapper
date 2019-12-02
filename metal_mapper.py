@@ -75,6 +75,12 @@ def flush_queue(country_short, link_list):
     """
     logger = logging.getLogger('Mapper')
     country_filename = Path(f"{FOLDER_LINKS}/" + BAND_LINK_FILE_NAME.format(country_short))
+    country_or_region_code = country_short
+
+    if len(country_short) == 2:
+        country_or_region_name = COUNTRY_NAMES[country_short]
+    else:
+        country_or_region_name = REGIONS[country_short][1]
 
     if len(link_list) > 0:
         band_links_file = open(country_filename, "w", encoding="utf-8")
@@ -82,13 +88,14 @@ def flush_queue(country_short, link_list):
         for link in link_list:
             band_links_file.write(link + '\n')
             counter += 1
+
         band_links_file.close()
         logger.info(
-            f"Saved {str(counter)} bands of {COUNTRY_NAMES[country_short]} ({country_short}) in"
-            f" file '{country_filename}'."
+            f'Saved {str(counter)} bands of {country_or_region_name} ({country_or_region_code}) in file '
+            f'"{country_filename}".'
         )
     else:
-        logger.warning(f"No bands found for {COUNTRY_NAMES[country_short]} ({country_short}).")
+        logger.warning(f"No bands found for {country_or_region_name} ({country_or_region_code}).")
 
     return country_filename
 
