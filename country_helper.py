@@ -3,10 +3,10 @@ from pathlib import Path
 REG_NC = ("NCO", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
 REG_SCA = ("SCA", "Scandinavia",  ["DK", "SE", "NO", "IS", "FI", "FO", "AX"])
 
-
 # Europe's region definitions: https://en.wikipedia.org/wiki/Central_Europe#/media/File:Grossgliederung_Europas-en.svg
 REG_EUR_NORTH = ("NEU", "Northern Europe", ["DK", "SE", "NO", "IS", "FI"])
-REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "MC", "NL", "GB", "MC", "AD", "GG"])
+# Isle of Man (IM) and Guernsey (GG) can be seen as part of WEU.
+REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "MC", "NL", "GB", "MC", "AD", "GG", "IM"])
 REG_EUR_CENTRAL = ("CEU", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH", "LU", "EE", "LV", "LT", "HR", "SI"])
 REG_EUR_SOUTH = ("SEU", "Southern Europe", ["PT", "ES", "IT", "SM", "MT"])
 REG_EUR_EAST = ("EEU", "Eastern Europe", ["AU", "BY", "RU"])
@@ -16,7 +16,8 @@ REG_EURO = ("EURO", "Europe", list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_
 
 REG_AMC_NORTH = ("NAM", "North America", ["US", "CA", "MX", "PR", "TC", "AG", "BS", "BB", "BZ", "CR", "CU", "DM", "DO", "SV", "GD", "GT", "HT", "HN", "JM", "NI", "PA", "KN", "LC", "VC", "TT"])
 REG_AMC_CENTRAL = ("CAM", "Central America", ["BZ", "CR", "SV", "GT", "HN", "NI", "PA"])
-REG_AMC_SOUTH = ("SAM", "South America", ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE"])
+# Curaçao and Aruba are technically part of the Netherlands but geographically should be part of SAM.
+REG_AMC_SOUTH = ("SAM", "South America", ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE", "CW", "AW"])
 REG_AMS = ("AMS", "Americas", list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 
 # As of Nov 2019: No bands in TL (Timor Leste).
@@ -30,6 +31,20 @@ REG_AEA = ("AEA", "East Asia", ["CN", "JP", "MN", "KR", "TW"])
 REG_AWA = ("AWA", "Western Asia", ["AM", "AZ", "BH", "CY", "EG", "GE", "IR", "IQ", "IL", "JO", "KW", "LB", "OM", "QA", "SA", "SY", "TR", "AE"])
 REG_ASIA = ("ASIA", "Asia", list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
 
+# As of Dec 2019: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
+REG_AAS = ("AAS", "Australasia", ["AU", "NZ", "NC"])
+# As of Dec 2019: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
+# Papua New Guinea (PG), Samoa (WS), Solomon Islands (SB), Tonga (TO), Tuvalu (TV) and Vanuatu (VU).
+REG_OCE = ("OCE", "Oceania", ["PF", "ID", "AU", "NZ", "NC", ])
+
+# As of Dec 2019: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
+# African Republic (CF), Chad (TD), Comoros (KM), DR Congo (CD), Congo (CG), Ivory Coast (CI), Djibouti (DJ), Equatorial
+# Guinea (GQ), Eritrea (ER), Eswatini (SZ), Gabon (GA), The Gambia (GM), Ghana (GH), Guinea (GN), Guinea-Bissau (GW),
+# Lesotho (LS), Liberia (LR), Malawi (MW), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
+# and Príncipe (ST), Senegal (SN), Seychelles (SC), Sierra Leone (SL), Somalia (SO), South Sudan (SS), Tanzania (TZ),
+# Togo (TG), Zambia (ZM).
+REG_AFR = ("AFR", "Africa", ["DZ", "AO", "BW", "EG", "ET", "KE", "LY", "MG", "MU", "MA", "MZ", "NA", "ZA", "TN", "UG", "ZW"])
+
 REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
 
 REGIONS = {
@@ -38,6 +53,7 @@ REGIONS = {
     REG_EUR_NORTH[0]: REG_EUR_NORTH,
     REG_EUR_WEST[0]: REG_EUR_WEST,
     REG_EUR_CENTRAL[0]: REG_EUR_CENTRAL,
+    REG_EUR_EAST[0]: REG_EUR_EAST,
     REG_EUR_SOUTH[0]: REG_EUR_SOUTH,
     REG_EUR_SOUTH_EAST[0]: REG_EUR_SOUTH_EAST,
     REG_EURO[0]: REG_EURO,
@@ -51,6 +67,9 @@ REGIONS = {
     REG_AEA[0]: REG_AEA,
     REG_AWA[0]: REG_AWA,
     REG_ASIA[0]: REG_ASIA,
+    REG_AAS[0]: REG_AAS,
+    REG_OCE[0]: REG_OCE,
+    REG_AFR[0]: REG_AFR,
     REG_TST[0]: REG_TST
 }
 
