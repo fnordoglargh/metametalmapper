@@ -269,6 +269,10 @@ of a band. These options are available in `settings.py`:
 * `IS_LIVE_MEMBER_IN_BAND`
 * `FILTER_UNCONNECTED`
 
+#### Using exported `.graphml` files
+
+The [Gephi intro page](GEPHI_HOWTO.md) explains how to use the generated `..graphml` files. 
+
 ## Known Issues
 
 * `PLAYED_IN` relationships are be overwritten with the last found one. Means an artists which was a regular
