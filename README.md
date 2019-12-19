@@ -271,7 +271,7 @@ of a band. These options are available in `settings.py`:
 
 #### Using exported `.graphml` files
 
-The [Gephi intro page](GEPHI_HOWTO.md) explains how to use the generated `..graphml` files. 
+The [Gephi intro page](GEPHI_HOWTO.md) explains how to use the generated `.graphml` files. 
 
 ## Known Issues
 
