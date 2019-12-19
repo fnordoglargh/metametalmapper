@@ -23,6 +23,9 @@ bands = 'bands/'
 ajaxLinks = queue.Queue()
 entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
 lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
+STATUS_ERROR = 'unrecoverable'
+STATUS_SKIPPED = 'skipped'
+STATUS_ADDED = 'added'
 
 
 class VisitBandThread(threading.Thread):
@@ -89,6 +92,7 @@ class VisitBandThread(threading.Thread):
             if link_band_temp in self.visited_entities['bands']:
                 self.logger.debug(f"  Skipping {link_band_temp}.")
                 self.update_bar(link_band_temp)
+                self.band_errors[STATUS_SKIPPED][link_band_temp] = ""
                 continue
 
             try:
@@ -99,19 +103,19 @@ class VisitBandThread(threading.Thread):
 
             # Error case: putting the link back into circulation.
             if crawl_result == -1:
-                if link_band_temp not in self.band_errors.keys():
-                    self.band_errors[link_band_temp] = 1
+                if link_band_temp not in self.band_errors[STATUS_ERROR].keys():
+                    self.band_errors[STATUS_ERROR][link_band_temp] = 1
                 else:
-                    self.band_errors[link_band_temp] += 1
+                    self.band_errors[STATUS_ERROR][link_band_temp] += 1
 
-                if self.band_errors[link_band_temp] < self.retries_max:
+                if self.band_errors[STATUS_ERROR][link_band_temp] < self.retries_max:
                     self.bandLinks.put(link_band_temp)
                 else:
                     self.logger.error(f'Too many retries for {link_band_temp}.')
                     self.update_bar(link_band_temp)
                 continue
             else:
-                self.visited_entities['bands'][link_band_temp] = ""
+                self.visited_entities['bands'][link_band_temp] = ''
 
             temp_band_data = crawl_result['bands']
             temp_artist_data = crawl_result['artists']
@@ -120,11 +124,13 @@ class VisitBandThread(threading.Thread):
 
             try:
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
+                self.band_errors[STATUS_ADDED][link_band_temp] = ''
             except Exception:
                 self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
                 self.logger.error(temp_band_data)
                 self.logger.error(temp_artist_data)
                 self.logger.error(temp_label_data)
+                self.band_errors[STATUS_ERROR][link_band_temp] = ''
             finally:
                 self.lock.release()
                 self.update_bar(link_band_temp)
@@ -423,8 +429,7 @@ class VisitBandThread(threading.Thread):
 def make_band_list(country_links):
     logger = logging.getLogger('Crawler')
     logger.debug('Started Band List Visitor')
-    link_counter = 0
-    http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+    skipped_links = 0
     band_links = []
     # Used as a very crude way to see if duplicate data is sent by MA.
     json_strings = []
@@ -432,6 +437,7 @@ def make_band_list(country_links):
     while country_links.qsize() != 0:
         link_country_temp = country_links.get_nowait()
         logger.debug(f'  Working on: {link_country_temp}')
+        http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         country_json = http.request('GET', link_country_temp)
         json_data_string = country_json.data.decode('utf-8')
 
@@ -440,7 +446,7 @@ def make_band_list(country_links):
         else:
             logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
             country_links.put(link_country_temp)
-            continue
+            #continue
 
         # The data string might contain an incomplete data definition which prevents conversion to the dict below.
         json_data_string = json_data_string.replace('"sEcho": ,', '')
@@ -460,14 +466,14 @@ def make_band_list(country_links):
         for band in json_data["aaData"]:
             # We do not need the leading "'<a href=\'https://www.metal-archives.com/bands/".
             partial_link = band[0][46:band[0].rfind("'>")]
+
             if partial_link not in band_links:
                 band_links.append(partial_link)
             else:
-                logger.error(f'  Worst case. Call returned invalid data from MA. Putting link back in circulation...')
-                country_links.put(link_country_temp)
-                break
+                logger.error(f'  Found a duplicate band link in MA [{partial_link}].')
+                skipped_links += 1
 
-            link_counter += 1
+    logger.info(f'Recorded {len(band_links)} band and skipped {skipped_links} links. ')
 
     return band_links
 
@@ -775,7 +781,6 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    unrecoverable_bands = {}
     # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
     # took longer and longer the larger the database got.
     time_start = datetime.now()
@@ -800,10 +805,16 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
         logger.error("Thread count is outside safe range from 1 to 8. Overriding to 4.")
         thread_count = 4
 
+    bands_status = {
+        STATUS_ERROR: {},
+        STATUS_SKIPPED: {},
+        STATUS_ADDED: {}
+    }
+
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, unrecoverable_bands, visited_entities, progress_bar,
+            str(i), local_bands_queue, lock, db_handle, bands_status, visited_entities, progress_bar,
             visited_bands, is_detailed)
         threads.append(thread)
 
@@ -819,18 +830,24 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Post-Crawler')
 
     # Print all bands which were not added to the database to the log and save the short links into a file.
-    if len(unrecoverable_bands) > 0:
+    if len(bands_status[STATUS_ERROR]) > 0:
         logger.error('The following bands had too many problems and were not added to the database:')
         actual_time = datetime.now()
         time_stamp = f'{actual_time.date()}_{actual_time.time().strftime("%H%M%S")}'
         unrecoverable_file_name = Path(f'links/_bands_with_errors_{time_stamp}')
         unrecoverable_file = open(unrecoverable_file_name, "w", encoding="utf-8")
 
-        for key, value in unrecoverable_bands.items():
+        for key, value in bands_status[STATUS_ERROR].items():
             logger.error(f'  {key}')
             unrecoverable_file.write(f'{key}\n')
 
         unrecoverable_file.close()
         logger.info(f'The short links of the bands are available in [{unrecoverable_file_name}].')
+
+    if len(bands_status[STATUS_SKIPPED]) > 0:
+        logger.info(f'{len(bands_status[STATUS_SKIPPED])} of {len(band_links)} bands were skipped.')
+
+    if len(bands_status[STATUS_ADDED]) > 0:
+        logger.info(f'{len(bands_status[STATUS_ADDED])} of {len(band_links)} bands were added.')
 
     logger.info('<<< Crawling all bands')
