@@ -202,7 +202,7 @@ def main(argv):
             flush_queue(country_short, link_list)
     elif mode is CrawlMode.CrawlRegion:
         if region not in REGIONS:
-            print(f'The region {REGIONS[region][1]} is invalid. Try one from the following list:')
+            print(f'The region key {region} is invalid. Try one from the following list:')
             print()
             print(print_regions())
         else:
