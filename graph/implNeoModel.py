@@ -131,12 +131,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         all_links = {'bands': {}, 'artists': {}}
         print('  Getting all known bands.')
         all_bands = Band.nodes.all()
+        print(f'    ...found {len(all_bands)}')
 
         for band in all_bands:
             all_links['bands'][band.link] = band.visited
 
         print('  Getting all known artists.')
         all_artists = Member.nodes.all()
+        print(f'    ...found {len(all_artists)}')
 
         for artist in all_artists:
             all_links['artists'][artist.link] = artist.visited
@@ -323,10 +325,12 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             genders[gender_key] = len(artists)
             artists_total += genders[gender_key]
 
+        print(f'    ...found {artists_total}')
         print('  Getting all bands.')
-        band_count = len(Band.nodes.all())
         bands_all = Band.nodes.all()
+        band_count = len(bands_all)
         bands_filtered = defaultdict(list)
+        print(f'    ...found {band_count}')
         print('  Filtering bands.')
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
