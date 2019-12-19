@@ -14,7 +14,7 @@ from graph.implNeoModel import *
 from graph.metalGraph import *
 from graph.exportGraph import *
 from global_helpers import *
-from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES
+from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES, clean_short_links
 from genre import save_genres
 from html_exporter import generate_html_report
 
@@ -48,9 +48,11 @@ def print_help():
         f'    into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.\n'
         f'  -b: Crawls all bands in the generated files from option -a\n'
         f'    (or -c if you specify your own file with -f).\n'
-        f'  -c <country ID>: Crawls the supplied country (e.g. NO for Norway)\n'
+        f'  -c <country IDs>: Crawls the supplied countries (e.g. NO for Norway)\n'
         f'    and uses the standard file name together with the ID to write a\n'
-        f'    file with all band links from the given country. See list below.\n'
+        f'    file with all band links from the given country. See list (-l) below.\n'
+        f'    The country shorts must always be separated by commas without spaces or be\n'
+        f'    enclosed by quotation-marks if they contain spaces.\n'
         f'  -y: Prints a raw data report of the active database and exports a GraphML file\n'
         f'    of all bands (including their implicit connections through artists).\n'
         f'  -z: Does the same as "-y" but expects a list of 1 to n countries or regions.\n'
@@ -155,8 +157,7 @@ def main(argv):
             print_help()
             sys.exit()
         elif opt == '-c':
-            country_short = arg.upper()
-            country_links.append(country_short)
+            country_links = clean_short_links(arg)
             mode = CrawlMode.CrawlCountry
         elif opt == '-a':
             mode = CrawlMode.CrawlAllCountries
@@ -168,7 +169,7 @@ def main(argv):
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-z':
-            country_links = arg.upper().split(',')
+            country_links = clean_short_links(arg)
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-l':
             mode = CrawlMode.DisplayInfo
@@ -246,30 +247,17 @@ def main(argv):
         if db_handle is None:
             sys.exit(-9)
 
-        cleaned_shorts = []
-
-        for short in country_links:
-            stripped_short = short.rstrip().strip()
-            if stripped_short in REGIONS.keys():
-                region_elements = REGIONS[stripped_short][2]
-                for country in region_elements:
-                    cleaned_shorts.append(country)
-            elif stripped_short in COUNTRY_NAMES.keys():
-                cleaned_shorts.append(stripped_short)
-            else:
-                logger.error(f'Ignoring {stripped_short}; not found in countries or regions.')
-
         country_info = 'Generating report for: '
 
-        for clean_short in cleaned_shorts:
+        for clean_short in country_links:
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
-        if len(cleaned_shorts) is 0:
+        if len(country_links) is 0:
             print(f'{country_info}Entire database.')
         else:
             print(country_info[:-2])
 
-        raw_report = db_handle.generate_report(cleaned_shorts)
+        raw_report = db_handle.generate_report(country_links)
         print(raw_report)
 
         logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
@@ -290,7 +278,7 @@ def main(argv):
         logger.info(f'  All : {genre_export_paths[0]}')
         logger.info(f'  Core: {genre_export_paths[1]}')
         export_handle = GraphExportContext(GraphMLExporter())
-        relationships = db_handle.export_bands_network(cleaned_shorts)
+        relationships = db_handle.export_bands_network(country_links)
         export_handle.export_graph(relationships)
     elif mode is CrawlMode.DisplayInfo:
         country_string = print_countries(4, crawl_countries())

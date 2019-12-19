@@ -76,6 +76,14 @@ REGIONS = {
 # Hardcoded file paths for the countries.
 COUNTRY_FILE_PATH = Path('data/iso_countries.csv')
 
+if not COUNTRY_FILE_PATH.exists():
+    # Unit Test
+    COUNTRY_FILE_PATH = Path('../data/iso_countries.csv')
+    if not COUNTRY_FILE_PATH.exists():
+        # Bail out.
+        print(f'{COUNTRY_FILE_PATH} cannot be found. Bailing Out...')
+        exit(-10)
+
 
 def load_data_file(file_name: Path, value_column, key_column=0):
     """Loads two columns of a CSV into a lookup table (dictionary).
@@ -153,3 +161,27 @@ def print_regions():
         lines += '\n'
 
     return lines
+
+
+def clean_short_links(unclean_shorts: str):
+    """Splits a string at every comma, removes all whitespaces and tests the resulting ISO country shorts for existence.
+
+    :param unclean_shorts: A comma separated string with ISO country shorts.
+    :return: A list of valid countries from the given string.
+    """
+    not_yet_clean_short_links = unclean_shorts.upper().replace(' ', '').split(',')
+
+    cleaned_short_links = []
+
+    for short in not_yet_clean_short_links:
+        if short in REGIONS.keys():
+            region_elements = REGIONS[short][2]
+            for country in region_elements:
+                cleaned_short_links.append(country)
+        elif short in COUNTRY_NAMES.keys():
+            cleaned_short_links.append(short)
+        else:
+            if short is not '':
+                print(f'Ignoring {short}; not found in countries or regions.')
+
+    return cleaned_short_links
