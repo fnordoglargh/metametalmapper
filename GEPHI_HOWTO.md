@@ -37,3 +37,29 @@ This leaves you with a smaller network of 20 connected bands. Bands which are no
 be shown.
 
 ![Middle East filtered - Lebanon](img/middle_east_1_filtered.png)
+
+## Adding a few metal communities
+
+The graph is a bit thin. Let's add bands from Syria (SY), United Arab Emirates (AE) and Kuwait (KW).
+
+1. `-c SY,AE,KW`
+2. `-b -F SY,AE,KW`
+3. `-y`
+
+Load the new file into Gephi. It looks a bit bland, but we can let Gephi apply some color.
+
+![Nodes Colored](img/gephi_node_colors.png)
+
+Now run the ForceAtlas 2 again.
+
+![Middle East unfiltered](img/middle_east_2_unfiltered.png)
+
+## Filter countries
+
+If you end up with a large graph and you want to remove nodes you can either make a new export from the database or you
+can filter by _country_ (found in _Attributes_ → _Eqaual_). Simply drag _country_ under your Giant Component.
+
+To display only band nodes from AE and LB, enter "United Arab Emirates|Lebanon" into the text box and check the box _Use
+regex_. Don't forget to push the play button.
+
+![Filter Countries](img/gephi_node_filter_countries.png)
