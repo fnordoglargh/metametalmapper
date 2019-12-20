@@ -21,7 +21,7 @@ from html_exporter import generate_html_report
 __author__ = "Martin Woelke"
 __copyright__ = "Copyright 2019, D-Test AG"
 __license__ = ""
-__version__ = "0.19"
+__version__ = "0.23"
 __status__ = "Development"
 
 countries = {}
@@ -61,6 +61,9 @@ def print_help():
         f'  -f <filename>: filename is a parameter to override the standard file name\n'
         f'    for -b or -c and is used either to write an output file or to read an\n'
         f'    input file.\n'
+        f'  -F <country IDs>: Takes a list two-letter country short names and tries\n'
+        f'    to find the them in the standard file names inside the links folder.\n'
+        f'    Needs to be used with -b.\n'
         f'  -l: List available countries and regions.\n'
         f'  -r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO\n'
         f'    to get short links of all Nordic Countries.)\n'
@@ -116,11 +119,12 @@ def init_db():
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "dbac:hf:tyz:lr:")
+        opts, args = getopt.getopt(argv, "dbac:hf:F:tyz:lr:")
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
 
+    # Display help text if no switches are supplied.
     if not opts:
         print_help()
         sys.exit(0)
@@ -166,6 +170,13 @@ def main(argv):
         elif opt == '-f':
             filenames.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
+        elif opt == '-F':
+            country_links = clean_short_links(arg)
+
+            for country_link in country_links:
+                temp_path = Path(f'{FOLDER_LINKS}/{country_link}{LINK_EXTENSION}')
+                if temp_path.exists():
+                    filenames.append(temp_path)
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-z':
@@ -223,13 +234,10 @@ def main(argv):
                 if band_links[-1] == '':
                     del band_links[-1]
 
-                # The test mode contains hash commented lines. Here we filter for those.
-                if mode is CrawlMode.Test:
-                    for line in band_links:
-                        if not line.startswith('#'):
-                            sanitized_bands.append(line)
-                else:
-                    sanitized_bands = band_links
+                # For testing a  file may contain hash commented lines. Here we filter for those.
+                for line in band_links:
+                    if not line.startswith('#'):
+                        sanitized_bands.append(line)
             else:
                 logger.error(f"File {path} was not readable.")
 
