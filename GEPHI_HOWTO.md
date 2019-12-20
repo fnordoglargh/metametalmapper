@@ -63,3 +63,11 @@ To display only band nodes from AE and LB, enter "United Arab Emirates|Lebanon" 
 regex_. Don't forget to push the play button.
 
 ![Filter Countries](img/gephi_node_filter_countries.png)
+
+You can achieve the reverse by Adding a _NOT_ from the _Operators_. Put it right before the _Equal (country)_. The 
+following snip from the Gephi shows a graph of the middle eastern network _without_ Kuwait and unconnected bands. 
+
+![Middle East unfiltered](img/middle_east_2_filtered.png)
+
+A more comprehensive guide can be explored in the 
+[Gephi Tutorials](https://seinecle.github.io/gephi-tutorials/generated-html/using-filters-en.html).
