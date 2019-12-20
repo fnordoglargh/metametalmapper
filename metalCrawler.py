@@ -161,6 +161,9 @@ class VisitBandThread(threading.Thread):
             -1 in an error case.
         """
 
+        if len(band_short_link) is 0:
+            return -1
+
         # TODO: Change your environment or this won't work!
         # The % escaped glyphs only work if the client.py in http
         # is changed in putrequest() before self._output() is called.
