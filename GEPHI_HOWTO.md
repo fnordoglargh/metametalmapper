@@ -64,10 +64,29 @@ regex_. Don't forget to push the play button.
 
 ![Filter Countries](img/gephi_node_filter_countries.png)
 
-You can achieve the reverse by Adding a _NOT_ from the _Operators_. Put it right before the _Equal (country)_. The 
+You can achieve the reverse by adding a _NOT_ from the _Operators_. Put it right before the _Equal (country)_. The 
 following snip from the Gephi shows a graph of the middle eastern network _without_ Kuwait and unconnected bands. 
 
 ![Middle East unfiltered](img/middle_east_2_filtered.png)
 
 A more comprehensive guide can be explored in the 
 [Gephi Tutorials](https://seinecle.github.io/gephi-tutorials/generated-html/using-filters-en.html).
+
+## Exporting the graph
+
+In the previous sections we only used the preview to look at the graphs. Gephi has built-in ways to export a graph e.g.
+as a PNG or a PDF. When band names are shown, the PNG has to be quite large. Otherwise it will be very hard to read the
+smaller labels.
+
+Head over to _Preview_. Select any of the _Presets_ and experiment with something you like. The standard settings of
+_Black Background_ work well. Some massaging of the graph is likely to be needed. Hit the _Refresh_ button once and have
+a look if the labels are readable and don't overlap. Sometimes a graph might look cramped. Go back to the _Overview_ and
+select _Expansion_ from the layouts and run it two or three times to expand the graph. Afterwards I recommend to run
+_Noverlap_ and _Label Adjust_.
+
+Go back to the preview, refresh to verify that the graph looks ok and then export a PDF and marvel at it in your 
+favourite PDF viewer.
+
+Extra fancy export into a HTML5 webpage: Install _SigmaExporter_ through _Tools_ → _Plugins_. Trigger the export with 
+_File_ → _Export_ → _Sigma-js template_.
+
