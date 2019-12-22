@@ -80,9 +80,18 @@ smaller labels.
 
 Head over to _Preview_. Select any of the _Presets_ and experiment with something you like. The standard settings of
 _Black Background_ work well. Some massaging of the graph is likely to be needed. Hit the _Refresh_ button once and have
-a look if the labels are readable and don't overlap. Sometimes a graph might look cramped. Go back to the _Overview_ and
-select _Expansion_ from the layouts and run it two or three times to expand the graph. Afterwards I recommend to run
-_Noverlap_ and _Label Adjust_.
+a look if the labels are readable and don't overlap. Sometimes a graph might look cramped.
+
+![Lebanon, no tweaks](img/lebanon_no_tweaks.png)
+
+Go back to the _Overview_ and select _Expansion_ from the layouts and run it two or three times to expand the graph.
+
+![Lebanon expanded](img/lebanon_expanded_twice.png)
+
+Afterwards I recommend to run _Noverlap_ (to prevent nodes to overlap) and _Label Adjust_ (to adjust labels so that they
+don't overlap).
+
+![Lebanon, overlap fixed](img/lebanon_noverlap_labels_adjusted.png)
 
 Go back to the preview, refresh to verify that the graph looks ok and then export a PDF and marvel at it in your 
 favourite PDF viewer.
