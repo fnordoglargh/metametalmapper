@@ -191,11 +191,21 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         return band_relationships
 
     def generate_country_report(self, country_short, bands):
-        number_bands = len(bands)
-        if number_bands is 0:
+        """ Generate a CountryReport from the given country short and list of bands.
+
+        :param country_short: An ISO country short string.
+        :param bands: A list of Band objects.
+        :return: An instantiated CountryReport or None if any of the parameters were invalid.
+        """
+
+        if country_short not in COUNTRY_NAMES.keys():
             return None
 
         population = COUNTRY_POPULATION[country_short]
+
+        number_bands = len(bands)
+        if number_bands is 0:
+            return None
 
         if int(population) == 0:
             return None
