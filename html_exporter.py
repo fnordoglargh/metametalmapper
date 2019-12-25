@@ -4,6 +4,8 @@ import logging
 from global_helpers import get_time_stamp
 
 REPORT_TEMPLATE = Path('data/report.tpl')
+
+# Currently not used. The CSS is embedded in the template.
 CSS_FILE = Path('data/w3.css')
 
 
