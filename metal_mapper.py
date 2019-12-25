@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 """_Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to access data of
-[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (MA) and query said data.
+[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) and query said data.
 """
 
 import sys
 import getopt
+
 import logging.config
 import yaml
 from enum import Enum
+
 from metalCrawler import *
 from graph.implNeoModel import *
 from graph.metalGraph import *
@@ -88,7 +90,7 @@ def flush_queue(country_short, link_list):
         country_or_region_name = REGIONS[country_short][1]
 
     if len(link_list) > 0:
-        band_links_file = open(country_filename, "w", encoding="utf-8")
+        band_links_file = open(country_filename, 'w', encoding='utf-8')
         counter = 0
         for link in link_list:
             band_links_file.write(link + '\n')
@@ -100,7 +102,7 @@ def flush_queue(country_short, link_list):
             f'"{country_filename}".'
         )
     else:
-        logger.warning(f"No bands found for {country_or_region_name} ({country_or_region_code}).")
+        logger.warning(f'No bands found for {country_or_region_name} ({country_or_region_code}).')
 
     return country_filename
 
@@ -111,7 +113,7 @@ def init_db():
     try:
         db_handle = GraphDatabaseContext(NeoModelStrategy())
     except:
-        logger.error("  Need database to function properly. Exiting...")
+        logger.error('  Need a database to function properly. Exiting...')
 
     return db_handle
 
@@ -119,7 +121,7 @@ def init_db():
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, "dbac:hf:F:tyz:lr:")
+        opts, args = getopt.getopt(argv, 'dbac:hf:F:tyz:lr:')
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -146,12 +148,12 @@ def main(argv):
         if not folder.exists() and not folder.is_dir():
             try:
                 folder.mkdir()
-                logger.info(f"Successfully created the directory {folder}.")
+                logger.info(f'Successfully created the directory {folder}.')
             except:
-                logger.fatal(f"Creation of the directory {folder} failed.")
+                logger.fatal(f'Creation of the directory {folder} failed.')
                 sys.exit(3)
         else:
-            logger.debug(f"Standard directory {folder} exists.")
+            logger.debug(f'Standard directory {folder} exists.')
 
     country_links = []
     is_detailed = False
@@ -189,7 +191,7 @@ def main(argv):
             region = arg.upper()
         elif opt == '-t':
             mode = CrawlMode.Test
-            filenames.append(Path("testLinks.txt"))
+            filenames.append(Path('testLinks.txt'))
         elif opt == '-m':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
         elif opt == '-d':
@@ -203,7 +205,7 @@ def main(argv):
             filenames.append(file_link)
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
-        logger.info("Crawling countries...")
+        logger.info('Crawling countries...')
 
         if len(country_links) is 0:
             # This starts bootstrapping from the actual country list as it is on EM.
@@ -229,7 +231,7 @@ def main(argv):
 
         for path in filenames:
             if path.is_file():
-                band_links = path.read_text(encoding="utf-8").split('\n')
+                band_links = path.read_text(encoding='utf-8').split('\n')
                 # Remove last element from list if it's a lonely, empty string.
                 if band_links[-1] == '':
                     del band_links[-1]
@@ -239,7 +241,7 @@ def main(argv):
                     if not line.startswith('#'):
                         sanitized_bands.append(line)
             else:
-                logger.error(f"File {path} was not readable.")
+                logger.error(f'File {path} was not readable.')
 
         if len(sanitized_bands) is not 0:
             db_handle = init_db()
@@ -248,7 +250,8 @@ def main(argv):
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
                 save_genres()
         else:
-            logger.error("No bands are available. Make sure that you crawled a country or regions before -b is used.")
+            logger.error('No bands are available. Make sure that you crawled a country or regions before -b is used.')
+
     elif mode in [CrawlMode.AnalyseDatabase]:
         db_handle = init_db()
 
@@ -276,8 +279,8 @@ def main(argv):
         release_all_json_export_path = raw_report.album_report.export_all_releases()
         logger.info(f'Release export saved to: {release_all_json_export_path}')
         export_data = [
-            (release_json_export_path, "marker_releases_year"),
-            (release_all_json_export_path, "marker_releases_all")
+            (release_json_export_path, 'marker_releases_year'),
+            (release_all_json_export_path, 'marker_releases_all')
         ]
         html_report_location = generate_html_report(export_data)
         logger.info(f'HTML report saved to: {html_report_location}')
@@ -301,5 +304,5 @@ def main(argv):
     logging.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(sys.argv[1:])

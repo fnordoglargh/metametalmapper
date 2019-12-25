@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+
 from graph.report import DatabaseReport
 
 POP_PER_100K = 'Bands per 100k people'

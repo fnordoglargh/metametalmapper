@@ -1,14 +1,16 @@
 from collections import defaultdict
+import settings
+
+import logging
 from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
     RelationshipFrom, StructuredRel, config, core
-from neomodel.match import *
 from neo4j import exceptions
+from neomodel.match import *
+import progressbar
+
+from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
 from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
-from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
-import logging
-import settings
-import progressbar
 from graph.report import CountryReport, DatabaseReport, AlbumReport
 
 
@@ -75,22 +77,22 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def __init__(self):
         self.logger = logging.getLogger('NeoModel')
-        error_text = "Cannot connect to Neo4j database."
+        error_text = 'Cannot connect to Neo4j database.'
         # Cheap test to test if the DB is available.
         try:
             Label.nodes.get(emid=-1)
         # No node with 'emid' of -1 available means the DB is up and running.
         except core.DoesNotExist:
-            self.logger.info("Neo4j database is up and running.")
+            self.logger.info('Neo4j database is up and running.')
             pass
         except exceptions.AuthError:
-            self.logger.error(f"{error_text} Check the credentials in the settings.py.")
+            self.logger.error(f'{error_text} Check the credentials in the settings.py.')
             raise
         except exceptions.ServiceUnavailable:
-            self.logger.error(f"{error_text} Make sure the database is up and running.")
+            self.logger.error(f'{error_text} Make sure the database is up and running.')
             raise
         except Exception:
-            self.logger.error(f"{error_text}")
+            self.logger.error(f'{error_text}')
             raise
 
     def add_band_interface(self, band_dict):

@@ -1,41 +1,46 @@
 from pathlib import Path
 
-REG_NC = ("NCO", "Nordic Countries", ["DK", "SE", "NO", "IS", "FI", "GL", "FO", "AX", "SJ"])
-REG_SCA = ("SCA", "Scandinavia",  ["DK", "SE", "NO", "IS", "FI", "FO", "AX"])
+REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 'AX', 'SJ'])
+REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])
 
 # Europe's region definitions: https://en.wikipedia.org/wiki/Central_Europe#/media/File:Grossgliederung_Europas-en.svg
-REG_EUR_NORTH = ("NEU", "Northern Europe", ["DK", "SE", "NO", "IS", "FI"])
+REG_EUR_NORTH = ('NEU', 'Northern Europe', ['DK', 'SE', 'NO', 'IS', 'FI'])
 # Isle of Man (IM) and Guernsey (GG) can be seen as part of WEU.
-REG_EUR_WEST = ("WEU", "Western Europe", ["BE", "FR", "IE", "MC", "NL", "GB", "MC", "AD", "GG", "IM"])
-REG_EUR_CENTRAL = ("CEU", "Central Europe", ["AT", "CZ", "DE", "HU", "LI", "PL", "SK", "CH", "LU", "EE", "LV", "LT", "HR", "SI"])
-REG_EUR_SOUTH = ("SEU", "Southern Europe", ["PT", "ES", "IT", "SM", "MT"])
-REG_EUR_EAST = ("EEU", "Eastern Europe", ["AU", "BY", "RU"])
+REG_EUR_WEST = ('WEU', 'Western Europe', ['BE', 'FR', 'IE', 'MC', 'NL', 'GB', 'MC', 'AD', 'GG', 'IM'])
+REG_EUR_CENTRAL = ('CEU', 'Central Europe', ['AT', 'CZ', 'DE', 'HU', 'LI', 'PL', 'SK', 'CH', 'LU', 'EE', 'LV', 'LT',
+                                             'HR', 'SI'])
+REG_EUR_SOUTH = ('SEU', 'Southern Europe', ['PT', 'ES', 'IT', 'SM', 'MT'])
+REG_EUR_EAST = ('EEU', 'Eastern Europe', ['AU', 'BY', 'RU'])
 # As of Nov 2019: No Bands in Kosovo.
-REG_EUR_SOUTH_EAST = ("SEE", "Southeastern Europe", ["RO", "MD", "BG", "RS", "BA", "MK", "GR", "ME", "AL", "CY"])
-REG_EURO = ("EURO", "Europe", list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_EUR_CENTRAL[2] + REG_EUR_SOUTH[2] + REG_EUR_EAST[2] + REG_EUR_SOUTH_EAST[2])))
+REG_EUR_SOUTH_EAST = ('SEE', 'Southeastern Europe', ['RO', 'MD', 'BG', 'RS', 'BA', 'MK', 'GR', 'ME', 'AL', 'CY'])
+REG_EURO = ('EURO', 'Europe', list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_EUR_CENTRAL[2] + REG_EUR_SOUTH[2] +
+                                       REG_EUR_EAST[2] + REG_EUR_SOUTH_EAST[2])))
 
-REG_AMC_NORTH = ("NAM", "North America", ["US", "CA", "MX", "PR", "TC", "AG", "BS", "BB", "BZ", "CR", "CU", "DM", "DO", "SV", "GD", "GT", "HT", "HN", "JM", "NI", "PA", "KN", "LC", "VC", "TT"])
-REG_AMC_CENTRAL = ("CAM", "Central America", ["BZ", "CR", "SV", "GT", "HN", "NI", "PA"])
+REG_AMC_NORTH = ('NAM', 'North America', ['US', 'CA', 'MX', 'PR', 'TC', 'AG', 'BS', 'BB', 'BZ', 'CR', 'CU', 'DM', 'DO',
+                                          'SV', 'GD', 'GT', 'HT', 'HN', 'JM', 'NI', 'PA', 'KN', 'LC', 'VC', 'TT'])
+REG_AMC_CENTRAL = ('CAM', 'Central America', ['BZ', 'CR', 'SV', 'GT', 'HN', 'NI', 'PA'])
 # Curaçao and Aruba are technically part of the Netherlands but geographically should be part of SAM.
-REG_AMC_SOUTH = ("SAM", "South America", ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE", "CW", "AW"])
-REG_AMS = ("AMS", "Americas", list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
+REG_AMC_SOUTH = ('SAM', 'South America', ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'GY', 'PY', 'PE', 'SR', 'UY', 'VE', 'CW',
+                                          'AW'])
+REG_AMS = ('AMS', 'Americas', list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 
 # As of Nov 2019: No bands in TL (Timor Leste).
-REG_ASE = ("ASE", "South East Asia", ["BN", "KH", "ID", "LA", "MY", "MM", "PH", "SG", "TH", "VN"])
+REG_ASE = ('ASE', 'South East Asia', ['BN', 'KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN'])
 # As of Nov 2019: No bands in Bhutan and Pakistan.
-REG_ASA = ("ASA", "South Asia", ["AF", "BD", "IN", "MV", "NP", "LK"])
-REG_ACA = ("ACA", "Central Asia", ["KZ", "KG", "TJ", "TM", "UZ"])
+REG_ASA = ('ASA', 'South Asia', ['AF', 'BD', 'IN', 'MV', 'NP', 'LK'])
+REG_ACA = ('ACA', 'Central Asia', ['KZ', 'KG', 'TJ', 'TM', 'UZ'])
 # Will there ever be metal in North Korea?
-REG_AEA = ("AEA", "East Asia", ["CN", "JP", "MN", "KR", "TW"])
+REG_AEA = ('AEA', 'East Asia', ['CN', 'JP', 'MN', 'KR', 'TW'])
 # As of Nov 2019: No bands in Palestine and Yemen.
-REG_AWA = ("AWA", "Western Asia", ["AM", "AZ", "BH", "CY", "EG", "GE", "IR", "IQ", "IL", "JO", "KW", "LB", "OM", "QA", "SA", "SY", "TR", "AE"])
-REG_ASIA = ("ASIA", "Asia", list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
+REG_AWA = ('AWA', 'Western Asia', ['AM', 'AZ', 'BH', 'CY', 'EG', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KW', 'LB', 'OM', 'QA',
+                                   'SA', 'SY', 'TR', 'AE'])
+REG_ASIA = ('ASIA', 'Asia', list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
 
 # As of Dec 2019: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
-REG_AAS = ("AAS", "Australasia", ["AU", "NZ", "NC"])
+REG_AAS = ('AAS', 'Australasia', ['AU', 'NZ', 'NC'])
 # As of Dec 2019: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
 # Papua New Guinea (PG), Samoa (WS), Solomon Islands (SB), Tonga (TO), Tuvalu (TV) and Vanuatu (VU).
-REG_OCE = ("OCE", "Oceania", ["PF", "ID", "AU", "NZ", "NC", ])
+REG_OCE = ('OCE', 'Oceania', ['PF', 'ID', 'AU', 'NZ', 'NC', ])
 
 # As of Dec 2019: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
 # African Republic (CF), Chad (TD), Comoros (KM), DR Congo (CD), Congo (CG), Ivory Coast (CI), Djibouti (DJ), Equatorial
@@ -43,9 +48,9 @@ REG_OCE = ("OCE", "Oceania", ["PF", "ID", "AU", "NZ", "NC", ])
 # Lesotho (LS), Liberia (LR), Malawi (MW), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
 # and Príncipe (ST), Senegal (SN), Seychelles (SC), Sierra Leone (SL), Somalia (SO), South Sudan (SS), Tanzania (TZ),
 # Togo (TG), Zambia (ZM).
-REG_AFR = ("AFR", "Africa", ["DZ", "AO", "BW", "EG", "ET", "KE", "LY", "MG", "MU", "MA", "MZ", "NA", "ZA", "TN", "UG", "ZW"])
+REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU', 'MA', 'MZ', 'NA', 'ZA', 'TN', 'UG', 'ZW'])
 
-REG_TST = ("TST", "Test", ["IS", "GL", "FO", "AX", "SJ"])
+REG_TST = ('TST', 'Test', ['IS', 'GL', 'FO', 'AX', 'SJ'])
 
 REGIONS = {
     REG_NC[0]: REG_NC,
@@ -91,13 +96,13 @@ def load_data_file(file_name: Path, value_column, key_column=0):
     :param file_name: Path object for the file to be loaded.
     :param value_column: The column number which will be used as value.
     :param key_column: The column from which the value will be read. Standard is the first column (0).
-    :return: A dict with key/value pairs.
+    :return: A dict with key/value pairs or an empty dict if the file was not readable.
     """
     collection = {}
-    file = file_name.open(encoding="utf-8")
+    file = file_name.open(encoding='utf-8')
     line = file.readline().rstrip()
 
-    while line is not "":
+    while line is not '':
         split_line = line.split(';')
         collection[split_line[key_column]] = split_line[value_column]
         line = file.readline().rstrip()
@@ -110,20 +115,17 @@ COUNTRY_NAMES = load_data_file(COUNTRY_FILE_PATH, 1)
 COUNTRY_POPULATION = load_data_file(COUNTRY_FILE_PATH, 2)
 
 
-def print_countries(columns_count, country_links):
+def print_countries(columns_count: int, country_links):
     """Uses ``crawl_countries`` to get a list of all available countries and their ISO codes from MA. The list is then
     used to prepare a formatted printable string with all countries.
 
     :param columns_count: The amount of columns for the formatted printout. The column width depends on the length
-    of the longest country name. A count of three or four should work fine.
-    :param country_links:
+    of the longest country name. An amount of three or four should work fine.
+    :param country_links: A list of ISO country shorts.
     :return: A string with all ISO country codes and their names neatly formatted in columns.
     """
-    if type(columns_count) is not int:
-        print("Cannot list countries with parameter type other than int.")
-        return
-    elif columns_count < 1:
-        print("Cannot list countries with columns count smaller than one. Defaulting to one.")
+    if columns_count < 1:
+        print('Cannot list countries with columns count smaller than one. Defaulting to one.')
         columns_count = 1
 
     longest_country = 0
@@ -132,19 +134,19 @@ def print_countries(columns_count, country_links):
         if len(value) > longest_country and key in country_links:
             longest_country = len(value)
 
-    line_format = "[{}] {:" + str(longest_country) + "}"
+    line_format = '[{}] {:' + str(longest_country) + '}'
     counter = 0
-    actual_line = "    "
+    country_text = '    '
 
     for key, country_name in COUNTRY_NAMES.items():
         if key in country_links:
-            actual_line += line_format.format(key, country_name)
+            country_text += line_format.format(key, country_name)
             counter += 1
             if counter is columns_count:
                 counter = 0
-                actual_line += '\n    '
+                country_text += '\n    '
 
-    return actual_line
+    return country_text
 
 
 def print_regions():

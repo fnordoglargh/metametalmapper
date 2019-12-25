@@ -1,21 +1,23 @@
-import certifi
-import urllib3
 import os
-import logging
 import json
 import threading
-import queue
 import time
+import queue
+import logging
+import re
+from datetime import date, datetime
+from pathlib import Path
+
+import certifi
+import urllib3
 import progressbar
 from settings import CRAWLER_THREAD_COUNT
 from bs4 import BeautifulSoup, NavigableString, Tag
-import re
-from graph.choices import *
-from datetime import date, datetime
-from pathlib import Path
+
+from country_helper import COUNTRY_NAMES
 from genre import split_genres
 from global_helpers import get_dict_key
-from country_helper import COUNTRY_NAMES
+from graph.choices import *
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'

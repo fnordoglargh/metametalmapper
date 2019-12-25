@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 import logging
-from global_helpers import get_export_path, escape_band_names
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
+
+from global_helpers import get_export_path, escape_band_names
 
 
 class GraphExportContext:
@@ -48,7 +49,7 @@ class GraphMLExporter(GraphExportStrategy):
         )
 
         db_path = get_export_path('bands', '.graphml')
-        export_file = open(db_path, "w", encoding="utf-8")
+        export_file = open(db_path, 'w', encoding='utf-8')
         export_file.write(header)
         filtered_nodes = []
 
@@ -57,7 +58,7 @@ class GraphMLExporter(GraphExportStrategy):
             if FILTER_UNCONNECTED and len(payload['relations']) is 0:
                 pass
             else:
-                band_name = escape_band_names(payload["name"])
+                band_name = escape_band_names(payload['name'])
 
                 export_file.write(
                     f'<node id="n{node}"><data key="d0">{band_name}</data>'

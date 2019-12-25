@@ -1,8 +1,9 @@
-import json
 from collections import defaultdict
-from graph.choices import GENDER, RELEASE_TYPES
-from global_helpers import get_export_path
+import json
+
 from genre import GENRE_CORE_MA
+from global_helpers import get_export_path
+from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
 POP_PER_100K = 'Bands per 100k people'

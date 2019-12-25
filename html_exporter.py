@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+
 from global_helpers import get_time_stamp
 
 REPORT_TEMPLATE = Path('data/report.tpl')

@@ -1,6 +1,10 @@
-from pathlib import Path
 import json
 import re
+from pathlib import Path
+
+"""Genre helper to quickly look up e.g. the core genres of M-A. It's also responsible to keep track of a cache to look
+up complicated genre mixtures and split genre strings from M-A.
+"""
 
 # Hardcoded file path for the genre cache.
 GENRES_FILE_PATH = Path('genre_cache.json')
