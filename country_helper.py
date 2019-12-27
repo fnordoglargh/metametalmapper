@@ -1,5 +1,9 @@
 from pathlib import Path
 
+"""Provides a list of regions and bootstraps itself. Note that it will also exit any program importing it if the
+    essential iso_countries.csv is not found inside ./data or ../data!
+"""
+
 REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 'AX', 'SJ'])
 REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])
 
@@ -48,7 +52,8 @@ REG_OCE = ('OCE', 'Oceania', ['PF', 'ID', 'AU', 'NZ', 'NC', ])
 # Lesotho (LS), Liberia (LR), Malawi (MW), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
 # and Príncipe (ST), Senegal (SN), Seychelles (SC), Sierra Leone (SL), Somalia (SO), South Sudan (SS), Tanzania (TZ),
 # Togo (TG), Zambia (ZM).
-REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU', 'MA', 'MZ', 'NA', 'ZA', 'TN', 'UG', 'ZW'])
+REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU', 'MA', 'MZ', 'NA', 'ZA', 'TN', 'UG',
+                             'ZW'])
 
 REG_TST = ('TST', 'Test', ['IS', 'GL', 'FO', 'AX', 'SJ'])
 
@@ -116,7 +121,7 @@ COUNTRY_POPULATION = load_data_file(COUNTRY_FILE_PATH, 2)
 
 
 def print_countries(columns_count: int, country_links):
-    """Uses ``crawl_countries`` to get a list of all available countries and their ISO codes from MA. The list is then
+    """Uses `crawl_countries` to get a list of all available countries and their ISO codes from MA. The list is then
     used to prepare a formatted printable string with all countries.
 
     :param columns_count: The amount of columns for the formatted printout. The column width depends on the length
