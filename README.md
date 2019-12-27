@@ -1,6 +1,6 @@
 # Metal Mapper
-_Metal Mapper_ is a Python3 program and intended to be the basis for a toolset to access data of 
-[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (MA) and query said data. The
+_Metal Mapper_ is a Python3 program intended to be the basis for a toolset to access data of 
+[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) and query said data. The
 _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) links to two projects showcasing
 interesting ways to visualize the _Metal Archives'_ data:
 
@@ -15,7 +15,7 @@ projects.
 
 * Generates lists for bands to crawl based on countries, regions or the entire database.
     It also accepts handcrafted files with bands of your choice.
-* Extracts information on bands, their band members and releases from MA.
+* Extracts information on bands, their band members and releases from M-A.
 * Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
     The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
     1000 nodes.
@@ -36,7 +36,7 @@ If you see output like this
                             ^
     SyntaxError: invalid syntax
 
-you need to run the program explicitly with `python3 metalMapper.py`.
+you need to run the program explicitly with `python3 metal_mapper.py`.
 
 ### Libraries
 
@@ -53,25 +53,24 @@ Install them with `pip3`:
 
 ### Neo4j
 
-Data is stored in a [Neo4j database](https://neo4j.com/product/).
-If you want to explore graphs locally you should download and install the 
-[desktop version (Windows)](https://neo4j.com/download/).
-The downside for some users might be the mandatory use of a Google of Facebook account to authorize
-the desktop app. 30 days to try the software without authorizations is given.
+All data is stored in a [Neo4j database](https://neo4j.com/product/). You have to download and install the
+[desktop version (Windows)](https://neo4j.com/download/) to use any meaningful functionality.
+The downside for some users might be the mandatory use of a Google or Facebook account to authorize
+the desktop app. A 30 day trial period for the software is granted.
 If you know what you're doing you may simply set up Neo4j from other
-available editions. There is e.g. the official Linux 
-[guide](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
+available editions. There is e.g. the official 
+[Linux guide](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
 
 Fire it up and create a database.
 Change the database credentials as needed in `settings.py`.
 
 #### Starting Neo4j Appimage on Linux
 
-If the Neo4j Appimage does not start the desktop window check the console logs contents like:
+If the Neo4j Appimage does not start the desktop window, check the console log for:
 
     The name org.freedesktop.secrets was not provided by any .service files
     
-Installation of the gnome-keyring helped me in that case.
+Installation of the gnome-keyring helped me in that case:
 
     sudo apt install gnome-keyring
 
@@ -94,17 +93,16 @@ Clone this repo and execute `python metal_mapper.py` (see _How to use_ section).
 
 ### Countries
 
-Countries on MA and this tool are represented in [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+Countries on M-A and this tool are represented in [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 two letter format. Whenever you read _NN_ in context with countries, a two letter country 
 code is meant. Two special countries exist: XX (international) and YY (unknown).
-
 
 A list of all countries with at least one band is shown on calling with the switch `-l`.
 
 ### Regions
 
-A _region_ is a group of countries defined inside `country_helper.py` file. Available regions 
-are shown on calling with the switch `-l`.
+A _region_ is a group of countries defined inside the file `country_helper.py`. Available regions 
+are shown on calling `metal_mapper.py` with the switch `-l`.
 
 Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
 Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_
@@ -112,57 +110,67 @@ Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Sca
 
 ### Graph Databases
 
-A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from MA for
-further analysis. Bands and their members are nodes. They are connected through edges storing e.g. data
+A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from M-A for
+further analysis. Bands and their members are nodes. They are connected through edges storing e.g. data,
 like what pseudonym a member used in a certain band or what instruments were played.   
 
 ## How to use
 
-`metal_mapper.py`, when called without switches, shows a list of compiler switches and some hints
-how to use them. The program does not have an interactive mode. Every function (but the
-bootstrapping) needs data from previous runs.
+`metal_mapper.py`, when called on without switches, shows a list of program switches and some hints
+how to use them. The program does not have an interactive mode. Every function needs data from previous runs, except
+the bootstrapping.
 
-### Use Case: Crawl and Analyse Norway
+The following sections will guide you through the usage of the program.
 
-1. Get all known Norwegian band links from MA: `metal_mapper.py -c NO`
-2. Crawl all Norwegian bands: `metal_mapper.py -b -f links/NO.lnks`
-3. Open Neo4j Desktop and look at the graph.
-4. Print raw analysis in the terminal and export a `.graphml` file: `metal_mapper.py -z NO`
+1. Getting all known band links from a country on M-A,
+2. Starting Neo4j Desktop,
+3. Crawling all Norwegian bands,
+4. Opening Neo4j Desktop and inspect the graph,
+5. Print raw analysis in the terminal, export `.graphml` and statistics files.
+    
+### Boostrapping: Crawl a country or a region for band links
 
-### Bootstrapping: Crawl _all_ available countries
+If you're not interested in getting the band links for all countries you can either:
 
-Calling with the switch `-a` will:
+* Start with the switch `-c NN` to crawl all bands in exactly one country **or** 
+* Call with `-r NNN` where NNN is the key of the region you want to crawl.
 
-1. Generate a list of all countries (from MA's [by country page](https://www.metal-archives.com/browse/country))
+Crawling an entire region is recommended only for small regions or to update with new bands.
+
+You may define your own regions in `country_helper.py`. Just make sure that a region code has three letters (or more)
+so that no country link files will be overwritten in a crawl.
+
+Band list files are generated by country (from M-A's ["by country page"](https://www.metal-archives.com/browse/country))
 with at least one band entry.
-2. Extract the link for every band in every country and save the links in a folder with the same name.
-    The name of the files follows this simple scheme: `NN.lnks` where NN is the two letter short form.
-    The contents of an `.lnks` file looks like this:
-    ```
+The names of the files follows this simple scheme: `NN.lnks` where NN is the two letter short form.
+The contents of an `.lnks` file looks like this:
+
     Akollonizer/3540362756
     Among_the_Mist/7576
     Nami/3540321763
     Persefone/12779
-    ```
-    Together with `https://www.metal-archives.com/bands/` a fully fledged link to every band can be generated
-    whenever it is needed.
-    
-### Boostrapping at smaller scale: Crawl a country or a region
 
-If you're not interested in getting the band links for all countries you can either 
+Together with `https://www.metal-archives.com/bands/` a fully fledged link to every band can be generated whenever it is
+needed. You can easily build files with the short links of your favorite bands.
 
-* start with the switch `-c NNN` to crawl all bands in exactly one country **or** 
-* call with `-r NNN` where NNN is the key of the region you want to crawl.
+### Create a graph in Neo4j Desktop
 
-Region codes should always have three letters (or more) so that no country link files will be overwritten in
-a crawl.
+Before bands can be crawled a database needs to be created.
+
+1. Open Neo4j Desktop.
+2. Click _Add Graph_ → _Create a Local Graph_.
+3. Give it a name and a password.
+4. Open `settings.py` and change `NEO4J_PASSWORD` to what you entered in the above step.
+5. Start the database. Remember that you need to start tge database every time you want to interact with the database.  
 
 ### Crawl bands
 
-Two options are available to crawl bands from the above generated link files:
-1. `-b`: Crawls _every_ band from all files found in `./links`. This mode is not recommended. It will take
-    a long time finish. Better use
-2.  `-b -f filename`: Crawls the bands in the given file.
+Several options are available to crawl bands from the above generated link files:
+1.  `-b -f <path/to/file>`: Crawls the bands in the given file.
+2. `-b -F <countries>`: In this case `<countries>` is a comma separated list of ISO shorts (`N1,N2,N3`). Don't use white
+    spaces unless you enclose the entire list in double quotes (`"N1, N2, N3"`).
+3. `-b`: Crawls _every_ band from all files found in `./links`. This mode is not recommended. It will take
+    a long time to finish.
 
 Eight threads are used by default to crawl for bands (See the 
 [performance analysis](DESIGN_NOTES.md) for the amount of crawling threads).
@@ -170,19 +178,36 @@ Data is applied immediately to the [graph database](DATABASES.md) and won't be o
 
 #### Error cases
 
-A band might encounter unrecoverable errors while crawling. It might happen if the band does not exist
-or the network connection breaks down. Unrecoverable bands will be saved in a file in `./links` and a 
-name like `_bands_with_errors_{time_stamp}`. The resulting files contain short band links (as the other 
-`.lnks` files) and can be used for crawling. If you notice from the log that a band was removed from MA
-simply remove the line from the file. In case of defects drop me a message or fix it yourself and issue
-a pull request.
+A band might encounter unrecoverable errors while crawling. It might happen if the band does not exist or the network
+connection breaks down. Unrecoverable bands will be saved in a file in `./links` and a name like 
+`_bands_with_errors_{time_stamp}`. The resulting files contain short band links (as the other `.lnks` files) and can be
+used for crawling. If you notice from the log that a band was removed from M-A simply remove the line from the file. In
+case of defects drop me a message or fix it yourself and issue a pull request.
+
+### Inspecting a graph
+
+Open Neo4j Desktop and inspect the graph.
+
+  1. Install Neo4j Browser with the "Add Application" button inside Neo4j Desktop.
+  1. Start Neo4j Browser.
+  3. Click on the database icon (top left).
+  4. Enter `MATCH (n) RETURN n LIMIT 250` in the text box starting with the $ symbol and press play. 
+  
+You might want to use a higher number than 250 if you already have more than 250 entities in the database. Depending on
+how strong your machine is, ~1000 might be usable maximum. To change the maximum node number you need to open the Neo4j
+Browser, click on the cog icon (lower left) anf change the value of _Initial Node Display_. 
+
+See also [database entities](DATABASES.md) for in-depth details and the [examples](EXAMPLES.md) section.
 
 ### Analysis
 
-After e.g. crawling a region or a country, you can start analyzing the data. Running the program with
-either of the available switches prints some information on the command line. Far more interesting are
-the exported CSV and GraphML files. They are named after their general category followed by a timestamp
-(depicted by a * in the following sections).
+After e.g. crawling a region or a country, you can start analyzing the data. Running the program with either of the
+available switches prints some information on the command line. Far more interesting are the exported CSV and GraphML
+files. They are named after their general category followed by a timestamp (depicted by a * in the following sections).
+
+* `-y`: Considers the entire database.
+* `-z <countries>`: In this case `<countries>` is a comma separated list of ISO shorts (`N1,N2,N3`). Don't use white
+    spaces unless you enclose the entire list in double quotes (`"N1, N2, N3"`).
 
 #### Countries
 
@@ -213,8 +238,8 @@ The file pattern is `genres_all_*`.
 
 #### All core genres
 
-_Core_ does not mean what you might think in this context. It's the merely the most 
-[common genre names](https://www.metal-archives.com/browse/genre) as MA defines them.
+_Core_ does not mean what you might think in this context. It's merely the most 
+[common genre names](https://www.metal-archives.com/browse/genre) as M-A defines them.
 
 The CSV contains the core genres and the count for each one per country.   
     
@@ -234,9 +259,14 @@ metric is the number of reviews. I arbitrarily tried cut-off values to filter re
     be found in `RELEASE_TYPES`(see `choices.py`).
    
 If you don't like the standard settings from `settings.py`, try to change the properties to something that works for 
-.you
+you. The file pattern is `releases_per_year_*`. Note that a JSON file of the release data is also exported.
 
-The file pattern is `releases_per_year_*`. Note that a JSON file of the release data is also exported.
+#### HTML reports
+
+An HTML file with all and per year releases is generated inside the reports folder. The reports can be influences with
+the `settings.py` as describes above. 
+
+![HTML Preview](img/report_demo.png)
 
 #### Usage and output example
 
@@ -266,8 +296,8 @@ The country analysis for all Norwegian band might look similar to this:
 By default all bands are exported (even unconnected ones). Band members which played only live are considered to be part
 of a band. These options are available in `settings.py`:
 
-* `IS_LIVE_MEMBER_IN_BAND`
-* `FILTER_UNCONNECTED`
+* `IS_LIVE_MEMBER_IN_BAND`: Used to decide if a live band member is considered to make connections between bands or not.
+* `FILTER_UNCONNECTED`: Any band which is not connected to any other bands will be filtered.
 
 #### Using exported `.graphml` files
 
