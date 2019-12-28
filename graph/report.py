@@ -315,7 +315,13 @@ class DatabaseReport:
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
 
     def __str__(self):
-        report = f'Database report for {len(self._country_reports)} countries. {self._amount_artists} artists from '
+
+        if len(self._country_reports) is 1:
+            word = 'country'
+        else:
+            word = 'countries'
+
+        report = f'Database report for {len(self._country_reports)} {word}. {self._amount_artists} artists from '
         report += f'{len(self._artists_per_country)} countries play in {self._band_count} bands.\n'
         report += f'  Gender distribution for entire database:\n'
 
