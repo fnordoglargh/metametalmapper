@@ -278,6 +278,8 @@ def main(argv):
         logger.info(f'Release export saved to: {release_json_export_path}')
         release_all_json_export_path = raw_report.album_report.export_all_releases()
         logger.info(f'Release export saved to: {release_all_json_export_path}')
+        bands_formed_export_path = raw_report.export_csv_bands_formed()
+        logger.info(f'Bands formed per year report saved to: {bands_formed_export_path}')
         export_data = [
             (release_json_export_path, 'marker_releases_year'),
             (release_all_json_export_path, 'marker_releases_all')

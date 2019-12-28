@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 
 from genre import GENRE_CORE_MA
@@ -23,7 +23,7 @@ class CountryReport:
         'Atmospheric Black' and 'Black'. This is especially important for counting against the core genres of MA. See
         genre.py for details.
     """
-    def __init__(self, country_name, population, number_bands, genders, gender_per_country, genres):
+    def __init__(self, country_name, population, number_bands, genders, gender_per_country, genres, bands_per_year):
         self._country_name = country_name
         self._population = int(population)
         self._number_bands = number_bands
@@ -42,6 +42,7 @@ class CountryReport:
         self._gender_per_country = gender_per_country
         self._genres = []
         self._set_genres(genres)
+        self.bands_per_year = bands_per_year
 
     def _set_genres(self, genres: list):
         """Internal function used by the constructor to set genres and calculate their percentages in relation to the
@@ -172,6 +173,7 @@ class DatabaseReport:
         self._amount_artists = 0
         self._artists_per_country = []
         self.album_report = album_report
+        self.bands_per_year = defaultdict(int)
 
         for gender in genders:
             self._amount_artists += genders[gender]
@@ -188,7 +190,44 @@ class DatabaseReport:
 
         :param report: The CountryReport to add.
         """
+        for year, number in report.bands_per_year.items():
+            self.bands_per_year[year] += number
         self._country_reports.append(report)
+
+    def export_csv_bands_formed(self):
+        sorted_bands_per_year = OrderedDict(sorted(self.bands_per_year.items()))
+        last_year = list(sorted_bands_per_year.keys())[0]
+
+        for actual_year in sorted_bands_per_year.keys():
+            # If the difference between the actual and last year is greater than 1, we need to insert the missing years.
+            year_diff = actual_year - last_year
+            if year_diff > 1:
+                for missed_year in range(last_year + 1, actual_year):
+                    # We cannot change the ordered dict while we iterate on it, so we make changes to the source.
+                    self.bands_per_year[missed_year] = 0
+            last_year = actual_year
+
+        # Sort the source again, because we added missing years to it.
+        sorted_bands_per_year = OrderedDict(sorted(self.bands_per_year.items()))
+        first_year = list(sorted_bands_per_year.keys())[0]
+
+        # Generate the header first.
+        export_text = 'Years;Total;'
+        for country_report in self._country_reports:
+            export_text += f'{country_report._country_name};'
+
+        export_text += '\n'
+        # Now add the real data.
+        for actual_year in range(first_year, last_year + 1):
+            export_text += f'{actual_year};{self.bands_per_year[actual_year]};'
+            for country_report in self._country_reports:
+                export_text += f'{country_report.bands_per_year[actual_year]};'
+            export_text += '\n'
+
+        export_file = get_export_path('bands_formed', 'csv')
+        export_file.write_text(export_text, encoding="utf-8")
+
+        return export_file
 
     def export_csv_country(self):
         export_text = CountryReport.get_csv_header()

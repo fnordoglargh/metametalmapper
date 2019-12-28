@@ -226,6 +226,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         genres = {}
         gender_per_country = defaultdict(int)
+        bands_per_year = defaultdict(int)
 
         for band in bands:
             for genre in band.genres:
@@ -242,12 +243,18 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     member_counter += 1
                     gender_per_country[member.origin] += 1
 
+            if band.formed is not None:
+                bands_per_year[band.formed.year] += 1
+            else:
+                pass
+                # Commented until I know what to do with unknown formation dates.
+                # bands_per_year[-1] += 1
             band_counter += 1
             progress_bar.update(band_counter)
 
         progress_bar.finish()
         genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres)
+        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres, bands_per_year)
 
         return report
 
