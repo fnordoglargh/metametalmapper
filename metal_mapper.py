@@ -246,7 +246,6 @@ def main(argv):
         if len(sanitized_bands) is not 0:
             db_handle = init_db()
             if db_handle is not None:
-                # TODO: Get the country from filename and pass as parameter.
                 crawl_bands(sanitized_bands, db_handle, is_detailed)
                 save_genres()
         else:

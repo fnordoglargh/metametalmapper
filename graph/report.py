@@ -250,6 +250,7 @@ class DatabaseReport:
 
         for report in self._country_reports:
             genre_tuples = report.get_genres()
+            # I know that it's sloppy.
             genre_cache[report._country_name] = {}
 
             for genre_tuple in genre_tuples:
