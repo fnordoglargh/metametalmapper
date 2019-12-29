@@ -195,6 +195,10 @@ class DatabaseReport:
         self._country_reports.append(report)
 
     def export_csv_bands_formed(self):
+        """Generates a CSV file with formed bands per year sorted by total amount for each country.
+
+        :return: The Path object to the saved file.
+        """
         sorted_bands_per_year = OrderedDict(sorted(self.bands_per_year.items()))
         last_year = list(sorted_bands_per_year.keys())[0]
 
@@ -210,17 +214,19 @@ class DatabaseReport:
         # Sort the source again, because we added missing years to it.
         sorted_bands_per_year = OrderedDict(sorted(self.bands_per_year.items()))
         first_year = list(sorted_bands_per_year.keys())[0]
+        # Sort collection by amount of bands.
+        sorted_bands_by_count = sorted(self._country_reports, key=lambda x: x._number_bands, reverse=True)
 
         # Generate the header first.
         export_text = 'Years;Total;'
-        for country_report in self._country_reports:
+        for country_report in sorted_bands_by_count:
             export_text += f'{country_report._country_name};'
 
         export_text += '\n'
         # Now add the real data.
         for actual_year in range(first_year, last_year + 1):
             export_text += f'{actual_year};{self.bands_per_year[actual_year]};'
-            for country_report in self._country_reports:
+            for country_report in sorted_bands_by_count:
                 export_text += f'{country_report.bands_per_year[actual_year]};'
             export_text += '\n'
 

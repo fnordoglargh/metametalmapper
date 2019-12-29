@@ -203,7 +203,8 @@ See also [database entities](DATABASES.md) for in-depth details and the [example
 
 After e.g. crawling a region or a country, you can start analyzing the data. Running the program with either of the
 available switches prints some information on the command line. Far more interesting are the exported CSV and GraphML
-files. They are named after their general category followed by a timestamp (depicted by a * in the following sections).
+files. They are named after their general category followed by a timestamp and the file type (depicted by a * in the
+following sections).
 
 * `-y`: Considers the entire database.
 * `-z <countries>`: In this case `<countries>` is a comma separated list of ISO shorts (`N1,N2,N3`). Don't use white
@@ -260,6 +261,12 @@ metric is the number of reviews. I arbitrarily tried cut-off values to filter re
    
 If you don't like the standard settings from `settings.py`, try to change the properties to something that works for 
 you. The file pattern is `releases_per_year_*`. Note that a JSON file of the release data is also exported.
+
+#### Bands formed per year
+
+Files named `bands_formed_*` give an overview of how many bands formed over the years. The time frame is decided by the
+oldest and newest bands. Years with no within the time span will be added automatically. Columns are sorted left to 
+right by total amount of formed bands.
 
 #### HTML reports
 
