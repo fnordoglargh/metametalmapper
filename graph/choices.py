@@ -1,6 +1,10 @@
 """Abbreviations used to write data to the graph database (or to retrieve it).
 """
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
+
 LABEL_STATUS = {
     'A': 'active',
     'C': 'closed',

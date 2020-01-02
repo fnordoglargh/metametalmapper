@@ -1,3 +1,6 @@
+"""Classes to interface a Neo4j database.
+"""
+
 from collections import defaultdict
 import settings
 
@@ -12,6 +15,10 @@ from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
 from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from graph.report import CountryReport, DatabaseReport, AlbumReport
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 
 class MemberRelationship(StructuredRel):

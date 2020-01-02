@@ -1,3 +1,7 @@
+"""Classes to export/save reports from a given data. Each GraphDatabaseStrategy implementation has to use these classes
+to successfully export data.
+"""
+
 from collections import defaultdict, OrderedDict
 import json
 
@@ -5,6 +9,10 @@ from genre import GENRE_CORE_MA
 from global_helpers import get_export_path
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'

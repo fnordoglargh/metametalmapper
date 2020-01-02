@@ -1,6 +1,13 @@
+"""Use this strategy pattern to implement access to graph databases. See base implementation in implNeoModel.py.
+"""
+
 from abc import ABCMeta, abstractmethod
 
 from graph.report import DatabaseReport
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'

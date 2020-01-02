@@ -1,8 +1,12 @@
-from pathlib import Path
-
 """Provides a list of regions and bootstraps itself. Note that it will also exit any program importing it if the
     essential iso_countries.csv is not found inside ./data or ../data!
 """
+
+from pathlib import Path
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 'AX', 'SJ'])
 REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])
