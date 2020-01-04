@@ -17,7 +17,7 @@ projects.
     It also accepts handcrafted files with bands of your choice.
 * Extracts information on bands, their band members and releases from M-A.
 * Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
-    The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
+    The desktop version of Neo4j brings a graphical browser to examine smaller networks around
     1000 nodes.
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Head over to the [examples](EXAMPLES.md) to see some networks.
