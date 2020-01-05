@@ -23,7 +23,7 @@ Test data consists of 18 bands and 203 artists.
     Thorns/1131
     Zyklon-B/1421
     
-Time (in min)
+Time (in min) to add data into empty database:
 
 |Threads|Run 1|Run 2|Run 3|Avg.|Factor*|
 |---|---|---|---|---|---|

@@ -23,13 +23,13 @@ Metal Mapper defines the following nodes and properties.
 A _band_ is a node connected to members through a `played_in` relationship and has the 
 following properties:
 
-* `emid`: The band ID used on MA.
+* `emid`: The band ID used on M-A.
 * `name`: Name of the band.
 * `country`: The country of origin as a two letter ISO code. Uses `COUNTRY_NAMES` from `country_helper.py`
     to ensure validity.
 * `locations`: Locations where the bands was active in.
 * `status`: Short form of the `BAND_STATUS`. One of six possible values.
-* `formed`: MA only uses years in for dates on the band page. To get it somehow right,
+* `formed`: M-A only uses years in for dates on the band page. To get it somehow right,
     we use Jan 1st and Dec 31st for as start and end dates.
 * `themes`: Themes used in the lyrics.
 * `genres`: Genres the band played. This could be a relationship or a collection.
@@ -42,7 +42,7 @@ following properties:
 A _member_ is a node connected to bands through a `played_in` relationship and has the 
 following properties:
 
-* `emid`:  The artist ID used on MA.
+* `emid`:  The artist ID used on M-A.
 * `name`: Name of the band member. Note that pseudonyms or instruments are part of the 
     `MemberRelationship`.
 * `age`: Age of the member at the time of crawling. It might contain -1 as a value if the age is
@@ -55,11 +55,11 @@ following properties:
 A _release_ is a node connected to a band through a _recorded_ relationship and has the following
 properties:
 
-* `emid`: The release ID used on MA.
+* `emid`: The release ID used on M-A.
 * `name`: Name of the release.
-* `type`: The type of teh release. Validity ensured by `RELEASE_TYPES`.
-* `rating`: The rating of the release (in percent). If it has not been rated on MA, the value will
-    be set with -1.
+* `type`: The type of the release. Validity ensured by `RELEASE_TYPES`.
+* `rating`: The rating of the release (in percent). If it has not been rated on M-A, the value is
+    set to -1.
 * `release_date`: The _year_ when the release first was available.
 * `recorded_by`: Relationship to a band.
 
@@ -71,7 +71,7 @@ Is directed from a Member to a Band and uses the model `MemberRelationship`.
 
 ### Abbreviations/Lookup Dictionaries
 
-The Keys are used inside the database and line up with the value which is used in MA.
+The Keys are used inside the database and line up with the value which is used in M-A.
 
 #### GENDER
 

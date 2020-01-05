@@ -17,7 +17,8 @@ in orange, releases in green and members in blue nodes):
 
     MATCH (b:Band{emid: 146})--(a) RETURN a,b
 
-You may exchange Darkthrone's `emid` 146 for any other in the database. 
+You may exchange Darkthrone's `emid` 146 for any other in the database to get the same result; all connected nodes to 
+the given band. 
 
 ### Short Link
 
