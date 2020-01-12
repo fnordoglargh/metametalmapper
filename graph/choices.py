@@ -1,5 +1,4 @@
-"""Abbreviations used to write data to the graph database (or to retrieve it).
-"""
+"""Abbreviations used to write data to the graph database (or to retrieve it)."""
 
 LABEL_STATUS = {
     'A': 'active',

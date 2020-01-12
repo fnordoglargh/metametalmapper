@@ -3,6 +3,8 @@ import logging
 
 from global_helpers import get_time_stamp
 
+"""Defines functionality to export data to an HTML template."""
+
 REPORT_TEMPLATE = Path('data/report.tpl')
 
 # Currently not used. The CSS is embedded in the template.

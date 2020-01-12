@@ -2,6 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 from graph.report import DatabaseReport
 
+"""Contains both base files to write database implementations. Each implementation inherits `GraphDatabaseStrategy`.
+    Database handles are instantiated with `GraphDatabaseContext(Implementation)`.
+"""
+
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'

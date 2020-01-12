@@ -1,6 +1,9 @@
 from pathlib import Path
 from datetime import datetime
 
+"""Implements helper functions to make programming meta_metal_mapper easier.
+"""
+
 LINK_EXTENSION = ".lnks"
 BAND_LINK_FILE_NAME = "{}" + LINK_EXTENSION
 

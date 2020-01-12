@@ -6,6 +6,8 @@ from global_helpers import get_export_path
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
+"""Defines all possible report types."""
+
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 GENDER_DISTRIBUTION = 'Gender distribution ({} artists from {} countries)\n'

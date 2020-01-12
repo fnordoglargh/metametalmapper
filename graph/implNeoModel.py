@@ -13,6 +13,9 @@ from graph.choices import *
 from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from graph.report import CountryReport, DatabaseReport, AlbumReport
 
+"""Implements the `GraphDatabaseStrategy` and a set of classes to define data in the neomodel context.
+"""
+
 
 class MemberRelationship(StructuredRel):
     # TODO: Try to use multiple connections for each stint.

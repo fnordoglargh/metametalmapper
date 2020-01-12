@@ -19,6 +19,8 @@ from genre import split_genres
 from global_helpers import get_dict_key
 from graph.choices import *
 
+"""Defines classes and functions to crawl M-A for band and artist pages."""
+
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
 bands = 'bands/'
