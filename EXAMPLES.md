@@ -1,11 +1,28 @@
 # Examples
 
-## Darkthrone
+For these examples you need to create some text files with the contents of the _Short Links_ sections. You can put them
+anywhere you like, but the `links` folder works best. Remember to call `metal_mapper` with `-b -f path/to/file`. It's
+safe to add all links to one file. Known entities (e.g. bands) will be skipped.
+
+The queries are executed in the Neo4j Browser.  
+
+## A band and all nodes connected to it: Darkthrone
 
 A Neo4j export of [Darkthrone](https://www.metal-archives.com/bands/Darkthrone/146) looks like this (the band
 in orange, releases in green and members in blue nodes):
 
 ![Darkthrone](img/darkthrone.svg)
+
+### Query 
+
+    MATCH (b:Band{emid: 146})--(a) RETURN a,b
+
+You may exchange Darkthrone's `emid` 146 for any other in the database to get the same result; all connected nodes to 
+the given band. 
+
+### Short Link
+
+    Darkthrone/146
 
 ## Neo4j export 2: Immortal, Amputation, Old Funeral, Mayhem
 
@@ -18,7 +35,7 @@ Visual representation of the connection of [Immortal](https://www.metal-archives
 
 ### Query 
 
-`MATCH (n:Band)--(m:Member) WHERE n.emid IN [67, 75, 3969, 14401] RETURN n, m`
+    MATCH (n:Band)--(m:Member) WHERE n.emid IN [67, 75, 3969, 14401] RETURN n, m
 
 ### Short links
 
@@ -41,6 +58,13 @@ recorded by Mayhem and Zyklon-B. Just put these short links into a file and try 
     Gehenna/2155
 
 ![Connection between some Norwegian black metal bands](img/intro_graph_1.svg)
+
+
+The query is a less specialized version of the last one:
+
+    MATCH (n:Band)--(m) WHERE n.emid IN [30, 67, 1421, 341, 5575,2155] RETURN n, m
+    
+`m` is not a member anymore but all connected nodes.
 
 ## India
 

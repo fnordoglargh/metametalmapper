@@ -4,7 +4,25 @@ from abc import ABCMeta, abstractmethod
 import logging
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
-from global_helpers import get_export_path, escape_band_names
+from global_helpers import get_export_path
+
+
+def escape_band_names(unclean_band_name):
+    """Removes (some) XML/HTML control characters from the band name.
+
+    :param unclean_band_name: The band name which may be invalid for XML/HTML exports.
+    :return: A clean and valid band name.
+    """
+    clean_band_name = unclean_band_name
+
+    if '&' in clean_band_name:
+        clean_band_name = clean_band_name.replace('&', '&amp;')
+    elif '\'' in clean_band_name:
+        clean_band_name = clean_band_name.replace('\'', '&apos;')
+    elif '"' in clean_band_name:
+        clean_band_name = clean_band_name.replace('"', '&quot;')
+
+    return clean_band_name
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'

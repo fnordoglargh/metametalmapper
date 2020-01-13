@@ -17,7 +17,7 @@ projects.
     It also accepts handcrafted files with bands of your choice.
 * Extracts information on bands, their band members and releases from M-A.
 * Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
-    The desktop version of Neo4j brings a graphical browsers to examine smaller networks around
+    The desktop version of Neo4j brings a graphical browser to examine smaller networks around
     1000 nodes.
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Head over to the [examples](EXAMPLES.md) to see some networks.
@@ -54,15 +54,13 @@ Install them with `pip3`:
 ### Neo4j
 
 All data is stored in a [Neo4j database](https://neo4j.com/product/). You have to download and install the
-[desktop version (Windows)](https://neo4j.com/download/) to use any meaningful functionality.
-The downside for some users might be the mandatory use of a Google or Facebook account to authorize
-the desktop app. A 30 day trial period for the software is granted.
-If you know what you're doing you may simply set up Neo4j from other
-available editions. There is e.g. the official 
+[desktop version (Windows)](https://neo4j.com/download/) to use any meaningful functionality. The downside for some 
+users might be the mandatory use of a Google or Facebook account to authorize the desktop app. However a 30 day trial
+period for the software is granted. If you know what you're doing you may simply set up Neo4j from other available 
+editions. There is e.g. the official 
 [Linux guide](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
 
-Fire it up and create a database.
-Change the database credentials as needed in `settings.py`.
+Fire it up and create a database. Change the database credentials as needed in `settings.py`.
 
 #### Starting Neo4j Appimage on Linux
 
@@ -76,9 +74,8 @@ Installation of the gnome-keyring helped me in that case:
 
 ### Library Hack
 
-While crawling band links on Windows I encountered a defect in `Lib/http/client.py`. 
-The percent escaped characters were not resolved correctly. The solution for
-me was to change `putrequest()` (before `self._output()` is called). The line
+While crawling band links on Windows I encountered a defect in `Lib/http/client.py`. The percent escaped characters were
+not resolved correctly. The solution for me was to change `putrequest()` (before `self._output()` is called). The line
 looks like this:
 
     url = rfc3986.uri_reference(url).unsplit()
@@ -94,55 +91,54 @@ Clone this repo and execute `python metal_mapper.py` (see _How to use_ section).
 ### Countries
 
 Countries on M-A and this tool are represented in [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-two letter format. Whenever you read _NN_ in context with countries, a two letter country 
-code is meant. Two special countries exist: XX (international) and YY (unknown).
+two letter format. Whenever you read _NN_ in context with countries, a two letter country code is meant. Two special
+countries exist: XX (international) and YY (unknown).
 
 A list of all countries with at least one band is shown on calling with the switch `-l`.
 
 ### Regions
 
-A _region_ is a group of countries defined inside the file `country_helper.py`. Available regions 
-are shown on calling `metal_mapper.py` with the switch `-l`.
+A _region_ is a group of countries defined inside the file `country_helper.py`. Available regions are shown on calling 
+`metal_mapper.py` with the switch `-l`.
 
-Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, 
-Greenland, Faroe Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_
-Åland Islands, Svalbard and Jan Mayen).
+Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, Greenland, Faroe
+Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_  Åland Islands, Svalbard
+and Jan Mayen).
 
 ### Graph Databases
 
-A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from M-A for
-further analysis. Bands and their members are nodes. They are connected through edges storing e.g. data,
-like what pseudonym a member used in a certain band or what instruments were played.   
+A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from M-A for further analysis.
+Bands and their members are nodes. They are connected through edges storing e.g. data, like what pseudonym a member used
+in a certain band or what instruments were played.   
 
 ## How to use
 
-`metal_mapper.py`, when called on without switches, shows a list of program switches and some hints
-how to use them. The program does not have an interactive mode. Every function needs data from previous runs, except
-the bootstrapping.
+`metal_mapper.py`, when called on without switches, shows a list of program switches and some hints how to use them. The
+program does not have an interactive mode. Every function needs data from previous runs, except the bootstrapping.
 
-The following sections will guide you through the usage of the program.
+The typical workflow follows these steps: 
 
-1. Getting all known band links from a country on M-A,
-2. Starting Neo4j Desktop,
-3. Crawling all Norwegian bands,
-4. Opening Neo4j Desktop and inspect the graph,
+1. Crawl a country or a region for band links on M-A,
+2. Create a graph in Neo4j Desktop,
+3. Crawl bands ,
+4. Opening Neo4j Desktop and inspect the graph and
 5. Print raw analysis in the terminal, export `.graphml` and statistics files.
     
+The following sections will guide you through the usage of the program.
+
 ### Boostrapping: Crawl a country or a region for band links
 
-If you're not interested in getting the band links for all countries you can either:
+The initial requirement to use mmm is having band links to crawl. There are two ways of creating band lists:
 
 * Start with the switch `-c NN` to crawl all bands in exactly one country **or** 
 * Call with `-r NNN` where NNN is the key of the region you want to crawl.
 
-Crawling an entire region is recommended only for small regions or to update with new bands.
-
-You may define your own regions in `country_helper.py`. Just make sure that a region code has three letters (or more)
-so that no country link files will be overwritten in a crawl.
+Crawling an entire region is recommended only for small regions with a low amount of bands or to update with new bands.
 
 Band list files are generated by country (from M-A's ["by country page"](https://www.metal-archives.com/browse/country))
 with at least one band entry.
 The names of the files follows this simple scheme: `NN.lnks` where NN is the two letter short form.
+
 The contents of an `.lnks` file looks like this:
 
     Akollonizer/3540362756
@@ -153,6 +149,9 @@ The contents of an `.lnks` file looks like this:
 Together with `https://www.metal-archives.com/bands/` a fully fledged link to every band can be generated whenever it is
 needed. You can easily build files with the short links of your favorite bands.
 
+You can define your own regions in `country_helper.py`. Just make sure that a region code has three letters (or more)
+so that no country link files will be overwritten in a crawl.
+
 ### Create a graph in Neo4j Desktop
 
 Before bands can be crawled a database needs to be created.
@@ -161,7 +160,7 @@ Before bands can be crawled a database needs to be created.
 2. Click _Add Graph_ → _Create a Local Graph_.
 3. Give it a name and a password.
 4. Open `settings.py` and change `NEO4J_PASSWORD` to what you entered in the above step.
-5. Start the database. Remember that you need to start tge database every time you want to interact with the database.  
+5. Start the database. Remember that you need to start the database every time you want to interact with the database.  
 
 ### Crawl bands
 
