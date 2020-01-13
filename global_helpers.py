@@ -1,5 +1,4 @@
-"""Some helper functions needed in several places.
-"""
+"""Implements helper functions to make programming meta_metal_mapper easier."""
 
 from pathlib import Path
 from datetime import datetime

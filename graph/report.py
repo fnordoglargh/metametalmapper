@@ -1,6 +1,5 @@
-"""Classes to export/save reports from a given data. Each GraphDatabaseStrategy implementation has to use these classes
-to successfully export data.
-"""
+"""Classes to export/save reports from a given data. Each ``GraphDatabaseStrategy`` implementation has to use
+these classes to successfully export data."""
 
 from collections import defaultdict, OrderedDict
 import json

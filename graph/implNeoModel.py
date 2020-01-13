@@ -1,5 +1,4 @@
-"""Classes to interface a Neo4j database.
-"""
+"""Implements the `GraphDatabaseStrategy` and a set of classes to define data in the neomodel context."""
 
 from collections import defaultdict
 import settings
@@ -19,7 +18,6 @@ from graph.report import CountryReport, DatabaseReport, AlbumReport
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019, Martin Woelke'
-
 
 class MemberRelationship(StructuredRel):
     # TODO: Try to use multiple connections for each stint.

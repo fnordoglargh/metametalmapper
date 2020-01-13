@@ -1,5 +1,4 @@
-"""Used to export JSON exports from files into the file report.tpl.
-"""
+"""Defines functionality to export JSON data to an HTML template."""
 
 from pathlib import Path
 import logging

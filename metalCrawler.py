@@ -1,5 +1,4 @@
-"""Defines the functions to actually crawl M-A for data.
-"""
+"""Defines classes and functions to crawl M-A for band and artist pages."""
 
 import os
 import json

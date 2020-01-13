@@ -1,5 +1,6 @@
-"""Use this strategy pattern to implement access to graph databases. See base implementation in implNeoModel.py.
-"""
+"""Contains both base files of the strategy pattern to write database implementations. Each implementation
+    must inherit `GraphDatabaseStrategy`. Database handles are instantiated with 
+    `GraphDatabaseContext(Implementation)`. See implementation in implNeoModel.py."""
 
 from abc import ABCMeta, abstractmethod
 
