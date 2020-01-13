@@ -18,7 +18,7 @@ REG_EUR_WEST = ('WEU', 'Western Europe', ['BE', 'FR', 'IE', 'MC', 'NL', 'GB', 'M
 REG_EUR_CENTRAL = ('CEU', 'Central Europe', ['AT', 'CZ', 'DE', 'HU', 'LI', 'PL', 'SK', 'CH', 'LU', 'EE', 'LV', 'LT',
                                              'HR', 'SI'])
 REG_EUR_SOUTH = ('SEU', 'Southern Europe', ['PT', 'ES', 'IT', 'SM', 'MT'])
-REG_EUR_EAST = ('EEU', 'Eastern Europe', ['AU', 'BY', 'RU'])
+REG_EUR_EAST = ('EEU', 'Eastern Europe', ['AT', 'BY', 'RU'])
 # As of Nov 2019: No Bands in Kosovo.
 REG_EUR_SOUTH_EAST = ('SEE', 'Southeastern Europe', ['RO', 'MD', 'BG', 'RS', 'BA', 'MK', 'GR', 'ME', 'AL', 'CY'])
 REG_EURO = ('EURO', 'Europe', list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_EUR_CENTRAL[2] + REG_EUR_SOUTH[2] +
