@@ -3,6 +3,11 @@ import logging
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
 from global_helpers import get_export_path
+from genre import GENRE_CORE_MA, GENRE_CORE_MAP
+
+""" Prototype of a key node which can be completed with a format() call to enter the number for the `id` property
+    and the attribute's name."""
+genre_key_element = '<key id="d{}" for="node" attr.name="{}" attr.type="bool"><default>false</default></key>\n'
 
 
 def escape_band_names(unclean_band_name):
@@ -44,12 +49,29 @@ class GraphExportStrategy(metaclass=ABCMeta):
 
 
 class GraphMLExporter(GraphExportStrategy):
+    @staticmethod
+    def generate_genre_keys(index_offset):
+        """Generates a string (by formatting `genre_key_element`) with key nodes of all known core genres from
+            `GENRE_CORE_MA`.
+
+        :param index_offset: The index of the first `id` attribute of the new key nodes.
+        :return: String of key nodes filled with genres.
+        """
+        genre_keys = ''
+
+        for genre in GENRE_CORE_MA:
+            genre_keys += genre_key_element.format(GENRE_CORE_MA.index(genre) + index_offset, genre)
+
+        return genre_keys
 
     def __init__(self):
         self.logger = logging.getLogger('GraphMLExporter')
 
     def export_graph_interface(self, data_dict: dict):
         self.logger.info('Starting GraphML export to file.')
+        # Indicates the starting index for the `id` attributes of the `key` nodes in the header. If you add another line
+        # with an `id` property, make sure you change this to the correct number.
+        index_offset = 2
 
         header = (
             f'<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -58,6 +80,7 @@ class GraphMLExporter(GraphExportStrategy):
             f'xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">\n'
             f'<key id="d0" for="node" attr.name="label" attr.type="string"/>\n'
             f'<key id="d1" for="node" attr.name="country" attr.type="string"/>\n'
+            f'{self.generate_genre_keys(index_offset)}'
             f'<graph id="G" edgedefault="undirected">\n'
         )
 
@@ -77,10 +100,18 @@ class GraphMLExporter(GraphExportStrategy):
                 pass
             else:
                 band_name = escape_band_names(payload['name'])
+                key_element = ''
+
+                for genre in payload['genres']:
+                    if genre in GENRE_CORE_MAP.keys():
+                        # First we need to get the core genre name from the lookup table GENRE_CORE_MAP
+                        key_index = GENRE_CORE_MA.index(GENRE_CORE_MAP[genre]) + index_offset
+                        if str(key_index) not in key_element:
+                            key_element += f'<data key="d{key_index}">true</data>'
 
                 export_file.write(
                     f'<node id="n{node}"><data key="d0">{band_name}</data>'
-                    f'<data key="d1">{payload["country"]}</data></node>\n'
+                    f'<data key="d1">{payload["country"]}</data>{key_element}</node>\n'
                 )
 
         # Keeps track of connections we already made so that no two nodes are connected more than once.

@@ -170,7 +170,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             band_relationships[band.emid] = {
                 'name': band.name,
                 'country': COUNTRY_NAMES[band.country],
-                'relations': []
+                'relations': [],
+                'genres': []
             }
 
             # Iterate over all members linked to the actual band and see if they're connected to other bands.
@@ -186,6 +187,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     if not is_already_connected:
                         band_relationships[band.emid]['relations'].append(outer_band.emid)
 
+            band_relationships[band.emid]['genres'] = band.genres
             progress_bar.update(len(band_relationships))
 
         progress_bar.finish()
