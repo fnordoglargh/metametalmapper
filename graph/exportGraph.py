@@ -24,7 +24,8 @@ def escape_band_names(unclean_band_name):
 
 
 class GraphExportContext:
-
+    """Refers to the `GraphExportStrategy` and is used to create an export instance. Must be called with an instance of
+        a strategy implementation."""
     def __init__(self, strategy):
         self._strategy = strategy
 
@@ -33,6 +34,7 @@ class GraphExportContext:
 
 
 class GraphExportStrategy(metaclass=ABCMeta):
+    """Interface class to implement concrete graph export strategies against. """
 
     @abstractmethod
     def export_graph_interface(self, export_data):
@@ -44,6 +46,7 @@ class GraphExportStrategy(metaclass=ABCMeta):
 
 
 class GraphMLExporter(GraphExportStrategy):
+    """Implements a `GraphExportStrategy` to write `.graphml` files from a dictionary with bands. """
 
     def __init__(self):
         self.logger = logging.getLogger('GraphMLExporter')
