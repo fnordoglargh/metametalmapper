@@ -1,3 +1,10 @@
+"""Settings definitions for mmm.
+"""
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
+
 NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "CHANGE_ME"
 NEO4J_IP_ADDRESS = "localhost"

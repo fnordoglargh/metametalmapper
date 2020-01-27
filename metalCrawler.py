@@ -1,3 +1,5 @@
+"""Defines classes and functions to crawl M-A for band and artist pages."""
+
 import os
 import json
 import threading
@@ -18,6 +20,10 @@ from country_helper import COUNTRY_NAMES
 from genre import split_genres
 from global_helpers import get_dict_key
 from graph.choices import *
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -630,13 +636,6 @@ def cook_soup(link, retry_count=5):
         return None
 
     return BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
-
-
-def display_children(c):
-    if c is not None:
-        print(c)
-        for e in c:
-            display_children(e)
 
 
 def cut_instruments(instrument_string):

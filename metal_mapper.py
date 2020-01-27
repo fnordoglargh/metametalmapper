@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-"""_Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to access data of
-[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) and query said data.
+"""_Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to crawl data of
+[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A), write it into a database  and query
+said data.
 """
 
 import sys
@@ -20,13 +21,12 @@ from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAME
 from genre import save_genres
 from html_exporter import generate_html_report
 
-__author__ = "Martin Woelke"
-__copyright__ = "Copyright 2019, D-Test AG"
-__license__ = ""
-__version__ = "0.23"
-__status__ = "Development"
-
-countries = {}
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
+# https://opensource.org/licenses/NPOSL-3.0
+__version__ = '0.23'
+__status__ = 'Development'
 
 
 class CrawlMode(Enum):

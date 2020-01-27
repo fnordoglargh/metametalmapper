@@ -1,6 +1,14 @@
+"""Contains both base files of the strategy pattern to write database implementations. Each implementation
+    must inherit `GraphDatabaseStrategy`. Database handles are instantiated with 
+    `GraphDatabaseContext(Implementation)`. See implementation in implNeoModel.py."""
+
 from abc import ABCMeta, abstractmethod
 
 from graph.report import DatabaseReport
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'

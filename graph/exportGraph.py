@@ -1,8 +1,14 @@
+"""A strategy to export to different file formats like .graphml."""
+
 from abc import ABCMeta, abstractmethod
 import logging
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
 from global_helpers import get_export_path
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 
 def escape_band_names(unclean_band_name):

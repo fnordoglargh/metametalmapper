@@ -1,5 +1,11 @@
+"""Implements helper functions to make programming meta_metal_mapper easier."""
+
 from pathlib import Path
 from datetime import datetime
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019, Martin Woelke'
 
 LINK_EXTENSION = ".lnks"
 BAND_LINK_FILE_NAME = "{}" + LINK_EXTENSION
