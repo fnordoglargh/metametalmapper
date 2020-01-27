@@ -203,12 +203,15 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         if country_short not in COUNTRY_NAMES.keys():
             return None
 
-        population = COUNTRY_POPULATION[country_short]
-
         number_bands = len(bands)
+
+        # No need to go further if there are no bands.
         if number_bands is 0:
             return None
 
+        population = COUNTRY_POPULATION[country_short]
+
+        # Bands per capita cannot be calculated with 0 people.
         if int(population) == 0:
             return None
 
