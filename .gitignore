@@ -15,3 +15,8 @@ crawler.log*
 exports/
 genre_cache.json
 reports/
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
