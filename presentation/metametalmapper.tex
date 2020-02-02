@@ -4,16 +4,18 @@
 
 \usetheme{Darmstadt}
 \usecolortheme{albatross}
-%\usetheme{Copenhagen}
-%\usetheme{AnnArbor}
 \usefonttheme[onlylarge]{structurebold}
 \setbeamerfont*{frametitle}{size=\normalsize,series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
+
 
 \definecolor{MWBlood}{rgb}{0.278, 0.0, 0.016} % MWBlood (primary)
 \definecolor{MWBloodDark}{rgb}{0.039, 0.0, 0.0} % MWBloodDark (secondary)
 \definecolor{MWBloodMiddle}{rgb}{0.171, 0.00, 0.01} % MWBloodMiddle ()
 \definecolor{MWBone}{rgb}{0.827, 0.827, 0.827} % MWBone (Text)
+
+\setbeamercolor*{normal text}{fg=yellow!50!white,bg=MWBloodMiddle!50!MWBlood}
+\setbeamercolor*{structure}{fg=MWBlood!25!MWBone}   
 
 \setbeamercolor{palette primary}{bg=MWBlood,fg=MWBone} % Slide heading and title box background.
 \setbeamercolor{palette secondary}{bg=MWBloodMiddle, fg=MWBone}
@@ -21,13 +23,6 @@
 \setbeamercolor{palette quaternary}{bg=MWBloodDark, fg=MWBone} % Navigation bar
 \setbeamercolor{background canvas}{bg=MWBloodDark, fg=green}
 \setbeamercolor{normal text}{fg=MWBone}
-
-\setbeamercolor{sidebar}{use=structure,bg=green}
-  
-\setbeamercolor{palette sidebar primary}{use=structure,fg=green}
-\setbeamercolor{palette sidebar secondary}{fg=green}
-\setbeamercolor{palette sidebar tertiary}{use=structure,fg=green}
-\setbeamercolor{palette sidebar quaternary}{fg=green}
 
 
 % Standard packages
