@@ -31,6 +31,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{url}
 \usepackage{lettrine}
+\usepackage{hyperref}
 
 % Setup TikZ
 
@@ -62,42 +63,45 @@
   \titlepage
 \end{frame}
 
-\begin{frame}{Summary}
-  \tableofcontents
-\end{frame}
-
 
 \section{Introduction}
 
 %\pgfimage[width=.45\textwidth,page=2]{beamer}
 
-  \subsection{meta metal mapper}
+  \subsection{Overview}
 
-    \begin{frame}{Inspiration}
+    \begin{frame}{Summary}
+      \tableofcontents
     \end{frame}
 
+  \subsection{meta metal mapper}
+	
     \begin{frame}{What is metal?}
-%      \uncover<1->
+%      \uncover<1-1>
+      \pause
       \begin{center}
         \includegraphics[scale=.18]{family_tree}
       \end{center}
     \end{frame}
 
-  \section{Statistics}
+    \begin{frame}{What is metal?}
 
-    \begin{frame}{Tools Used}
-      \begin{itemize}
-        \item<1-> Programming language: Python 2 and 3 on Window and Linux,
-        \item<1-> IDEs: Visual Studio and PyCharm,
-        \item<1-> Graphviz
-        \item<1-> Markdown
-        \item<1-> Neo4j (graph database)
-        \item<1-> Graphviz (diagram rendering)
-        \item<1-> SCM: git
-        \item<1-> Gephi (graph rendering and querying)
-        \item<1-> \LaTeX{}
-        \item<1-> Markdown
-      \end{itemize}
+      %\begin{block}{Wikipedia Definition}
+        Heavy metal (or simply metal) is a genre of rock music that developed in the late 1960s
+        and early 1970s, largely in the United Kingdom. With roots in blues rock, psychedelic rock,
+        and acid rock, the bands that created heavy metal developed a thick, massive sound,
+        characterized by highly amplified distortion, extended guitar solos, emphatic beats,
+        and overall loudness.
+      %\end{block}
+      
+      %\footnote[frame]{https://en.wikipedia.org/wiki/Heavy_metal_music}
+
+    \end{frame}
+    
+    \begin{frame}{Inspiration}
+      \begin{center}
+        \includegraphics[scale=2.3]{true_kings_diagram}
+      \end{center}
     \end{frame}
 
     \begin{frame}{History}
@@ -127,6 +131,34 @@
     \begin{frame}{Most Common Styles}
       Table?
     \end{frame}
+
+\section{Résumé}
+
+  \subsection{Statistics}
+
+    \begin{frame}{Tools Used}
+      \begin{itemize}
+        \item<1-> Programming language: Python 2 and 3 on Window and Linux,
+        \item<1-> IDEs: Visual Studio and PyCharm,
+        \item<1-> Graphviz
+        \item<1-> Markdown
+        \item<1-> Neo4j (graph database)
+        \item<1-> Graphviz (diagram rendering)
+        \item<1-> SCM: git
+        \item<1-> Gephi (graph rendering and querying)
+        \item<1-> \LaTeX{}
+        \item<1-> Markdown
+      \end{itemize}
+    \end{frame}
+
+  \subsection{Link Collection}
+
+    \begin{frame}{Further Reading}
+      \begin{itemize}
+        \item\href{https://musicmap.info/}{musicmap.info}: Genre development and influences over time
+      \end{itemize}
+    \end{frame}
+
 
 
 \end{document}
