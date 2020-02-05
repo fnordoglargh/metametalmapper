@@ -25,10 +25,10 @@
 
 % Standard packages
 
-\usepackage[english]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage{times}
 \usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[greek,english]{babel}
+\usepackage{times}
 \usepackage{url}
 \usepackage{lettrine}
 \usepackage{hyperref}
@@ -45,7 +45,7 @@
 \title[Titel]
 {
   \texttt{\huge{meta metal mapper}}\\\vspace{3 mm}
-  \textit{A data science journey for software developers}
+  \textit{A data science and Python journey for software developers}
 }
 
 \author[Martin Woelke]
@@ -75,26 +75,41 @@
     \end{frame}
 
   \subsection{meta metal mapper}
+
+	  \begin{frame}{What does the quirky name mean?}
+	    \begin{itemize}
+        \item<1->\textbf{Meta} (from the Greek meta- \foreignlanguage{greek}{μετά}- meaning
+        "after" or "beyond") is a prefix meaning more comprehensive or transcending.
+        \item<2->\textbf{Metal}: A style of contemporary rock  music.
+        \item<3->\textbf{Mapper}: An entity making a symbolic depiction emphasizing relationships
+        between elements of some space, such as objects, regions, or themes.
+      \end{itemize}
+    \end{frame}	  
 	
+    \begin{frame}{Origins of metal}
+      \begin{center}
+        \includegraphics[scale=.33]{familyTree2}
+      \end{center}
+      \href{https://www.concerthotels.com/100-years-of-rock/}{https://www.concerthotels.com/100-years-of-rock/}
+    \end{frame}
+
     \begin{frame}{What is metal?}
 %      \uncover<1-1>
       \pause
       \begin{center}
-        \includegraphics[scale=.18]{family_tree}
+        \includegraphics[scale=.18]{familyTree}
       \end{center}
     \end{frame}
 
     \begin{frame}{What is metal?}
 
-      %\begin{block}{Wikipedia Definition}
+      \begin{block}{Wikipedia Definition}
         Heavy metal (or simply metal) is a genre of rock music that developed in the late 1960s
         and early 1970s, largely in the United Kingdom. With roots in blues rock, psychedelic rock,
         and acid rock, the bands that created heavy metal developed a thick, massive sound,
         characterized by highly amplified distortion, extended guitar solos, emphatic beats,
-        and overall loudness.
-      %\end{block}
-      
-      %\footnote[frame]{https://en.wikipedia.org/wiki/Heavy_metal_music}
+        and overall loudness.\footnote{https://en.wikipedia.org/wiki/Heavy\_metal\_music}
+      \end{block}
 
     \end{frame}
     
@@ -155,7 +170,8 @@
 
     \begin{frame}{Further Reading}
       \begin{itemize}
-        \item\href{https://musicmap.info/}{musicmap.info}: Genre development and influences over time
+        \item\href{https://musicmap.info/}{musicmap.info}: Musical genre development (not only metal) and influences over time.
+        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph}: Metal development from the beginning until 2010.
       \end{itemize}
     \end{frame}
 
