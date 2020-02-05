@@ -12,7 +12,7 @@ import progressbar
 
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
+from graph.metal_graph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from graph.report import CountryReport, DatabaseReport, AlbumReport
 
 __author__ = 'Martin Woelke'

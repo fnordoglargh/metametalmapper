@@ -1,11 +1,11 @@
 # How to use Gephi
 
-_[Gephi](https://gephi.org/)_ is one of the tools to render graphs from the `.graphml` exported by _mmm_. This page 
+_[Gephi](https://gephi.org/)_ is one of the tools to render graphs from the `.graphml` exported by Meta Metal Mapper. This page 
 gives a short introduction how to massage a graph into something useful.  
 
 ## Preparing a graph
 
-For this example we use Lebanon with its manageable 51 bands (Dec 2019). Call `metal_mapper` three times with the 
+For this example we use Lebanon with its manageable 51 bands (Dec 2019). Call `meta_metal_mapper` three times with the 
 following parameters:
 
 1. `-c LB`

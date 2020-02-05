@@ -1,5 +1,5 @@
-# Metal Mapper
-_Metal Mapper_ is a Python3 program intended to be the basis for a toolset to access data of 
+# Meta Metal Mapper
+_Meta Metal Mapper_ is a Python3 program intended to be the basis for a toolset to access data of 
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) and query said data. The
 _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) links to two projects showcasing
 interesting ways to visualize the _Metal Archives'_ data:
@@ -8,7 +8,7 @@ interesting ways to visualize the _Metal Archives'_ data:
 * [Metal Graph](http://metal-graph.com/): A graph showing the connections between Norwegian black metal bands, 
     with data from M-A. 
     
-Neither project mentions _how_ they get the presented data. _Metal Mapper_ aims at closing the gap for your own
+Neither project mentions _how_ they get the presented data. _Meta Metal Mapper_ aims at closing the gap for your own
 projects.  
 
 ## Highlights
@@ -25,18 +25,21 @@ projects.
 
 ## Getting Started
 
+Clone this repo, install the dependencies `pip3 install -r requirements.txt` and execute 
+`python meta_metal_mapper.py` (see _How to use_ section).
+
 ### Python3
 
-A Python3 installation >= 3.6 is needed to execute Metal Mapper.
+A Python3 installation >= 3.6 is needed to execute Meta Metal Mapper.
 
 If you see output like this
 
-      File "metal_mapper.py", line 36
+      File "meta_metal_mapper.py", line 36
         f'Supported modes:\n'
                             ^
     SyntaxError: invalid syntax
 
-you need to run the program explicitly with `python3 metal_mapper.py`.
+you need to run the program explicitly with `python3 meta_metal_mapper.py`.
 
 ### Libraries
 
@@ -62,31 +65,10 @@ editions. There is e.g. the official
 
 Fire it up and create a database. Change the database credentials as needed in `settings.py`.
 
-#### Starting Neo4j Appimage on Linux
+## Basic Terminology
 
-If the Neo4j Appimage does not start the desktop window, check the console log for:
-
-    The name org.freedesktop.secrets was not provided by any .service files
-    
-Installation of the gnome-keyring helped me in that case:
-
-    sudo apt install gnome-keyring
-
-### Library Hack
-
-While crawling band links on Windows I encountered a defect in `Lib/http/client.py`. The percent escaped characters were
-not resolved correctly. The solution for me was to change `putrequest()` (before `self._output()` is called). The line
-looks like this:
-
-    url = rfc3986.uri_reference(url).unsplit()
-    
-This hack needs to import `rfc3986` to function.
-
-### Metal Mapper
-
-Clone this repo and execute `python metal_mapper.py` (see _How to use_ section). 
-
-## Basics
+Certain words are used throughout the documentation. This short section explains what _countries_,
+_regions_ and _graph databases_ in the Meta Metal Mapper context mean.
 
 ### Countries
 
@@ -99,7 +81,7 @@ A list of all countries with at least one band is shown on calling with the swit
 ### Regions
 
 A _region_ is a group of countries defined inside the file `country_helper.py`. Available regions are shown on calling 
-`metal_mapper.py` with the switch `-l`.
+`meta_metal_mapper.py` with the switch `-l`.
 
 Popular regions are *NCO*; nordic countries (containing Denmark, Sweden, Norway, Iceland, Finland, Greenland, Faroe
 Islands, Åland Islands, Svalbard and Jan Mayen) and *SCA*; Scandinavia (as above but _without_  Åland Islands, Svalbard
@@ -113,7 +95,7 @@ in a certain band or what instruments were played.
 
 ## How to use
 
-`metal_mapper.py`, when called on without switches, shows a list of program switches and some hints how to use them. The
+`meta_metal_mapper.py`, when called on without switches, shows a list of program switches and some hints how to use them. The
 program does not have an interactive mode. Every function needs data from previous runs, except the bootstrapping.
 
 The typical workflow follows these steps: 
@@ -128,7 +110,7 @@ The following sections will guide you through the usage of the program.
 
 ### Boostrapping: Crawl a country or a region for band links
 
-The initial requirement to use mmm is having band links to crawl. There are two ways of creating band lists:
+The initial requirement to use Meta Metal Mapper is having band links to crawl. There are two ways of creating band lists:
 
 * Start with the switch `-c NN` to crawl all bands in exactly one country **or** 
 * Call with `-r NNN` where NNN is the key of the region you want to crawl.
@@ -165,6 +147,7 @@ Before bands can be crawled a database needs to be created.
 ### Crawl bands
 
 Several options are available to crawl bands from the above generated link files:
+
 1.  `-b -f <path/to/file>`: Crawls the bands in the given file.
 2. `-b -F <countries>`: In this case `<countries>` is a comma separated list of ISO shorts (`N1,N2,N3`). Don't use white
     spaces unless you enclose the entire list in double quotes (`"N1, N2, N3"`).
@@ -218,8 +201,8 @@ The file pattern is `countries_*`.
 
 | Country | Population | Bands | Bands per 100k | # Total | # Male | % Male | # Female | % Female | # Unknown | % Unknown | TOP genre |
 | ------------- |---------------|------|------|------|------|------|------|------|------|------|------|
-| Norway | 5378857 | 1702 | 31,64 | 5782 | 5523 | 95,52 | 240 | 4,15 | 19 | 0,33 | Black Metal |
-| Denmark | 5771876 | 999 | 17,31 | 3623 | 3545 | 97,85 | 77 | 2,13 | 1 | 0,03 | Death Metal |
+| Norway | 5.378.857 | 1702 | 31,64 | 5782 | 5523 | 95,52 | 240 | 4,15 | 19 | 0,33 | Black Metal |
+| Denmark | 5.771.876 | 999 | 17,31 | 3623 | 3545 | 97,85 | 77 | 2,13 | 1 | 0,03 | Death Metal |
 
 
 #### All genres
@@ -314,6 +297,26 @@ The [Gephi intro page](GEPHI_HOWTO.md) explains how to use the generated `.graph
 * `PLAYED_IN` relationships are be overwritten with the last one found. An artist, which was a regular
     band member and helped out live in the past will be considered to be "only" `PL` [past (live)]. 
 * The hierarchy of the instrument structure for artists may be in the wrong order.
+
+### Starting Neo4j Appimage on Linux
+
+If the Neo4j Appimage does not start the desktop window, check the console log for:
+
+    The name org.freedesktop.secrets was not provided by any .service files
+    
+Installation of the gnome-keyring helped me in that case:
+
+    sudo apt install gnome-keyring
+
+### Library Hack
+
+While crawling band links on Windows I encountered a defect in `Lib/http/client.py`. The percent escaped characters were
+not resolved correctly. The solution for me was to change `putrequest()` (before `self._output()` is called). The line
+looks like this:
+
+    url = rfc3986.uri_reference(url).unsplit()
+    
+This hack needs to import `rfc3986` to function.
 
 ## Backlog
 

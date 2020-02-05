@@ -1,6 +1,6 @@
 # Databases
 
-Metal Mapper supports one database: Neo4j. Other databases can easily be added through implementing the
+Meta Metal Mapper supports one database: Neo4j. Other databases can easily be added through implementing the
 `GraphDatabaseStrategy` ([Strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)) found in 
 `metalGraph.py`.
 
@@ -16,7 +16,7 @@ Use `settings.py` to set the following properties:
 
 ### Nodes
 
-Metal Mapper defines the following nodes and properties.
+Meta Metal Mapper defines the following nodes and properties.
 
 #### Band
 

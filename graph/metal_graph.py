@@ -1,6 +1,6 @@
 """Contains both base files of the strategy pattern to write database implementations. Each implementation
     must inherit `GraphDatabaseStrategy`. Database handles are instantiated with 
-    `GraphDatabaseContext(Implementation)`. See implementation in implNeoModel.py."""
+    `GraphDatabaseContext(Implementation)`. See implementation in graph_neomodel_impl.py."""
 
 from abc import ABCMeta, abstractmethod
 

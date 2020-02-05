@@ -1,7 +1,7 @@
 # Examples
 
 For these examples you need to create some text files with the contents of the _Short Links_ sections. You can put them
-anywhere you like, but the `links` folder works best. Remember to call `metal_mapper` with `-b -f path/to/file`. It's
+anywhere you like, but the `links` folder works best. Remember to call `meta_metal_mapper` with `-b -f path/to/file`. It's
 safe to add all links to one file. Known entities (e.g. bands) will be skipped.
 
 The queries are executed in the Neo4j Browser.  

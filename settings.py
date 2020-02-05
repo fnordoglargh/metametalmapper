@@ -1,4 +1,4 @@
-"""Settings definitions for mmm.
+"""Settings definitions for Meta Metal Mapper.
 """
 
 __author__ = 'Martin Woelke'
