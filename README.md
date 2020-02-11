@@ -1,15 +1,21 @@
 # Meta Metal Mapper
-_Meta Metal Mapper_ is a Python3 program intended to be the basis for a toolset to access data of 
-[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) and query said data. The
-_Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) links to two projects showcasing
-interesting ways to visualize the _Metal Archives'_ data:
+_Meta Metal Mapper_ is a Python3 program to crawl 
+[Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) for bands, artists and albums. The
+data is stored in a in a local database and can be analysed and exported into band networks.
 
-* [Metal Map](https://metal-map.com/): A visualization of bands by country displayed on a map, with data from M-A.
+The first time I saw a band network was in the liner notes of the 7" EP compilation
+[True Kings of Norway](https://www.metal-archives.com/albums/Immortal/True_Kings_of_Norway/111142) almost 20 years ago.
+Networks and info graphics fascinated me ever since. My interest in band networks and statistics was renewed when I 
+found two projects in the _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools) on M-A:
+
+* [Metal Map](https://metal-map.com/): A visualization of bands statistics by country displayed on a map, with data from
+    M-A.
 * [Metal Graph](http://metal-graph.com/): A graph showing the connections between Norwegian black metal bands, 
-    with data from M-A. 
+    again with data from M-A. 
     
-Neither project mentions _how_ they get the presented data. _Meta Metal Mapper_ aims at closing the gap for your own
-projects.  
+Neither project release the means of _how_ they acquire the presented data. The Metal Graph is limited to Norwegian
+black metal and the Metal Map lacks e.g. album or gender statistics. Meta Metal Mapper closes these gaps and add even 
+more analyzed data. It's not flashy but it's the base for your own data science projects.
 
 ## Highlights
 
@@ -21,12 +27,11 @@ projects.
     1000 nodes.
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Head over to the [examples](EXAMPLES.md) to see some networks.
-* Exports CSV files with country reports or database reports of all countries and their genres.
+* Exports CSV files with country or database reports of all countries and their genres.
 
 ## Getting Started
 
-Clone this repo, install the dependencies `pip3 install -r requirements.txt` and execute 
-`python meta_metal_mapper.py` (see _How to use_ section).
+To use Meta Metal Mapper you first need to clone this repository, install Python libraries and Neo4j.
 
 ### Python3
 
@@ -43,7 +48,7 @@ you need to run the program explicitly with `python3 meta_metal_mapper.py`.
 
 ### Libraries
 
-metalMapper depends on the following packages:
+Meta Metal Mapper depends on the following packages:
 * [certifi](https://certifi.io/en/latest/)
 * [urllib3](https://urllib3.readthedocs.io/en/latest/)
 * [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
@@ -95,8 +100,9 @@ in a certain band or what instruments were played.
 
 ## How to use
 
-`meta_metal_mapper.py`, when called on without switches, shows a list of program switches and some hints how to use them. The
-program does not have an interactive mode. Every function needs data from previous runs, except the bootstrapping.
+`meta_metal_mapper.py`, when called on without switches, shows a list of program switches and some hints how to use
+them. The program does not have an interactive mode. Every function needs data from previous runs, except the 
+bootstrapping.
 
 The typical workflow follows these steps: 
 
