@@ -1,6 +1,12 @@
 # Databases
 
-Meta Metal Mapper supports one database: Neo4j. Other databases can easily be added through implementing the
+Meta Metal Mapper uses graph databases to store data and currently only uses Neo4j.
+
+A [graph database](https://en.wikipedia.org/wiki/Graph_database) is ideal to store data from M-A for further analysis.
+Entgities like e.g. bands and their members are called nodes. They are connected through edges storing e.g. data, like
+what pseudonym a member used in a certain band or which instruments were played. 
+
+Other databases can easily be added through implementing the
 `GraphDatabaseStrategy` ([Strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern)) found in 
 `metalGraph.py`.
 
