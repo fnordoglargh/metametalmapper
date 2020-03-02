@@ -27,7 +27,7 @@ This is what Meta Metal Mapper already delivers:
 * Extracts information about bands, their band members and releases from M-A.
 * Saves ~~everything~~ a lot of the retrieved data into a Neo4j database for further analysis.
     The desktop version of Neo4j brings a graphical browser to examine small networks around
-    1000 nodes ([examples](EXAMPLES.md)).
+    1000 nodes ([examples](documentation/EXAMPLES.md)).
 * Extracts band networks in [GraphML](http://graphml.graphdrawing.org/) for use in other tools.
 * Exports CSV files with country or database reports of all countries and their genres.
 * Exports HTML pages of the best albums, EPs and demos.
@@ -42,7 +42,7 @@ To use Meta Metal Mapper you first need to clone this repository, install Python
 
 ### Tool Installation
 
-This here is the short version, a [longer version](GETTING_STARTED.md) is also available.
+This here is the short version, a [longer version](documentation/GETTING_STARTED.md) is also available.
 
 Install the following tools:
 
@@ -53,15 +53,15 @@ Install the following tools:
 
 ### Setup
 
-1. Start Neo4j Desktop and [create a graph](USAGE.md).
+1. Start Neo4j Desktop and [create a graph](documentation/USAGE.md).
 2. Start the created graph. 
 3. In the Neo4j Desktop application use _Add Application_ to install the Neo4j Browser. 
 4. Open `settings.py` and change `NEO4J_PASSWORD`.
 
 ### First Crawl and Analysis
 
-This rather short section uses example data, but gives an idea what it is about. A detailed [usage page](USAGE.md)
-explains what the parameters mean and what to do with them.   
+This rather short section uses example data, but gives an idea what it is about. A detailed
+[usage page](documentation/USAGE.md) explains what the parameters mean and what to do with them.   
 
 Call `python meta_metal_mapper.py` each time with one of the following parameters:
 
@@ -89,9 +89,11 @@ Browse to the folder named `reports` and open a report in a web browser to see t
 
 ### Where to go from here?
 
-Install [Gephi](GEPHI_HOWTO.md), load a `.graphml` file (see exports folder) and experiment with the available data. 
+Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see exports folder) and experiment with the
+available data. 
 
-See the detailed [usage page](USAGE.md), the [glossary](GLOSSARY.md) or the [examples](EXAMPLES.md) for inspiration.
+See the detailed [usage page](documentation/USAGE.md), the [glossary](documentation/GLOSSARY.md) or the
+[examples](documentation/EXAMPLES.md) for inspiration.
 
 ## Known Issues
 

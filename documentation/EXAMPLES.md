@@ -1,8 +1,8 @@
 # Examples
 
 For these examples you need to create some text files with the contents of the _Short Links_ sections. You can put them
-anywhere you like, but the `links` folder works best. Remember to call `meta_metal_mapper` with `-b -f path/to/file`. It's
-safe to add all links to one file. Known entities (e.g. bands) will be skipped.
+anywhere you like, but the `links` folder works best. Remember to call `meta_metal_mapper` with `-b -f path/to/file`. 
+It's safe to add all links to one file. Known entities (e.g. bands) will be skipped.
 
 The queries are executed in the Neo4j Browser.  
 
@@ -11,7 +11,7 @@ The queries are executed in the Neo4j Browser.
 A Neo4j export of [Darkthrone](https://www.metal-archives.com/bands/Darkthrone/146) looks like this (the band
 in orange, releases in green and members in blue nodes):
 
-![Darkthrone](img/darkthrone.svg)
+![Darkthrone](../img/darkthrone.svg)
 
 ### Query 
 
@@ -31,7 +31,7 @@ Visual representation of the connection of [Immortal](https://www.metal-archives
 [Old Funeral](https://www.metal-archives.com/bands/Old_Funeral/3969) and 
 [Mayhem](https://www.metal-archives.com/bands/Mayhem/67) through their members.
  
-![black_metal_forefathers](img/intro_graph_3.svg)
+![black_metal_forefathers](../img/intro_graph_3.svg)
 
 ### Query 
 
@@ -57,7 +57,7 @@ recorded by Mayhem and Zyklon-B. Just put these short links into a file and try 
     1349/5575
     Gehenna/2155
 
-![Connection between some Norwegian black metal bands](img/intro_graph_1.svg)
+![Connection between some Norwegian black metal bands](../img/intro_graph_1.svg)
 
 
 The query is a less specialized version of the last one:
@@ -68,7 +68,7 @@ The query is a less specialized version of the last one:
 
 ## India
 
-The entire metal scene of [India](img/india.svg) in one picture. Following is the analysis of Indian
+The entire metal scene of [India](../img/india.svg) in one picture. Following is the analysis of Indian
 bands. 
 
     This raw analysis contains data of 219 bands from 1 countries. That is the entire database.
@@ -88,7 +88,7 @@ Live members are the glue which connect a lot of bands; even a Norwegian black m
 [Metallica](https://www.metal-archives.com/bands/Metallica/125). It's a bit far fetched but still
 interesting enough to mention.
 
-![metallica_satyricon](img/metallica_satyricon.svg)
+![metallica_satyricon](../img/metallica_satyricon.svg)
 
 ### Query 
 

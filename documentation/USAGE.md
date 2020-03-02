@@ -16,7 +16,8 @@ The following sections will guide you through the usage of the program.
 
 ## Boostrapping: Crawl a country or a region for band links
 
-The initial requirement to use Meta Metal Mapper is having band links to crawl. There are two ways of creating band lists:
+The initial requirement to use Meta Metal Mapper is having band links to crawl. There are two ways of creating band
+lists:
 
 * Start with the switch `-c NN` to crawl all bands in exactly one country **or** 
 * Call with `-r NNN` where NNN is the key of the region you want to crawl.
@@ -161,7 +162,7 @@ sorted left to right by total amount of bands formed.
 An HTML file with all and per year releases is generated inside the reports folder. The reports can be influences with
  `settings.py` as described above. 
 
-![HTML Preview](img/report_demo.png)
+![HTML Preview](../img/report_demo.png)
 
 ### Usage and output example
 
