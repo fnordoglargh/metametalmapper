@@ -89,10 +89,11 @@ Browse to the folder named `reports` and open a report in a web browser to see t
 
 ### Where to go from here?
 
-Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see exports folder) and experiment with the
+* Crawl the extended network from the _True Kings of Norway_ CD with:
+  * `meta_metal_mapper -b -f data/true_kings.lnks`
+  * Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see exports folder) and experiment with the
 available data. 
-
-See the detailed [usage page](documentation/USAGE.md), the [glossary](documentation/GLOSSARY.md) or the
+* See the detailed [usage page](documentation/USAGE.md), the [glossary](documentation/GLOSSARY.md) or the
 [examples](documentation/EXAMPLES.md) for inspiration.
 
 ## Known Issues
