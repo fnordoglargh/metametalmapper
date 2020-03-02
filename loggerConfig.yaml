@@ -21,6 +21,8 @@ loggers:
         level: INFO
         handlers: [file]
         propagate: no
+    neobolt:
+        level: WARN
 root:
     level: DEBUG
     handlers: [console, file]
