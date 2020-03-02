@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""_Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to crawl data of
+"""_Meta Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to crawl data of
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A), write it into a database  and query
 said data.
 """
@@ -12,10 +12,10 @@ import logging.config
 import yaml
 from enum import Enum
 
-from metalCrawler import *
-from graph.implNeoModel import *
-from graph.metalGraph import *
-from graph.exportGraph import *
+from metal_crawler import *
+from graph.graph_neomodel_impl import *
+from graph.metal_graph import *
+from graph.export_graph import *
 from global_helpers import *
 from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES, clean_short_links
 from genre import save_genres
@@ -144,7 +144,7 @@ def main(argv):
     os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
     logger.debug('***************************************************************')
-    logger.info(f'metal mapper {__version__}')
+    logger.info(f'meta metal mapper {__version__}')
     mode = CrawlMode.Error
     filenames = []
 

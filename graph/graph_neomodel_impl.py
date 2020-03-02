@@ -12,7 +12,7 @@ import progressbar
 
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
-from graph.metalGraph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
+from graph.metal_graph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from graph.report import CountryReport, DatabaseReport, AlbumReport
 
 __author__ = 'Martin Woelke'
@@ -27,7 +27,7 @@ class MemberRelationship(StructuredRel):
     # end_date = DateProperty()
     pseudonym = StringProperty()
     instrument = StringProperty()
-    status = StringProperty(max_length=2, choices=MEMBER_STATUS)
+    status = StringProperty(choices=MEMBER_STATUS)
 
 
 class Band(StructuredNode):
@@ -35,9 +35,9 @@ class Band(StructuredNode):
     link = StringProperty()
     visited = DateProperty()
     name = StringProperty()
-    country = StringProperty(max_length=2, choices=COUNTRY_NAMES)
+    country = StringProperty(choices=COUNTRY_NAMES)
     locations = ArrayProperty()
-    status = StringProperty(max_length=1, choices=BAND_STATUS)
+    status = StringProperty(choices=BAND_STATUS)
     formed = DateProperty()
     # active = ArrayProperty()
     themes = ArrayProperty()  # Should a theme be a node?
@@ -49,7 +49,7 @@ class Band(StructuredNode):
 class Label(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
-    status = StringProperty(max_length=1, choices=LABEL_STATUS)
+    status = StringProperty(choices=LABEL_STATUS)
     releases = RelationshipFrom('Release', 'RELEASED_ON')
 
 
@@ -57,7 +57,7 @@ class Release(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     link = StringProperty()
-    type = StringProperty(max_lenght=1, choices=RELEASE_TYPES)
+    type = StringProperty(choices=RELEASE_TYPES)
     rating = IntegerProperty()
     review_count = IntegerProperty()
     release_date = DateProperty()
@@ -72,8 +72,8 @@ class Member(StructuredNode):
     visited = DateProperty()
     name = StringProperty()
     age = IntegerProperty()
-    origin = StringProperty(max_length=2, choices=COUNTRY_NAMES)
-    gender = StringProperty(max_length=1, choices=GENDER)
+    origin = StringProperty(choices=COUNTRY_NAMES)
+    gender = StringProperty(choices=GENDER)
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
 
 

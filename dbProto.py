@@ -1,7 +1,7 @@
 from neomodel import StructuredNode, StringProperty, RelationshipTo, RelationshipFrom, config
 from datetime import date
-from graph.implNeoModel import *
-from graph.metalGraph import *
+from graph.graph_neomodel_impl import *
+from graph.metal_graph import *
 
 db = GraphDatabaseContext(NeoModelStrategy())
 
