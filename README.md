@@ -83,6 +83,8 @@ into relation to a country.
 To filter the albums try `MATCH (b:Band)--(m:Member) RETURN b, m` and hit the play button. The resulting graph is a bit
 slimmer.
 
+![True Kings od Norway](img/true_kings.svg)
+
 ### Inspect the report
 
 Browse to the folder named `reports` and open a report in a web browser to see the best albums, EPs and demos.
