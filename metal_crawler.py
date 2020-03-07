@@ -34,6 +34,7 @@ lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known"
 STATUS_ERROR = 'unrecoverable'
 STATUS_SKIPPED = 'skipped'
 STATUS_ADDED = 'added'
+stop_crawl_user_input = ""
 
 
 class VisitBandThread(threading.Thread):
@@ -77,6 +78,7 @@ class VisitBandThread(threading.Thread):
         self.band_errors = band_errors
         self.retries_max = 3
         self.progress_bar = progress_bar
+        global stop_crawl_user_input
 
     def update_bar(self, band_link):
         self.visited_bands.append(band_link)
@@ -89,7 +91,7 @@ class VisitBandThread(threading.Thread):
         """
         self.logger.debug("Running " + self.name)
 
-        while True:
+        while stop_crawl_user_input is not "Q":
             try:
                 link_band_temp = self.bandLinks.get_nowait()
             except queue.Empty:
@@ -775,6 +777,16 @@ def crawl_countries():
     return country_links
 
 
+def read_user_input():
+    """Continuously reads the standard input until a Q is entered.
+
+    """
+    global stop_crawl_user_input
+
+    while stop_crawl_user_input is not "Q":
+        stop_crawl_user_input = input()
+
+
 def crawl_bands(band_links, db_handle, is_detailed=False):
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
@@ -815,6 +827,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
         STATUS_ADDED: {}
     }
 
+    print("Press Q and <ENTER> to stop crawl. All threads will finish their current work and then stop.")
+
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
@@ -827,8 +841,14 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for t in threads:
         t.start()
 
+    user_input = threading.Thread(target=read_user_input)
+    user_input.daemon = True
+    user_input.start()
+
     for t in threads:
         t.join()
+
+    user_input.join()
 
     progress_bar.finish()
     logger = logging.getLogger('Post-Crawler')
