@@ -28,7 +28,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[greek,english]{babel}
-\usepackage{times}
+
 \usepackage{url}
 \usepackage{lettrine}
 \usepackage{hyperref}
@@ -38,7 +38,6 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows}
 \tikzstyle{block}=[draw opacity=0.7,line width=1.4cm]
-
 
 % Author, Title, etc.
 
@@ -131,12 +130,53 @@
             \includegraphics[scale=.6]{bandsGraphCombined}
           \end{center}
         \item<2-> Mothballed until end of 2018.
-        \item<2-> 600 Commits later: ~2400 loc + 400 comments + 4k words in
-          markdown.
+        \item<2-> Found graph databases while reading about connected data
+          (a.k.a. networks).
+        \item<2-> Converted codebase to Python3 and started using a debugger.
       \end{itemize}
 
     \end{frame}
 
+  \subsection{Graph Databases}
+
+    \begin{frame}{Comparison with a Relational Database}
+    
+      A relational database models connections between tables with foreign key relationships.
+      
+      \begin{center}
+        \includegraphics[scale=.6]{relational_as_graph}
+      \end{center}
+      
+      https://neo4j.com/developer/graph-db-vs-rdbms/
+      
+    \end{frame}
+    
+    \begin{frame}{Modelling a Graph Database}
+
+      A graph database consists of two elements: Nodes and edges.
+
+      \begin{itemize}
+
+        \item<1-> Nodes represent entities of data.
+        \item<1-> Edges are the relationsips between nodes.
+        \item<2-> The former two are refined by properties (name/value pairs).        
+      \end{itemize}
+      
+      \begin{center}
+        \includegraphics[scale=.6]{relational_graph_model}
+      \end{center}
+      
+      \footnote{https://neo4j.com/developer/graph-database}
+      
+    \end{frame}
+    
+    \begin{frame}{Modelling the Meta Metal Mapper database}
+    
+      Bands, Artists, Releases and Labels
+    
+    \end{frame}
+
+  \subsection{Show, don't tell}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -167,13 +207,22 @@
         \item<1-> Markdown
       \end{itemize}
     \end{frame}
-
+    
+    \begin{frame}{Key Learnings}
+    
+      \begin{itemize}
+        \item<1-> Know your tools.
+        \item<1-> Don't be afraid to take risks.
+      \end{itemize}
+      
+    \end{frame}
+    
   \subsection{Link Collection}
 
     \begin{frame}{Further Reading}
       \begin{itemize}
         \item\href{https://musicmap.info/}{musicmap.info}: Musical genre development (not only metal) and influences over time.
-        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph}: Metal development from the beginning until 2010.
+        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph/}: Metal development from the beginning until 2010.
       \end{itemize}
     \end{frame}
 
