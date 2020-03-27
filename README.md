@@ -2,7 +2,7 @@
 
 _Meta Metal Mapper_ is a Python3 program to crawl 
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A) for bands, artists and albums. The
-data is stored in a in a local database and can be analysed and exported into band networks.
+data is stored in a in a local database and can be analyzed and exported into band networks.
 
 The first time I saw a band network was in the liner notes of the 7" EP compilation
 [True Kings of Norway](https://www.metal-archives.com/albums/Immortal/True_Kings_of_Norway/111142) almost 20 years ago.
@@ -46,7 +46,7 @@ This here is the short version, a [longer version](documentation/GETTING_STARTED
 
 Install the following tools:
 
-1. Python >= 3.6.
+1. Python >= 3.6.0.
 2. Libraries: `pip3 install -r requirements.txt`.
 3. Neo4j [Windows](https://neo4j.com/download/) or 
     [Linux](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
@@ -75,7 +75,7 @@ into relation to a country.
 ### Inspect the graph
 
 1. Open the Neo4j Browser you installed during setup.
-2. Click on the cog (lower left) and change _Initial Node Display_ to a number >= 2000.
+2. Click on the gear (lower left) and change _Initial Node Display_ to a number >= 2000.
 3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) and hit the play button.
   1. The displayed graph contains all crawled band, artist and album nodes.
   2. Click on some of the nodes or edges to see the individual properties.
