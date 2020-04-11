@@ -1,6 +1,7 @@
 # Getting Started
 
-To use Meta Metal Mapper you first need to clone this repository, install Python libraries and Neo4j.
+To use Meta Metal Mapper you first need to clone this repository, install Python
+libraries and Neo4j.
 
 ## Python3
 
@@ -30,11 +31,16 @@ Install them with `pip3`:
 
 ## Neo4j
 
-All data is stored in a [Neo4j database](https://neo4j.com/product/). You have to download and install the
-[desktop version (Windows)](https://neo4j.com/download/) to use any meaningful functionality. The downside for some 
-users might be the mandatory use of a Google or Facebook account to authorize the desktop app. However a 30 day trial
-period for the software is granted. If you know what you're doing you may simply set up Neo4j from other available 
-editions. There is e.g. the official 
+All data is stored in a [Neo4j database](https://neo4j.com/product/). You have
+to download and install the
+[desktop version (Windows)](https://neo4j.com/download/)
+to use any meaningful functionality. The downside for some users might be the
+mandatory use of a Google or Facebook account to authorize the desktop app.
+However a 30 day trial period for the software is granted. If you know what
+you're doing you may simply set up Neo4j from other available editions. There is
+e.g. the official
 [Linux guide](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
 
-Fire it up and create a database. Change the database credentials as needed in `settings.py`.
+Fire it up and create a database. Change the database credentials as needed in
+`settings.py`.
+

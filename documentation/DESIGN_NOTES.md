@@ -22,10 +22,10 @@ Test data consists of 18 bands and 203 artists.
     Satyricon/341
     Thorns/1131
     Zyklon-B/1421
-    
+
 Time (in min) to add data into empty database:
 
-|Threads|Run 1|Run 2|Run 3|Avg.|Factor*|
+|Threads|Run 1|Run 2|Run 3|Avg.|Factor\*|
 |---|---|---|---|---|---|
 |1|4:00|5:18|3:45|4:20|1|
 |2|1:56|1:56|1:55|1:56|2.24|
@@ -33,4 +33,4 @@ Time (in min) to add data into empty database:
 |8|0:49|0:49|0:53|0:50|5.2|
 
 \* Times faster than baseline with one thread.
-    
+
