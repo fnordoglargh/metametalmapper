@@ -33,6 +33,8 @@
 \usepackage{lettrine}
 \usepackage{hyperref}
 
+\usepackage{listings}
+
 % Setup TikZ
 
 \usepackage{tikz}
@@ -73,7 +75,7 @@
       \tableofcontents
     \end{frame}
 
-  \subsection{meta metal mapper}
+  \subsection{The Music}
 
     \begin{frame}{What does the quirky name mean?}
       \begin{itemize}
@@ -111,13 +113,15 @@
 
       \begin{block}{Wikipedia Definition}
         Heavy metal (or simply metal) is a genre of rock music that developed in the late 1960s
-        and early 1970s, largely in the United Kingdom. With roots in blues rock, psychedelic rock,
-        and acid rock, the bands that created heavy metal developed a thick, massive sound,
+        and early 1970s, largely in the United Kingdom. With roots in blues rock, psychedelic
+        rock, acid rock, the bands that created heavy metal developed a thick, massive sound,
         characterized by highly amplified distortion, extended guitar solos, emphatic beats,
         and overall loudness.\footnote{https://en.wikipedia.org/wiki/Heavy\_metal\_music}
       \end{block}
 
     \end{frame}
+
+  \subsection{meta metal mapper}
 
     \begin{frame}{Inspiration}
     
@@ -172,6 +176,38 @@
         \item<2-> Converted codebase to Python3 and started using a debugger.
       \end{itemize}
 
+    \end{frame}
+    
+    %\begin{frame}{Getting a page and parse data}[fragile]
+    \begin{frame}[fragile]
+
+How to get any data from any webpage:
+
+\begin{lstlisting}[basicstyle=\footnotesize,]
+
+link = "https://www.metal-archives.com/bands/Arcturus/292"
+http = urllib3.PoolManager(
+  cert_reqs='CERT_REQUIRED' , ca_certs=certifi.where())
+web_page = http.request('GET', link)
+web_page_string = web_page.data.decode("utf-8")
+soup = BeautifulSoup(web_page.data.decode(
+  'utf-8', 'ignore'), "html.parser")
+s = band_soup.find_all(attrs={"class": "band_name"})
+
+\end{lstlisting}
+
+    \end{frame}
+
+    \begin{frame}{Example: BeautifulSoup}
+
+      Debugging the found \texttt{ResultSet}:
+
+      \begin{center}
+        \includegraphics[scale=1.6]{debug_01}
+      \end{center}
+      
+      % Don't ask.
+      \texttt{band\_name} $=$ \texttt{s[0].next\_element.text}
     \end{frame}
 
   \subsection{Graph Databases}
@@ -251,8 +287,6 @@
 
           \end{itemize}
         \item<1-> IDEs: Visual Studio and PyCharm,
-        \item<1-> Graphviz
-        \item<1-> Markdown
         \item<1-> Neo4j (graph database)
         \item<1-> Graphviz (diagram rendering)
         \item<1-> SCM: git
@@ -275,8 +309,10 @@
 
     \begin{frame}{Further Reading}
       \begin{itemize}
-        \item\href{https://musicmap.info/}{musicmap.info}: Musical genre development (not only metal) and influences over time.
-        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph/}: Metal development from the beginning until 2010.
+        \item\href{https://musicmap.info/}{musicmap.info}: Musical genre development
+          (not only metal) and influences over time.
+        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph/}: Metal
+          development from the beginning until 2010.
       \end{itemize}
     \end{frame}
 
