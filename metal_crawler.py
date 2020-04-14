@@ -848,7 +848,7 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for t in threads:
         t.join()
 
-    user_input.join()
+    user_input.join(1)
 
     progress_bar.finish()
     logger = logging.getLogger('Post-Crawler')
