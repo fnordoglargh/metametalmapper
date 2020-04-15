@@ -153,10 +153,10 @@
 
   \subsection{Humble beginnings}
 
-    \begin{frame}{What the... data!}
+    \begin{frame}{What the..... data!}
     
       \begin{center}
-        \includegraphics[scale=.55]{MA_Arcturus}
+        \includegraphics[scale=2]{MA_Immortal}
       \end{center}
     
     \end{frame}
@@ -178,6 +178,18 @@
 
     \end{frame}
     
+  \subsection{Getting data from webpages with BeautifulSoup}
+  
+    \begin{frame}{Web Page Reverse Engineering}
+    
+      Firefox' onboard web deloper tools.
+    
+      \begin{center}
+        \includegraphics[scale=.6]{firefox_dom}
+      \end{center}
+    
+    \end{frame}   
+    
     %\begin{frame}{Getting a page and parse data}[fragile]
     \begin{frame}[fragile]
 
@@ -185,7 +197,7 @@ How to get any data from any webpage:
 
 \begin{lstlisting}[basicstyle=\footnotesize,]
 
-link = "https://www.metal-archives.com/bands/Arcturus/292"
+link = "https://www.metal-archives.com/bands/Immortal/75"
 http = urllib3.PoolManager(
   cert_reqs='CERT_REQUIRED' , ca_certs=certifi.where())
 web_page = http.request('GET', link)
@@ -256,12 +268,10 @@ s = band_soup.find_all(attrs={"class": "band_name"})
     
     \end{frame}
 
-  \subsection{Show, don't tell}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Expots and Reporting}
+\section{Exports and Reporting - Show, don't tell}
 
   \subsection{Band Networks}
 
@@ -297,12 +307,13 @@ s = band_soup.find_all(attrs={"class": "band_name"})
     \end{frame}
     
     \begin{frame}{Key Learnings}
-    
+
       \begin{itemize}
-        \item<1-> Know your tools.
+        \item<1-> Know your tools, then learn some more.
         \item<1-> Don't be afraid to take risks.
+        \item<2-> Don't be afraid of asking questions - Contacted \textit{HellBlazer}
       \end{itemize}
-      
+
     \end{frame}
     
   \subsection{Link Collection}
@@ -311,7 +322,8 @@ s = band_soup.find_all(attrs={"class": "band_name"})
       \begin{itemize}
         \item\href{https://musicmap.info/}{musicmap.info}: Musical genre development
           (not only metal) and influences over time.
-        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph/}: Metal
+        \item\href{https://www.boundbymetal.com/en/common/metal-genres-graph/}
+          {boundbymetal.com}: Metal
           development from the beginning until 2010.
       \end{itemize}
     \end{frame}
