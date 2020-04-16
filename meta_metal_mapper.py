@@ -141,7 +141,7 @@ def main(argv):
         logging.config.dictConfig(log_config)
 
     # Change to a terminal size in which everything fits.
-    os.system('mode con: cols=153 lines=9999')
+    # os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
     logger.debug('***************************************************************')
     logger.info(f'meta metal mapper {__version__}')
