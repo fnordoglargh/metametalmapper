@@ -88,12 +88,12 @@ meaningless data e.g. when data is put into relation to a country.
 ### Inspect the graph
 
 1. Open the Neo4j Browser you installed during setup.
-2. Click on the gear (lower left) and change _Initial Node Display_ to a number
-   >= 2000.
+2. Click on the gear (lower left) and change _Initial Node Display_ to a number 
+   \>= 2000.
 3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) and
    hit the play button.
-  1. The displayed graph contains all crawled band, artist and album nodes.
-  2. Click on some of the nodes or edges to see the individual properties.
+4. The displayed graph contains all crawled band, artist and album nodes.
+5. Click on some of the nodes or edges to see the individual properties.
 
 To filter the albums try `MATCH (b:Band)--(m:Member) RETURN b, m` and hit the
 play button. The resulting graph is a bit slimmer.
