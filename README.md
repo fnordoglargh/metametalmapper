@@ -117,6 +117,10 @@ the best albums, EPs and demos.
   [glossary](documentation/GLOSSARY.md) or the
   [examples](documentation/EXAMPLES.md) for inspiration.
 
+## Acknowledgments
+
+Thanks to Suma, Henning and Marcel for their invaluable feedback.
+
 ## Known Issues
 
 A couple of problems have already been [identified](documentation/ISSUES.md).
