@@ -551,7 +551,11 @@ class AlbumReport:
                 report += f'    {release_type}s: {count} ({percentage:.2f}%)\n'
 
         # Take the maximum from the settings file.
-        top = TOP
+        if TOP < 1:
+            top = 1
+        else:
+            top = TOP
+
         releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
         report += 'Best releases per year:\n'
 
