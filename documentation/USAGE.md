@@ -51,7 +51,8 @@ overwritten in a crawl.
 Before bands can be crawled a database needs to be created.
 
 1. Open Neo4j Desktop.
-2. Click _Add Graph_ → _Create a Local Graph_.
+2. Click _Add Graph_ → _Create a Local Graph_. Make sure to use a 3.5.x as 
+    version as >= 4.x is not yet supported by `neomodel`.
 3. Give it a name and a password.
 4. Open `settings.py` and change `NEO4J_PASSWORD` to what you entered in the
    above step.

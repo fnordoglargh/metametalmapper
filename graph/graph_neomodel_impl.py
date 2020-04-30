@@ -80,10 +80,11 @@ class Member(StructuredNode):
 class NeoModelStrategy(GraphDatabaseStrategy):
 
     config.DATABASE_URL = f'bolt://{settings.NEO4J_USERNAME}:{settings.NEO4J_PASSWORD}@{settings.NEO4J_IP_ADDRESS}:7687'
+    config.ENCRYPTED_CONNECTION = False
 
     def __init__(self):
         self.logger = logging.getLogger('NeoModel')
-        error_text = 'Cannot connect to Neo4j database.'
+        error_text = 'Cannot connect to the Neo4j database.'
         # Cheap test to test if the DB is available.
         try:
             Label.nodes.get(emid=-1)
@@ -97,7 +98,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         except exceptions.ServiceUnavailable:
             self.logger.error(f'{error_text} Make sure the database is up and running.')
             raise
-        except Exception:
+        # Could happen while using an unsupported 4.x database.
+        except exceptions.CypherSyntaxError as cse:
+            if 'no longer supported' in cse.message:
+                self.logger.error(f'{error_text} Make sure a 3.5.x database is used.')
+            else:
+                self.logger.error(f'{error_text}')
+            raise
+        except Exception as e:
             self.logger.error(f'{error_text}')
             raise
 
