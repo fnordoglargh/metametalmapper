@@ -39,7 +39,7 @@ stop_crawl_user_input = ""
 
 class VisitBandThread(threading.Thread):
     def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, progress_bar,
-                 visited_bands, is_detailed=False):
+                 visited_bands, is_detailed=False, is_single_mode=True):
         """Constructs an worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
@@ -57,6 +57,7 @@ class VisitBandThread(threading.Thread):
             maximum value.
         :param visited_bands: A list shared among the threads so that the progress bar is updated easily.
         :param is_detailed: A parameter that is not used and might be useful someday.
+        :param is_single_mode: Indicates if a single band and its immediate connections is crawled.
         """
 
         super(VisitBandThread, self).__init__()
@@ -75,6 +76,7 @@ class VisitBandThread(threading.Thread):
         self.visited_bands = visited_bands
         self.today = date.today()
         self.is_detailed = is_detailed
+        self.is_single_mode = is_single_mode
         self.band_errors = band_errors
         self.retries_max = 3
         self.progress_bar = progress_bar
@@ -787,7 +789,8 @@ def read_user_input():
         stop_crawl_user_input = input()
 
 
-def crawl_bands(band_links, db_handle, is_detailed=False):
+def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
+    # TODO: Add comment and parameter description.
     logger = logging.getLogger('Crawler')
     logger.debug('>>> Crawling all bands.')
     print("Starting band crawl. All logging is diverted to file. Prepping database:")
@@ -833,7 +836,7 @@ def crawl_bands(band_links, db_handle, is_detailed=False):
     for i in range(0, thread_count):
         thread = VisitBandThread(
             str(i), local_bands_queue, lock, db_handle, bands_status, visited_entities, progress_bar,
-            visited_bands, is_detailed)
+            visited_bands, is_detailed, is_single_mode)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for

@@ -38,6 +38,7 @@ class CrawlMode(Enum):
     DisplayInfo = 4
     CrawlRegion = 5
     Test = 6
+    CrawlSingle = 7
 
 
 def print_help():
@@ -46,6 +47,8 @@ def print_help():
         f'\n'
         f'Supported modes:\n'
         f'  Crawl M-A for band links:\n'
+        f'    -s: <short link>: Crawls the given short link (e.g. Darkthrone/146) and all\n'
+        f'      connected bands.'
         f'    -a: Crawls all countries for bands and saves them in files named {file_name_a}\n'
         f'      (where NN is the two letter short form of a given country). The files are put\n'
         f'      into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.\n'
@@ -126,7 +129,7 @@ def init_db():
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, 'dbac:hf:F:tyz:lr:')
+        opts, args = getopt.getopt(argv, 'dbac:hf:F:tyz:lr:s:')
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -167,6 +170,9 @@ def main(argv):
         if opt == '-h':
             print_help()
             sys.exit()
+        elif opt == '-s':
+            mode = CrawlMode.CrawlSingle
+            short_link = [arg]
         elif opt == '-c':
             country_links = clean_short_links(arg)
             mode = CrawlMode.CrawlCountry
@@ -204,7 +210,7 @@ def main(argv):
             mode = CrawlMode.Error
 
     # No filename argument given; read all files in links folder. Results in path plus filename.
-    if len(file_names) == 0:
+    if len(file_names) == 0 and mode not in [CrawlMode.CrawlSingle]:
         for file_link in FOLDER_LINKS.iterdir():
             file_names.append(file_link)
 
@@ -254,6 +260,11 @@ def main(argv):
                 save_genres()
         else:
             logger.error('No bands are available. Make sure that you crawled a country or regions before -b is used.')
+    elif mode is CrawlMode.CrawlSingle:
+        db_handle = init_db()
+        if db_handle is not None:
+            crawl_bands(short_link, db_handle, is_single_mode=True)
+            save_genres()
 
     elif mode in [CrawlMode.AnalyseDatabase]:
         db_handle = init_db()
