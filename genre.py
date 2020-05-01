@@ -127,7 +127,7 @@ def split_genres(genre_string):
 
 
 def save_genres():
-    """Dumps the cache into a JSON file.
+    """Dumps the genre cache into a JSON file.
     """
     actual_genre_file = open(GENRES_FILE_PATH, "w", encoding="utf-8")
     json_database_string = json.dumps(GENRE_CACHE)

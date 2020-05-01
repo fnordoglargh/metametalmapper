@@ -87,7 +87,7 @@ class VisitBandThread(threading.Thread):
     def run(self):
         """Runs crawling as long as band links are retrieved from the links queue.
 
-        :return: -1 as soon as the queue runs out of values.
+        :return: -1 as soon as the queue runs out of links.
         """
         self.logger.debug("Running " + self.name)
 
