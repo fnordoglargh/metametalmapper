@@ -25,6 +25,6 @@ TOP = 5
 IS_LIVE_MEMBER_IN_BAND = True
 FILTER_UNCONNECTED = False
 
-# Useful flag to find inconsistencies in MA data. Don't set to True unless you know what you're doing. Setting to True
+# Useful flag to find inconsistencies in M-A data. Don't set to True unless you know what you're doing. Setting to True
 # will result in graphs with invalid connections. This _might_ actually be useful while merging graphs with Gephi.
 FIND_MA_INCONSISTENCIES = False
