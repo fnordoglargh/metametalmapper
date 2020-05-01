@@ -146,7 +146,6 @@ def main(argv):
     logger.debug('***************************************************************')
     logger.info(f'meta metal mapper {__version__}')
     mode = CrawlMode.Error
-    filenames = []
 
     # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
     for folder in FOLDERS_MAIN:
@@ -160,6 +159,7 @@ def main(argv):
         else:
             logger.debug(f'Standard directory {folder} exists.')
 
+    file_names = []
     country_links = []
     is_detailed = False
 
@@ -175,15 +175,14 @@ def main(argv):
         elif opt == '-b':
             mode = CrawlMode.CrawlBands
         elif opt == '-f':
-            filenames.append(Path(arg))
+            file_names.append(Path(arg))
             logger.info(f"Supplied file name: '{arg}'.")
         elif opt == '-F':
             country_links = clean_short_links(arg)
-
             for country_link in country_links:
                 temp_path = Path(f'{FOLDER_LINKS}/{country_link}{LINK_EXTENSION}')
                 if temp_path.exists():
-                    filenames.append(temp_path)
+                    file_names.append(temp_path)
         elif opt == '-y':
             mode = CrawlMode.AnalyseDatabase
         elif opt == '-z':
@@ -196,7 +195,7 @@ def main(argv):
             region = arg.upper()
         elif opt == '-t':
             mode = CrawlMode.Test
-            filenames.append(Path('testLinks.txt'))
+            file_names.append(Path('testLinks.txt'))
         elif opt == '-m':
             result = cut_instruments('Drums(1988-1993, 1994-present)')
         elif opt == '-d':
@@ -205,9 +204,9 @@ def main(argv):
             mode = CrawlMode.Error
 
     # No filename argument given; read all files in links folder. Results in path plus filename.
-    if len(filenames) == 0:
+    if len(file_names) == 0:
         for file_link in FOLDER_LINKS.iterdir():
-            filenames.append(file_link)
+            file_names.append(file_link)
 
     if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
         logger.info('Crawling countries...')
@@ -234,7 +233,7 @@ def main(argv):
     elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
         sanitized_bands = []
 
-        for path in filenames:
+        for path in file_names:
             if path.is_file():
                 band_links = path.read_text(encoding='utf-8').split('\n')
                 # Remove last element from list if it's a lonely, empty string.
