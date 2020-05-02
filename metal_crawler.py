@@ -382,6 +382,10 @@ class VisitBandThread(threading.Thread):
                 instruments = cut_instruments(temp_instruments)
                 artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
+        # Happens only for the first band if -s was used as the command line switch.
+        if self.is_single_mode:
+            self.add_connected_bands_to_queue(band_soup)
+
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
         disco_soup = cook_soup(link_disco)
@@ -439,6 +443,36 @@ class VisitBandThread(threading.Thread):
 
         logger.debug(f'<<< Crawling [{band_short_link}]')
         return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
+
+    def add_connected_bands_to_queue(self, band_soup):
+        """Extracts all band links from the given band soup and adds them to the queue, resets the single mode flag and
+            updates the progressbar to the new band amount.
+
+        :param band_soup: The band soup of the band that's crawled right now. A band soup is cooked with
+            `cook_soup(link_band)` (which expects the _full_ address of a band page).
+        """
+        band_rows = band_soup.find_all('tr', attrs={'class': 'lineupBandsRow'})
+        linked_bands = []
+
+        for band_row in band_rows:
+            actual_bands = band_row.contents[1].contents
+            for i in range(1, len(actual_bands), 2):
+                band_link = actual_bands[i].attrs['href'][37:]
+                if band_link not in linked_bands:
+                    linked_bands.append(band_link)
+                    self.bandLinks.put(band_link)
+
+        # Most of the time the crawler log is off, so this goes to the screen and the log file.
+        if len(linked_bands) is 0:
+            log_message = f'The chosen band does not have any outward connections.'
+        else:
+            log_message = f'Added {len(linked_bands)} connected bands to the crawl.'
+        print(log_message)
+        self.logger.info(log_message)
+        # Switch off the single mode after the first call. At least for now. Maybe we'll do two levels (or more) later.
+        self.is_single_mode = False
+        # The additional band is the actual one because it is not in the queue right now.
+        self.progress_bar.max_value = self.bandLinks.qsize() + 1
 
 
 def make_band_list(country_links):
