@@ -495,7 +495,6 @@ def make_band_list(country_links):
         else:
             logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
             country_links.put(link_country_temp)
-            #continue
 
         # The data string might contain an incomplete data definition which prevents conversion to the dict below.
         json_data_string = json_data_string.replace('"sEcho": ,', '')

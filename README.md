@@ -59,7 +59,7 @@ Install the following tools:
 
 1. Python >= 3.6.0.
 2. Libraries: `pip3 install -r requirements.txt`.
-3. Neo4j [Windows](https://neo4j.com/download/) or
+3. Neo4j for [Windows](https://neo4j.com/download/) or
    [Linux](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
 
 ### Setup
@@ -108,7 +108,7 @@ the best albums, EPs and demos.
 ### Where to go from here?
 
 * Crawl the extended network from the _True Kings of Norway_ CD with:
-  * `meta_metal_mapper -b -f data/true_kings.lnks`
+  * `meta_metal_mapper -b -f data/true_kings_ext.lnks`
   * Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see
     exports folder) and experiment with the available data.
   * A graph of the extended _True Kings_ network could look like:
@@ -119,7 +119,7 @@ the best albums, EPs and demos.
 
 ## Acknowledgments
 
-Thanks to Suma, Henning and Marcel for their invaluable feedback.
+Thanks to Annukka, Suma, Henning and Marcel for their invaluable feedback.
 
 ## Known Issues
 
@@ -129,7 +129,6 @@ issue tracker in the repository or write to fnordoglargh at gmail dot com.
 
 ## Backlog
 
-* Add mode to visit single band and their immediate connections.
 * Notify user on calling analysis if a country has not been mapped entirely.
 * Implement a flag to overwrite data unconditionally.
 * Implement option to overwrite data based on its age.

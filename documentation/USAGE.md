@@ -31,12 +31,13 @@ page"](https://www.metal-archives.com/browse/country)) with at least one band
 entry.  The names of the files follow this simple scheme: `NN.lnks` where NN is
 the two letter short form.
 
-The contents of an `.lnks` file looks like this:
+The contents of an `.lnks` file looks like this (see `data/true_kings.lnks`):
 
-    Akollonizer/3540362756
-    Among_the_Mist/7576
-    Nami/3540321763
-    Persefone/12779
+    Emperor/30
+    Ancient/772
+    Dimmu_Borgir/69
+    Immortal/75
+    Arcturus/292
 
 Together with `https://www.metal-archives.com/bands/` a fully fledged link to
 every band can be generated whenever it is needed. You can easily build files
