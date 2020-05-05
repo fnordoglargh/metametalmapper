@@ -7,15 +7,40 @@ bootstrapping.
 
 The typical workflow follows these steps:
 
-1. Crawl a country or a region for band links on M-A,
-2. Create a graph in Neo4j Desktop,
-3. Crawl bands,
+1. Create a graph (aka database) in _Neo4j Desktop_.
+2. Crawl either
+    * a single band and connected bands **or**
+    * a country or a region for band 
+    links on M-A,
+3. Crawl the bands from the countries or regions (not needed for a single band
+    crawl),
 4. Opening Neo4j Desktop and inspect the graph and
 5. Print raw analysis in the terminal, export `.graphml` and statistics files.
 
 The following sections will guide you through the usage of the program.
 
-## Boostrapping: Crawl a country or a region for band links
+## Crawling
+
+_Crawling_ is the process of either getting band links from country pages or
+getting band data from their pages into the database. 
+
+### Crawl a single band and all connected bands
+
+The _single_ mode is the first choice to generate small networks of bands.
+Call the program with the switch `-s` and a short link (e.g. `Emperor/30`) for
+the band. The given band and all linked bands from the complete lineup are
+crawled. The screenshot shows the bands Emperor's Samoth is and was involved
+in:
+
+![Lineup - Emperor](../img/M-A_lineup_emperor.png)
+
+There's no distinction between actual, past or a live bands. Live members can 
+be filtered in `settings.py` with `IS_LIVE_MEMBER_IN_BAND`.
+
+**Note**: This mode will not get you any useful information when country 
+statistics are generated.
+
+### Crawl a country or a region for band links
 
 The initial requirement to use Meta Metal Mapper is having band links to crawl.
 There are two ways of creating band lists:

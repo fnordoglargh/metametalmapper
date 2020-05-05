@@ -28,6 +28,7 @@ projects.
 
 This is what Meta Metal Mapper already delivers:
 
+* Crawl around your favorite bands to generate small networks. 
 * Generates lists for bands to crawl based on countries, regions or the entire
   database.  It also accepts handcrafted files with bands of your choice.
 * Extracts information about bands, their band members and releases from M-A.
