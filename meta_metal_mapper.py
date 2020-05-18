@@ -298,11 +298,12 @@ def main(argv):
         if report_mode is ReportMode.CountryOn:
             logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
         release_export_path = raw_report.album_report.export_csv_releases_per_year()
-        logger.info(f'Release report saved to: {release_export_path}')
+        logger.info(f'Release reports saved to:')
+        logger.info(f'  {release_export_path}')
         release_json_export_path = raw_report.album_report.export_json_releases_per_year()
-        logger.info(f'Release export saved to: {release_json_export_path}')
+        logger.info(f'  {release_json_export_path}')
         release_all_json_export_path = raw_report.album_report.export_all_releases()
-        logger.info(f'Release export saved to: {release_all_json_export_path}')
+        logger.info(f'  {release_all_json_export_path}')
         bands_formed_export_path = raw_report.export_csv_bands_formed()
         logger.info(f'Bands formed per year report saved to: {bands_formed_export_path}')
         export_data = [
