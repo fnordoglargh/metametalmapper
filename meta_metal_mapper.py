@@ -39,6 +39,7 @@ class CrawlMode(Enum):
     CrawlRegion = 5
     Test = 6
     CrawlSingle = 7
+    AnalyseDbNoCountries = 8
 
 
 def print_help():
@@ -74,9 +75,12 @@ def print_help():
         f'    -z: Does the same as "-y" but expects a list of 1 to n countries or regions.\n'
         f'      The list items must always be separated by commas without spaces or be\n'
         f'      enclosed by quotation-marks.\n'
+        f'      Note: The country analysis depends on having all bands for a given country.\n'
+        f'        It will function properly but calculate bogus numbers.\n'
+        f'    -x: The "diet version of "-y" without the country report. Use this mode together\n'
+        f'      with the crawl mode "-s".\n'
         f'  Miscellaneous:\n'
         f'    -l: List available countries and regions.\n'
-
     )
 
 
@@ -129,7 +133,7 @@ def init_db():
 def main(argv):
     try:
         # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, 'dbac:hf:F:tyz:lr:s:')
+        opts, args = getopt.getopt(argv, 'dbac:hf:F:txyz:lr:s:')
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -194,6 +198,8 @@ def main(argv):
         elif opt == '-z':
             country_links = clean_short_links(arg)
             mode = CrawlMode.AnalyseDatabase
+        elif opt == '-x':
+            mode = CrawlMode.AnalyseDbNoCountries
         elif opt == '-l':
             mode = CrawlMode.DisplayInfo
         elif opt == '-r':
@@ -266,7 +272,7 @@ def main(argv):
             crawl_bands(short_link, db_handle, is_single_mode=True)
             save_genres()
 
-    elif mode in [CrawlMode.AnalyseDatabase]:
+    elif mode in [CrawlMode.AnalyseDatabase, CrawlMode.AnalyseDbNoCountries]:
         db_handle = init_db()
 
         if db_handle is None:
@@ -283,9 +289,14 @@ def main(argv):
             print(country_info[:-2])
 
         raw_report = db_handle.generate_report(country_links)
+        if mode is CrawlMode.AnalyseDbNoCountries:
+            report_mode = ReportMode.CountryOff
+        else:
+            report_mode = ReportMode.CountryOn
         print(raw_report)
 
-        logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
+        if report_mode is ReportMode.CountryOn:
+            logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
         release_export_path = raw_report.album_report.export_csv_releases_per_year()
         logger.info(f'Release report saved to: {release_export_path}')
         release_json_export_path = raw_report.album_report.export_json_releases_per_year()
