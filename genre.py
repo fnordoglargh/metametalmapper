@@ -99,6 +99,7 @@ def split_genres(genre_string):
 
     # Filter everything enclosed in parenthesis.
     genre_string = re.sub('\([^)]*\)', '', genre_string)
+    genre_string = genre_string.replace(';', ',')
 
     # Iterate over the split genre_string.
     for outer_genre in genre_string.split(', '):

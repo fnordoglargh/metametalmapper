@@ -514,9 +514,8 @@ class AlbumReport:
         return export_file
 
     def export_json_releases_per_year(self):
-        export_releases = []
         # Define valid release types for functionality using the JSON export.
-        export_releases.append({"categories": self.workable_types})
+        export_releases = [{"categories": self.workable_types}]
         # Sort the existing dict by year (descending) and use copy from now on.
         releases_per_year = dict(sorted(self.releases_per_year.items(), reverse=True))
 
