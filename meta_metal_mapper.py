@@ -16,6 +16,7 @@ from metal_crawler import *
 from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.metal_graph import GraphDatabaseContext
 from graph.export_graph import GraphExportContext, GraphMLExporter
+from graph.report import ReportMode
 from global_helpers import *
 from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES, clean_short_links
 from genre import save_genres
@@ -288,11 +289,12 @@ def main(argv):
         else:
             print(country_info[:-2])
 
-        raw_report = db_handle.generate_report(country_links)
         if mode is CrawlMode.AnalyseDbNoCountries:
             report_mode = ReportMode.CountryOff
         else:
             report_mode = ReportMode.CountryOn
+
+        raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)
 
         if report_mode is ReportMode.CountryOn:

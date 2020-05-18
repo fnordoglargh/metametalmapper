@@ -13,7 +13,7 @@ import progressbar
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
 from graph.metal_graph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
-from graph.report import CountryReport, DatabaseReport, AlbumReport
+from graph.report import CountryReport, DatabaseReport, AlbumReport, ReportMode
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -338,11 +338,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
-    def generate_report_interface(self, country_shorts: list) -> DatabaseReport:
+    def generate_report_interface(self, country_shorts: list, report_mode: ReportMode) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
-        :param country_shorts: The list either contains the ISO names of countries to analyse or it is empty. In that
+        :param country_shorts: The list either contains the ISO names of countries to analyze or it is empty. In that
             case we take all countries of all bands into account.
+        :param report_mode: Determines the grade of details. E.g. if a detailed country report is needed or wanted
+            because that only makes sense if all bands of all countries are in the database.
         :return: An initialized DatabaseReport object which can be processed further. Printing it is an obvious choice.
         """
 
@@ -407,7 +409,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         progress_bar.finish()
         print('  Releases processed. Creating database report.')
-        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, album_report)
+        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, album_report,
+                                   report_mode)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
         if len(country_diff) > 0:
@@ -421,7 +424,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
             print(diff_report)
 
-        print('  Creating country reports.')
+        if report_mode is ReportMode.CountryOn:
+            print('  Creating country reports.')
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
         for iso_short, bands in bands_filtered.items():
             db_report.add_country_report(self.generate_country_report(iso_short, bands))

@@ -12,6 +12,7 @@ from pathlib import Path
 
 import certifi
 import urllib3
+from urllib3.exceptions import ReadTimeoutError, MaxRetryError
 import progressbar
 from settings import CRAWLER_THREAD_COUNT
 from bs4 import BeautifulSoup, NavigableString, Tag

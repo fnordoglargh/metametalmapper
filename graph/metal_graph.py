@@ -4,7 +4,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-from graph.report import DatabaseReport
+from graph.report import DatabaseReport, ReportMode
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -62,8 +62,8 @@ class GraphDatabaseContext:
     def calc_bands_per_pop(self, country_short, bands) -> dict:
         return self._strategy.calc_bands_per_pop_interface(country_short, bands)
 
-    def generate_report(self, country_shorts=None) -> DatabaseReport:
-        return self._strategy.generate_report_interface(country_shorts)
+    def generate_report(self, country_shorts=None, report_mode=ReportMode.CountryOn) -> DatabaseReport:
+        return self._strategy.generate_report_interface(country_shorts, report_mode)
 
 
 class GraphDatabaseStrategy(metaclass=ABCMeta):
@@ -109,5 +109,5 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def generate_report_interface(self, country_shorts) -> DatabaseReport:
+    def generate_report_interface(self, country_shorts, report_mode) -> DatabaseReport:
         pass

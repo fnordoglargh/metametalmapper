@@ -3,6 +3,7 @@ these classes to successfully export data."""
 
 from collections import defaultdict, OrderedDict
 import json
+from enum import Enum
 
 from genre import GENRE_CORE_MA
 from global_helpers import get_export_path
@@ -16,6 +17,11 @@ __copyright__ = 'Copyright 2019, Martin Woelke'
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 GENDER_DISTRIBUTION = 'Gender distribution ({} artists from {} countries)\n'
+
+
+class ReportMode(Enum):
+    CountryOff = 0
+    CountryOn = 1
 
 
 class CountryReport:
@@ -172,13 +178,14 @@ class DatabaseReport:
     """A DatabaseReport stores the analysis of the entire database plus the attached CountryReport objects. It always
         contains e.g. the amount of _all_ artists and which genders they have.
     """
-    def __init__(self, band_count, genders, artist_count, artists_per_country, genres, album_report):
+    def __init__(self, band_count, genders, artist_count, artists_per_country, genres, album_report, report_mode):
         self._band_count = band_count
         self._genders = {}
         self._country_reports = []
         self._genres = []
         self._amount_artists = 0
         self._artists_per_country = []
+        self._report_mode = report_mode
         self.album_report = album_report
         self.bands_per_year = defaultdict(int)
 
@@ -329,7 +336,6 @@ class DatabaseReport:
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
 
     def __str__(self):
-
         if len(self._country_reports) is 1:
             word = 'country'
         else:
@@ -341,14 +347,16 @@ class DatabaseReport:
 
         country_report_str = ''
 
-        for country_report in self._country_reports:
-            country_report_str += str(country_report)
+        if self._report_mode is ReportMode.CountryOn:
+            for country_report in self._country_reports:
+                country_report_str += str(country_report)
 
         for gender, value_pair in self._genders.items():
             report += f'    {GENDER[gender]}: {value_pair[0]} ({value_pair[1]:.2f}%)\n'
 
-        report += f'  {self._band_count} bands play {len(self._genres)} genres (there might be more genres than bands; '
-        report += 'a band playing Atmospheric Black Metal counts as both "Atmospheric Black" and "Black"):\n'
+        report += f'  Genre distribution: {self._band_count} bands play {len(self._genres)} genres.\n'
+        report += '  There will be more genres than bands. A band playing Atmospheric Black Metal\n'
+        report += '  counts as both "Atmospheric Black" and "Black".\n'
 
         for genre in self._genres:
             report += f'    {genre[0]}: {genre[1]} ({genre[2]:.2f}%)\n'
