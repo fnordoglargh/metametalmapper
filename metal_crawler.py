@@ -660,16 +660,29 @@ def cook_soup(link, retry_count=5):
     while retry_count > 0:
         # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
-        web_page = http.request('GET', link)
-        web_page_string = web_page.data.decode("utf-8")
+        web_page = None
 
-        if "Forbidden.\n" == web_page_string:
-            time.sleep(.5)
+        try:
+            web_page = http.request('GET', link, timeout=10.0)
+        except ReadTimeoutError as e:
+            logger.error(e)
             retry_count -= 1
-            logger.debug(f"  Trying again... ({retry_count} to go)")
-        else:
-            retry_count = -1
+        except MaxRetryError as e:
+            logger.error(e)
+            retry_count -= 1
 
+        if web_page is not None:
+            web_page_string = web_page.data.decode("utf-8")
+
+            if "Forbidden.\n" == web_page_string:
+                time.sleep(.5)
+                retry_count -= 1
+                logger.debug(f"  Trying again... ({retry_count} to go)")
+            else:
+                # Breaks out of the loop.
+                retry_count = -1
+
+    # Error case: No web page data after n retries.
     if retry_count is 0:
         return None
 
@@ -821,6 +834,8 @@ def read_user_input():
 
     while stop_crawl_user_input is not "Q":
         stop_crawl_user_input = input()
+
+    print('Received request to quit. Stand by for threads to finish.')
 
 
 def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
