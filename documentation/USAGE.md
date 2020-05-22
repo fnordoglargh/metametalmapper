@@ -140,10 +140,14 @@ information on the command line. Far more interesting are the exported CSV and
 GraphML files. They are named after their general category followed by a
 timestamp and the file type (depicted by a * in the following sections).
 
-* `-y`: Considers the entire database.
+* `-x`: Analyses and exports data of the whole database but does not generate
+    any country specific statistics. This mode is useful for small networks
+    and simply if not all bands of a country are available. 
+* `-y`: Considers the entire database and includes country specific 
+    information.
 * `-z <countries>`: In this case `<countries>` is a comma separated list of ISO
-  shorts (`N1,N2,N3`). Don't use white spaces unless you enclose the entire list
-  in double quotes (`"N1, N2, N3"`).
+    shorts (`N1,N2,N3`). Don't use white spaces unless you enclose the entire
+    list in double quotes (`"N1, N2, N3"`).
 
 ### Countries
 

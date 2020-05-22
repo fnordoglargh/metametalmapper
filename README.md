@@ -73,15 +73,17 @@ Install the following tools:
 
 ### First Crawl and Analysis
 
-This rather short section uses example data, but gives an idea what it is about.
-A detailed [usage page](documentation/USAGE.md) explains what the parameters
-mean and what to do with them.
+This rather short section uses example data, but gives an idea what it is
+about. A detailed [usage page](documentation/USAGE.md) explains what the 
+parameters mean and what to do with them.
 
-Call `python meta_metal_mapper.py` each time with one of the following parameters:
+Call `python meta_metal_mapper.py` each time with one of the following
+parameters:
 
 1. `-b -f data/true_kings.lnks`: Uses the supplied file with band names, crawls
    all of them and puts data in to the database.
-2. `-y`: Prints analysis into terminal and saves several files with data.
+2. `-x`: Prints analysis into terminal and generates several files with 
+    exported data.
 
 Please note that the analysis is across the entire database and might result in
 meaningless data e.g. when data is put into relation to a country.
