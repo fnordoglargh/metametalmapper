@@ -17,7 +17,7 @@ from graph.report import CountryReport, DatabaseReport, AlbumReport, ReportMode
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019, Martin Woelke'
+__copyright__ = 'Copyright 2019-2020, Martin Woelke'
 
 
 class MemberRelationship(StructuredRel):
