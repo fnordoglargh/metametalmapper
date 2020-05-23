@@ -32,7 +32,7 @@ def check_bands_in_country(country_short, band_links_actual, base_folder=FOLDER_
     :param base_folder: The folder relative to the execution path from where to load the
     :return: A set of two lists and a string; the first list contains the bands that are missing
         in the database, the second holds the bands that are in the database but not on M-A. The string
-        is either a valid country name or 'Not a country: "country_short"'
+        is either a valid country name or 'Not a country: "country_short"'.
         None if the file does not exist.
     """
     if country_short in COUNTRY_NAMES.keys():
@@ -59,6 +59,30 @@ def check_bands_in_country(country_short, band_links_actual, base_folder=FOLDER_
     bands_not_expected.sort()
 
     return bands_missing, bands_not_expected, country_name
+
+
+def interpret_sanity_test(test_result):
+    bands_missing = test_result[0]
+    bands_invalid = test_result[1]
+    result_text = ''
+
+    if len(bands_missing) > 0 and len(bands_invalid) > 0:
+        result_text = f'  {test_result[2]}\n'
+
+        if len(bands_missing) > 0:
+            result_text += f'    Missing bands (not in database but country link file):\n'
+
+            for band_missing in bands_missing:
+                result_text += f'      {band_missing}\n'
+
+        if len(bands_invalid) > 0:
+
+            result_text += f'    Invalid bands (in database but not in country link file):\n'
+
+            for band_invalid in bands_invalid:
+                result_text += f'      {band_invalid}\n'
+
+    return result_text
 
 
 class GraphDatabaseContext:

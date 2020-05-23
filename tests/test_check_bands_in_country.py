@@ -1,6 +1,6 @@
 import unittest
 
-from graph.metal_graph import check_bands_in_country
+from graph.metal_graph import check_bands_in_country, interpret_sanity_test
 
 band_links_expected = [
     'Dimmu_Borgir/69',
@@ -39,14 +39,17 @@ class MyTestCase(unittest.TestCase):
 
     def test_bands_more_than_expected(self):
         result_set = check_bands_in_country(true_kings, band_links_more, '../data')
+        print(interpret_sanity_test(result_set))
         self.assertEqual(result_set, ([], ['Cryptopsy/17'], 'Not a country: "true_kings"'))
 
     def test_bands_less_than_expected(self):
         result_set = check_bands_in_country(true_kings, band_links_less, '../data')
+        print(interpret_sanity_test(result_set))
         self.assertEqual(result_set, (['Immortal/75'], [], 'Not a country: "true_kings"'))
 
     def test_bands_equal_length_but_different(self):
         result_set = check_bands_in_country('band_links_less_and missing', band_links_expected, '../tests')
+        print(interpret_sanity_test(result_set))
         self.assertEqual(result_set, (['Cryptopsy/17'],
                                       ['Arcturus/292', 'Dimmu_Borgir/69'],
                                       'Not a country: "band_links_less_and missing"'))
