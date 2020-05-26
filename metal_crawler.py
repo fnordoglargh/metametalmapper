@@ -506,7 +506,6 @@ def make_band_list(country_links):
         except Exception:
             logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
             country_links.put(link_country_temp)
-            time.sleep(.5)
 
         if json_data is None:
             country_links.put(link_country_temp)
@@ -522,7 +521,8 @@ def make_band_list(country_links):
                 logger.error(f'  Found a duplicate band link in MA [{partial_link}].')
                 skipped_links += 1
 
-    logger.info(f'Recorded {len(band_links)} band and skipped {skipped_links} links. ')
+        # Not waiting is much faster but generates more errors.
+        time.sleep(1.0)
 
     return band_links
 
@@ -790,16 +790,34 @@ def crawl_country(country_short):
 
     # The total amount of entries for this country is the only data we need for now.
     amount_entries = json_data["iTotalRecords"]
-    logger.debug("  Country has [{}] entries.".format(amount_entries))
+    logger.debug(f'  Country has [{amount_entries}] entries.')
     # Limit imposed by MA.
     display_constant = 500
     link_suffix = "/json/1?sEcho=1&iDisplayStart="
 
-    # Prepare the AJAX links for the actual run.
-    for i in range(0, amount_entries, display_constant):
-        ajaxLinks.put_nowait(link_country + link_suffix + str(i))
+    band_links = None
+    alt_link = "https://www.metal-archives.com/browse/ajax-country/c/{0}/json/1?sEcho={1:.0f}&iDisplayStart={2}"
 
-    band_links = make_band_list(ajaxLinks)
+    # I reworked this section multiple times but kept running into trouble infrequently. Running twice (and slowly)
+    # seems to do the trick.
+    for j in range(1):
+        # Prepare the AJAX links for the actual run.
+        for i in range(0, amount_entries, display_constant):
+            ajaxLinks.put_nowait(alt_link.format(country_short, (i/500)+1, i))
+
+        band_links = make_band_list(ajaxLinks)
+
+        if amount_entries - len(band_links) is not 0:
+            logger.error(f'  {amount_entries - len(band_links)} bands are missing.')
+
+            if j is 0:
+                logger.info('  Preparing a second run.')
+            else:
+                break
+
+    if amount_entries - len(band_links) is not 0:
+        logger.fatal('Despite trying twice, the band list is not complete. Run again in single run.')
+
     logger.debug("<<< Crawling Country")
 
     return band_links
