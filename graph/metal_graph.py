@@ -3,11 +3,8 @@
     `GraphDatabaseContext(Implementation)`. See implementation in graph_neomodel_impl.py."""
 
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
 
 from graph.report import DatabaseReport, ReportMode
-from global_helpers import FOLDER_LINKS, LINK_EXTENSION
-from country_helper import COUNTRY_NAMES
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -18,71 +15,6 @@ POP_POPULATION = 'Population'
 POP_BANDS = 'Bands'
 RAW_GENRES = 'Genres'
 POP_COUNTRY = 'Country'
-
-
-def check_bands_in_country(country_short, band_links_actual, base_folder=FOLDER_LINKS):
-    """Checks if the actual bands list matches the expected bands which are read from a country file.
-    A set of results contains both bands that are missing from the database (not crawled yet) and
-    the bands which were deleted from M-A since the last crawl.
-    The assumption is that the country link file is _always_ the sole source of truth.
-
-    :param country_short: The ISO country code of the country link file to be read for the check.
-        Any file name ending in `.lnks` can be used.
-    :param band_links_actual: A list of short band links from the running database.
-    :param base_folder: The folder relative to the execution path from where to load the
-    :return: A set of two lists and a string; the first list contains the bands that are missing
-        in the database, the second holds the bands that are in the database but not on M-A. The string
-        is either a valid country name or 'Not a country: "country_short"'.
-        None if the file does not exist.
-    """
-    if country_short in COUNTRY_NAMES.keys():
-        country_name = COUNTRY_NAMES[country_short]
-    else:
-        country_name = f'Not a country: "{country_short}"'
-
-    country_file = Path(f'{base_folder}/{country_short}{LINK_EXTENSION}')
-
-    if not country_file.is_file():
-        return None
-
-    expected_bands = country_file.read_text(encoding='utf-8').split('\n')
-
-    # Remove all empty lines.
-    for i in range(0, expected_bands.count(''), 1):
-        expected_bands.remove('')
-
-    bands_missing = list(set(expected_bands) - set(band_links_actual))
-    bands_not_expected = list(set(band_links_actual) - set(expected_bands))
-
-    # The collections need to be sorted for the unit tests.
-    bands_missing.sort()
-    bands_not_expected.sort()
-
-    return bands_missing, bands_not_expected, country_name
-
-
-def interpret_sanity_test(test_result):
-    bands_missing = test_result[0]
-    bands_invalid = test_result[1]
-    result_text = ''
-
-    if len(bands_missing) > 0 and len(bands_invalid) > 0:
-        result_text = f'  {test_result[2]}\n'
-
-        if len(bands_missing) > 0:
-            result_text += f'    Missing bands (not in database but country link file):\n'
-
-            for band_missing in bands_missing:
-                result_text += f'      {band_missing}\n'
-
-        if len(bands_invalid) > 0:
-
-            result_text += f'    Invalid bands (in database but not in country link file):\n'
-
-            for band_invalid in bands_invalid:
-                result_text += f'      {band_invalid}\n'
-
-    return result_text
 
 
 class GraphDatabaseContext:

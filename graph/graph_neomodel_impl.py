@@ -244,8 +244,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         genres = {}
         gender_per_country = defaultdict(int)
         bands_per_year = defaultdict(int)
+        sanity_bands = []
 
         for band in bands:
+            sanity_bands.append(band.link)
             for genre in band.genres:
                 if genre not in genres.keys():
                     genres[genre] = 1
@@ -271,7 +273,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         progress_bar.finish()
         genres = sorted(genres.items(), key=lambda x: x[1], reverse=True)
-        report = CountryReport(COUNTRY_NAMES[country_short], population, number_bands, genders, gender_per_country, genres, bands_per_year)
+        report = CountryReport(country_short, population, sanity_bands, genders, gender_per_country, genres, bands_per_year)
 
         return report
 

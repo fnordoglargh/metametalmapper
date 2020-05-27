@@ -4,9 +4,12 @@ these classes to successfully export data."""
 from collections import defaultdict, OrderedDict
 import json
 from enum import Enum
+from pathlib import Path
 
 from genre import GENRE_CORE_MA
-from global_helpers import get_export_path
+from global_helpers import get_export_path, get_time_stamp, FOLDER_LINKS, LINK_EXTENSION, FOLDER_LINKS_INVALID,\
+    FOLDER_LINKS_MISSING
+from country_helper import COUNTRY_NAMES
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
@@ -17,6 +20,71 @@ __copyright__ = 'Copyright 2019-2020, Martin Woelke'
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
 GENDER_DISTRIBUTION = 'Gender distribution ({} artists from {} countries)\n'
+
+
+def check_bands_in_country(country_short, band_links_actual, base_folder=FOLDER_LINKS):
+    """Checks if the actual bands list matches the expected bands which are read from a country file.
+    A set of results contains both bands that are missing from the database (not crawled yet) and
+    the bands which were deleted from M-A since the last crawl.
+    The assumption is that the country link file is _always_ the sole source of truth.
+
+    :param country_short: The ISO country code of the country link file to be read for the check.
+        Any file name ending in `.lnks` can be used.
+    :param band_links_actual: A list of short band links from the running database.
+    :param base_folder: The folder relative to the execution path from where to load the
+    :return: A set of two lists and a string; the first list contains the bands that are missing
+        in the database, the second holds the bands that are in the database but not on M-A. The string
+        is either a valid country name or 'Not a country: "country_short"'.
+        None if the file does not exist.
+    """
+    if country_short in COUNTRY_NAMES.keys():
+        country_name = COUNTRY_NAMES[country_short]
+    else:
+        country_name = f'Not a country: "{country_short}"'
+
+    country_file = Path(f'{base_folder}/{country_short}{LINK_EXTENSION}')
+
+    if not country_file.is_file():
+        return None
+
+    expected_bands = country_file.read_text(encoding='utf-8').split('\n')
+
+    # Remove all empty lines.
+    for i in range(0, expected_bands.count(''), 1):
+        expected_bands.remove('')
+
+    bands_missing = list(set(expected_bands) - set(band_links_actual))
+    bands_not_expected = list(set(band_links_actual) - set(expected_bands))
+
+    # The collections need to be sorted for the unit tests.
+    bands_missing.sort()
+    bands_not_expected.sort()
+
+    return bands_missing, bands_not_expected, country_name
+
+
+def interpret_sanity_test(test_result):
+    bands_missing = test_result[0]
+    bands_invalid = test_result[1]
+    result_text = ''
+
+    if len(bands_missing) > 0 and len(bands_invalid) > 0:
+        result_text = f'  {test_result[2]}\n'
+
+        if len(bands_missing) > 0:
+            result_text += f'    Missing bands (not in database but in country link file):\n'
+
+            for band_missing in bands_missing:
+                result_text += f'      {band_missing}\n'
+
+        if len(bands_invalid) > 0:
+
+            result_text += f'    Invalid bands (in database but not in country link file):\n'
+
+            for band_invalid in bands_invalid:
+                result_text += f'      {band_invalid}\n'
+
+    return result_text
 
 
 class ReportMode(Enum):
@@ -36,17 +104,19 @@ class CountryReport:
         'Atmospheric Black' and 'Black'. This is especially important for counting against the core genres of MA. See
         genre.py for details.
     """
-    def __init__(self, country_name, population, number_bands, genders, gender_per_country, genres, bands_per_year):
-        self._country_name = country_name
+    def __init__(self, country_short, population, sanity_bands, genders, gender_per_country, genres, bands_per_year):
+        self._country_short = country_short
+        self._country_name = COUNTRY_NAMES[country_short]
         self._population = int(population)
-        self._number_bands = number_bands
+        self._number_bands = len(sanity_bands)
+        self._checked_bands = check_bands_in_country(country_short, sanity_bands)
 
         # Special case handling for countries like "International" (XX) which have -1 as population.
         if self._population <= 1:
             self._bands_per_100k = 'NA'
             self._population = 'NA'
         else:
-            self._bands_per_100k = number_bands / (int(population) / 100000)
+            self._bands_per_100k = self._number_bands / (int(population) / 100000)
 
         self._genders = {}
         self._amount_people = 0
@@ -170,6 +240,26 @@ class CountryReport:
 
         for index in range(0, top):
             report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
+
+        if len(self._checked_bands[0]):
+            missing_text = ''
+            report += '    Missing bands (not in database but in country link file): '
+            for band_missing in self._checked_bands[0]:
+                report += f'{band_missing}, '
+                missing_text += f'{band_missing}\n'
+            report += '\n'
+            missing_path = Path(f'{FOLDER_LINKS_MISSING}/{self._country_short}_{get_time_stamp()}{LINK_EXTENSION}')
+            missing_path.write_text(missing_text)
+
+        if len(self._checked_bands[1]):
+            invalid_text = ''
+            report += '    Invalid bands (in database but not in country link file): '
+            for band_invalid in self._checked_bands[1]:
+                report += f'{band_invalid}, '
+                invalid_text += f'{band_invalid}\n'
+            report += '\n'
+            invalid_path = Path(f'{FOLDER_LINKS_INVALID}/{self._country_short}_{get_time_stamp()}{LINK_EXTENSION}')
+            invalid_path.write_text(invalid_text)
 
         return report
 
