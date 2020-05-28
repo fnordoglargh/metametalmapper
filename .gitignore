@@ -15,3 +15,5 @@ crawler.log*
 exports/
 genre_cache.json
 reports/
+links_invalid/
+links_missing/

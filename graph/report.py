@@ -63,30 +63,6 @@ def check_bands_in_country(country_short, band_links_actual, base_folder=FOLDER_
     return bands_missing, bands_not_expected, country_name
 
 
-def interpret_sanity_test(test_result):
-    bands_missing = test_result[0]
-    bands_invalid = test_result[1]
-    result_text = ''
-
-    if len(bands_missing) > 0 and len(bands_invalid) > 0:
-        result_text = f'  {test_result[2]}\n'
-
-        if len(bands_missing) > 0:
-            result_text += f'    Missing bands (not in database but in country link file):\n'
-
-            for band_missing in bands_missing:
-                result_text += f'      {band_missing}\n'
-
-        if len(bands_invalid) > 0:
-
-            result_text += f'    Invalid bands (in database but not in country link file):\n'
-
-            for band_invalid in bands_invalid:
-                result_text += f'      {band_invalid}\n'
-
-    return result_text
-
-
 class ReportMode(Enum):
     CountryOff = 0
     CountryOn = 1
@@ -104,12 +80,19 @@ class CountryReport:
         'Atmospheric Black' and 'Black'. This is especially important for counting against the core genres of MA. See
         genre.py for details.
     """
+    TXT_MISSING = '    Missing bands; not in database but in country link file'
+    TXT_INVALID = '    Invalid bands; in database but not in country link file'
+
     def __init__(self, country_short, population, sanity_bands, genders, gender_per_country, genres, bands_per_year):
         self._country_short = country_short
         self._country_name = COUNTRY_NAMES[country_short]
         self._population = int(population)
         self._number_bands = len(sanity_bands)
         self._checked_bands = check_bands_in_country(country_short, sanity_bands)
+
+        # Tuple with formatted printable text and a line terminated string.
+        self._report_missing = self._make_sanity_report(0, self.TXT_MISSING)
+        self._report_invalid = self._make_sanity_report(1, self.TXT_INVALID)
 
         # Special case handling for countries like "International" (XX) which have -1 as population.
         if self._population <= 1:
@@ -216,6 +199,43 @@ class CountryReport:
 
         return export_data
 
+    def _make_sanity_report(self, index, message):
+        """Generates two strings of either the missing or invalid bands. The strings can be used to print to the
+        terminal or to save the list to a file.
+
+        :param index: The index signifies which list from the checked bands is picked. 0 means "missing" and 1 is
+            "invalid". There is no boundary check.
+        :param message: This should be either "Missing" or "Invalid" as nothing else makes sense.
+        :return: A tuple of two strings. The first is one continuous line mainly used to print to the terminal. The
+            second is used to save the list to a file for later processing. If no bands are available the function
+            returns None.
+        """
+        # TODO: No boundary checks. Rewrite to named tuple.
+        bands = self._checked_bands[index]
+
+        if len(bands) < 1:
+            return None
+
+        print_report = f'    {message} ({len(bands)}): '
+        export_text = ''
+
+        for band in self._checked_bands[index]:
+            print_report += f'{band}, '
+            export_text += f'{band}\n'
+
+        return print_report, export_text
+
+    def save_report_missing(self):
+        return self._save_sanity_report(FOLDER_LINKS_MISSING, self._report_missing[1])
+
+    def save_report_invalid(self):
+        return self._save_sanity_report(FOLDER_LINKS_INVALID, self._report_invalid[1])
+
+    def _save_sanity_report(self, folder, export_text):
+        report_path = Path(f'{folder}/{self._country_short}_{get_time_stamp()}{LINK_EXTENSION}')
+        report_path.write_text(export_text)
+        return report_path
+
     def __str__(self):
         if len(self._genders) == 0:
             return "Invalid Country Report: Genders not set."
@@ -241,25 +261,11 @@ class CountryReport:
         for index in range(0, top):
             report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
 
-        if len(self._checked_bands[0]):
-            missing_text = ''
-            report += '    Missing bands (not in database but in country link file): '
-            for band_missing in self._checked_bands[0]:
-                report += f'{band_missing}, '
-                missing_text += f'{band_missing}\n'
-            report += '\n'
-            missing_path = Path(f'{FOLDER_LINKS_MISSING}/{self._country_short}_{get_time_stamp()}{LINK_EXTENSION}')
-            missing_path.write_text(missing_text)
+        if self._report_missing:
+            report += self._report_missing[0] + 'saved in: ' + str(self.save_report_missing()) + '\n\n'
 
-        if len(self._checked_bands[1]):
-            invalid_text = ''
-            report += '    Invalid bands (in database but not in country link file): '
-            for band_invalid in self._checked_bands[1]:
-                report += f'{band_invalid}, '
-                invalid_text += f'{band_invalid}\n'
-            report += '\n'
-            invalid_path = Path(f'{FOLDER_LINKS_INVALID}/{self._country_short}_{get_time_stamp()}{LINK_EXTENSION}')
-            invalid_path.write_text(invalid_text)
+        if self._report_invalid:
+            report += self._report_invalid[0] + 'saved in: ' + str(self.save_report_invalid()) + '\n\n'
 
         return report
 
