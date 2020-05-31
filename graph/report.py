@@ -485,8 +485,6 @@ class AlbumReport:
 
     def process_release(self, country_name, band_id, band_name, release_name, link, release_type, year, ratings,
                         review_count):
-        if ratings is -1:
-            return
         if len(country_name) is 0 or len(band_name) < 1:
             return
         elif release_type not in self.workable_types:
