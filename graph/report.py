@@ -165,7 +165,7 @@ class CountryReport:
 
     def _get_pop_per_100k(self):
         """Returns a string for the str() method which handles the formatting of valid values for the number of bands
-            per 100k people (rounds to two digits) and simply prints 'NA' for invalid values.
+        per 100k people (rounds to two digits) and simply prints 'NA' for invalid values.
 
         :return: A perfectly formatted population per 100k people string used internally by the str() method.
         """
@@ -272,7 +272,7 @@ class CountryReport:
 
 class DatabaseReport:
     """A DatabaseReport stores the analysis of the entire database plus the attached CountryReport objects. It always
-        contains e.g. the amount of _all_ artists and which genders they have.
+    contains e.g. the amount of _all_ artists and which genders they have.
     """
     def __init__(self, band_count, genders, artist_count, artists_per_country, genres, album_report, report_mode):
         self._band_count = band_count
