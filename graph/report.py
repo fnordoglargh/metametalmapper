@@ -5,6 +5,7 @@ from collections import defaultdict, OrderedDict
 import json
 from enum import Enum
 from pathlib import Path
+import logging
 
 from genre import GENRE_CORE_MA
 from global_helpers import get_export_path, get_time_stamp, FOLDER_LINKS, LINK_EXTENSION, FOLDER_LINKS_INVALID,\
@@ -482,13 +483,16 @@ class AlbumReport:
         self.releases_total = defaultdict(int)
         self.releases_per_year = defaultdict(lambda: defaultdict(list))
         self.all_releases = defaultdict(list)
+        self.logger = logging.getLogger('AlbumReport')
 
     def process_release(self, country_name, band_id, band_name, release_name, link, release_type, year, ratings,
                         review_count):
-        if len(country_name) is 0 or len(band_name) < 1:
-            return
+        if len(country_name) < 1:
+            raise ValueError('Country name was empty.')
+        elif len(band_name) < 1:
+            raise ValueError('Band name was empty.')
         elif release_type not in self.workable_types:
-            return
+            raise ValueError(f'{release_type} is not a workable release type.')
 
         # Collect release counts per type (and total).
         self.country_releases[country_name][release_type] += 1
