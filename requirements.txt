@@ -1,6 +1,6 @@
-certifi
-urllib3
-progressbar2
-neomodel
-beautifulsoup4
-pyYAML
+certifi~=2017.11.5
+urllib3~=1.22
+progressbar2~=3.39.3
+neomodel~=3.3.2
+beautifulsoup4~=4.6.3
+pyYAML~=3.13
