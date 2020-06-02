@@ -81,8 +81,8 @@ class CountryReport:
         'Atmospheric Black' and 'Black'. This is especially important for counting against the core genres of MA. See
         genre.py for details.
     """
-    TXT_MISSING = '    Missing bands; not in database but in country link file'
-    TXT_INVALID = '    Invalid bands; in database but not in country link file'
+    TXT_MISSING = 'Missing bands; not in database but in country link file'
+    TXT_INVALID = 'Invalid bands; in database but not in country link file'
 
     def __init__(self, country_short, population, sanity_bands, genders, gender_per_country, genres, bands_per_year):
         self._country_short = country_short
@@ -217,11 +217,10 @@ class CountryReport:
         if len(bands) < 1:
             return None
 
-        print_report = f'    {message} ({len(bands)}): '
+        print_report = f'    {message} ({len(bands)}). '
         export_text = ''
 
         for band in self._checked_bands[index]:
-            print_report += f'{band}, '
             export_text += f'{band}\n'
 
         return print_report, export_text
@@ -263,10 +262,10 @@ class CountryReport:
             report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
 
         if self._report_missing:
-            report += self._report_missing[0] + 'saved in: ' + str(self.save_report_missing()) + '\n\n'
+            report += self._report_missing[0] + 'Saved in ' + str(self.save_report_missing()) + '\n\n'
 
         if self._report_invalid:
-            report += self._report_invalid[0] + 'saved in: ' + str(self.save_report_invalid()) + '\n\n'
+            report += self._report_invalid[0] + 'Saved in ' + str(self.save_report_invalid()) + '\n\n'
 
         return report
 
