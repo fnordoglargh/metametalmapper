@@ -2,8 +2,8 @@
 
 _Meta Metal Mapper_ is a Python3 program to crawl
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/)
-(M-A) for bands, artists and albums. The data is stored in a in a local database
-and can be analyzed and exported into band networks.
+(M-A) for bands, artists and releases. The data is stored in a in a local 
+database and can be analyzed and exported into band networks.
 
 The first time I saw a band network was in the liner notes of the 7" EP
 compilation
@@ -28,7 +28,7 @@ projects.
 
 This is what Meta Metal Mapper already delivers:
 
-* Crawl around your favorite bands to generate small networks. 
+* Crawls your favorite bands to generate small networks. 
 * Generates lists for bands to crawl based on countries, regions or the entire
   database.  It also accepts handcrafted files with bands of your choice.
 * Extracts information about bands, their band members and releases from M-A.
@@ -48,8 +48,8 @@ And to rule out any disappointments; a list of things it is not:
 
 ## Getting Started
 
-To use Meta Metal Mapper you first need to clone this repository, install Python
-libraries and Neo4j.
+To use Meta Metal Mapper you first need to clone this repository, install
+Python libraries and Neo4j.
 
 ### Tool Installation
 
@@ -81,9 +81,9 @@ Call `python meta_metal_mapper.py` each time with one of the following
 parameters:
 
 1. `-b -f data/true_kings.lnks`: Uses the supplied file with band names, crawls
-   all of them and puts data in to the database.
+  all of them and puts data in to the database.
 2. `-x`: Prints analysis into terminal and generates several files with 
-    exported data.
+  exported data.
 
 Please note that the analysis is across the entire database and might result in
 meaningless data e.g. when data is put into relation to a country.
@@ -91,10 +91,10 @@ meaningless data e.g. when data is put into relation to a country.
 ### Inspect the graph
 
 1. Open the Neo4j Browser you installed during setup.
-2. Click on the gear (lower left) and change _Initial Node Display_ to a number 
-   \>= 2000.
-3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) and
-   hit the play button.
+2. Click on the gear (lower left) and change _Initial Node Display_ to a number
+  \>= 2000.
+3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) 
+  and hit the play button.
 4. The displayed graph contains all crawled band, artist and album nodes.
 5. Click on some of the nodes or edges to see the individual properties.
 
@@ -132,7 +132,6 @@ issue tracker in the repository or write to fnordoglargh at gmail dot com.
 
 ## Backlog
 
-* Notify user on calling analysis if a country has not been mapped entirely.
 * Implement a flag to overwrite data unconditionally.
 * Implement option to overwrite data based on its age.
 * Connecting releases with labels. The screenshot shows additional label nodes

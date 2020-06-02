@@ -148,6 +148,13 @@ timestamp and the file type (depicted by a * in the following sections).
 * `-z <countries>`: In this case `<countries>` is a comma separated list of ISO
     shorts (`N1,N2,N3`). Don't use white spaces unless you enclose the entire
     list in double quotes (`"N1, N2, N3"`).
+    
+Both latter options also check for:
+* Missing bands; not found in database but in the country links file.
+* Invalid bands; found in database but not in the country links file.
+
+Files with the missing or invalid bands are saved in `links_missing` or 
+`links_valid`. The naming pattern is `<IsoCountry>_YY-MM-DD_hhmmss.lnks`. 
 
 ### Countries
 
