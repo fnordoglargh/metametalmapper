@@ -492,7 +492,8 @@ class ReleaseReport:
         elif len(band_name) < 1:
             raise ValueError('Band name was empty.')
         elif release_type not in self.workable_types:
-            raise ValueError(f'{release_type} is not a workable release type.')
+            # For now we don't want to consider any releases other than defined in the settings.
+            return
 
         # Collect release counts per type (and total).
         self.country_releases[country_name][release_type] += 1
