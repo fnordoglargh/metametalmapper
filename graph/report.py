@@ -461,8 +461,8 @@ class DatabaseReport:
         return report + country_report_str + str(self.album_report)
 
 
-class AlbumReport:
-    """An AlbumReport stores the data for releases and prints it to he command line and/or exports it to a CSV file.
+class ReleaseReport:
+    """A ReleaseReport stores the data for releases and prints it to he command line and/or exports it to a CSV file.
     """
 
     def __init__(self, workable_types: list):
@@ -483,7 +483,7 @@ class AlbumReport:
         self.releases_total = defaultdict(int)
         self.releases_per_year = defaultdict(lambda: defaultdict(list))
         self.all_releases = defaultdict(list)
-        self.logger = logging.getLogger('AlbumReport')
+        self.logger = logging.getLogger('ReleaseReport')
 
     def process_release(self, country_name, band_id, band_name, release_name, link, release_type, year, ratings,
                         review_count):

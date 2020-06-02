@@ -13,7 +13,7 @@ import progressbar
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
 from graph.metal_graph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
-from graph.report import CountryReport, DatabaseReport, AlbumReport, ReportMode
+from graph.report import CountryReport, DatabaseReport, ReleaseReport, ReportMode
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -391,7 +391,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for release_type in settings.RELEASE_TYPES_REVIEW:
             release_types.append(RELEASE_TYPES[release_type])
 
-        album_report = AlbumReport(release_types)
+        release_report = ReleaseReport(release_types)
         print('  Prep done. Processing releases and genres.')
         progress_bar = progressbar.ProgressBar(max_value=len(bands_all))
         band_counter = 0
@@ -401,7 +401,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 genres[genre] += 1
 
             for release in band.releases:
-                album_report.process_release(
+                release_report.process_release(
                     COUNTRY_NAMES[band.country], band.emid, band.name, release.name, release.link,
                     RELEASE_TYPES[release.type], release.release_date, release.rating, release.review_count
                 )
@@ -411,7 +411,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         progress_bar.finish()
         print('  Releases processed. Creating database report.')
-        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, album_report,
+        db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, release_report,
                                    report_mode)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
 
