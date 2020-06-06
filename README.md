@@ -120,6 +120,24 @@ the best albums, EPs and demos.
   [glossary](documentation/GLOSSARY.md) or the
   [examples](documentation/EXAMPLES.md) for inspiration.
 
+## Version History
+
+* 0.97.0 (2020-06-06):
+  * Added two new modes:
+    * `-s <short link>` (e.g. Darkthrone/146): Crawls a single band and all
+      connected bands (identified by the bands links the individual members
+      played in).
+    * `-x`: Analyzes small networks (e.g. from one or several runs like above),
+      essentially leaving out the country related details which depend e.g. on
+      total band counts.
+  * Added console notification and export of link files for invalid bands 
+    (which are in the database but not on M-A anymore) and missing bands (not
+    in the database) but on M-A.
+  * Fixed a defect which prevented processing of unrated releases.
+* 0.87.1 (2020-05-01): Bugfix release.
+    * Added message in case an unsupported Neo4j 4.x database is used.
+* 0.87.0 (2020-04-19): First public release.
+
 ## Acknowledgments
 
 Thanks to Annukka, Suma, Henning and Marcel for their invaluable feedback.
