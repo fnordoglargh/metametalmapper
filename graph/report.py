@@ -262,10 +262,10 @@ class CountryReport:
             report += f'      {self._genres[index][0]}: {self._genres[index][1]} ({self._genres[index][2]:.2f}%)\n'
 
         if self._report_missing:
-            report += self._report_missing[0] + 'Saved in ' + str(self.save_report_missing()) + '\n\n'
+            report += self._report_missing[0] + 'Saved in ' + str(self.save_report_missing()) + '\n'
 
         if self._report_invalid:
-            report += self._report_invalid[0] + 'Saved in ' + str(self.save_report_invalid()) + '\n\n'
+            report += self._report_invalid[0] + 'Saved in ' + str(self.save_report_invalid()) + '\n'
 
         return report
 
