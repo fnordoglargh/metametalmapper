@@ -321,8 +321,10 @@ class VisitBandThread(threading.Thread):
                 # It's always 39 letters long.
                 temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
                 temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
-                temp_artist_name = str(actual_row.contents[1].contents[1].contents[0])
-                logger.debug(f"    Recording artist data for {temp_artist_name}.")
+                temp_artist_pseudonym = str(actual_row.contents[1].contents[1].contents[0])
+                logger.debug(f"    Recording artist data for {temp_artist_pseudonym}.")
+
+                artist = Artist(link=temp_artist_link, emid=temp_artist_id, name=temp_artist_pseudonym)
 
                 # Don't visit known band members.
                 if temp_artist_link in self.visited_entities['artists']:
@@ -363,7 +365,7 @@ class VisitBandThread(threading.Thread):
                 # If the band member does not have a name in the database we simply use the pseudonym. This
                 # unfortunately overwrites the name with whatever pseudonym we found last.
                 if 'N/A' in name:
-                    name = temp_artist_name
+                    name = temp_artist_pseudonym
 
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
@@ -376,7 +378,7 @@ class VisitBandThread(threading.Thread):
                 artist_data[temp_artist_id]["origin"] = origin
                 artist_data[temp_artist_id]["bands"] = {}
                 artist_data[temp_artist_id]["bands"][band_id] = {}
-                artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_name
+                artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_pseudonym
                 # Last replace is not a normal white space (\xa0).
                 temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ',
                                                                                                                   '')
