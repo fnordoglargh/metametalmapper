@@ -210,12 +210,10 @@ class VisitBandThread(threading.Thread):
         band_data[band_id]["name"] = str(s[0].next_element.text)
 
         s = band_soup.find_all(attrs={"class": "float_left"})
-        band_data[band_id]["country"] = s[1].contents[3].contents[0]
-        country_node = s[1].contents[3].contents[0]
         # Saving the country name and link in a dict.
-        country_link = country_node.attrs["href"]
+        country_link = s[1].contents[3].contents[0].attrs["href"][-2:]
         # Take the last two letters of the link.
-        band_data[band_id]["country"] = country_link[-2:]
+        band_data[band_id]["country"] = country_link
         location = s[1].contents[7].text
 
         if location == "N/A":
