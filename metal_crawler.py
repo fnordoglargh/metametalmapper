@@ -9,6 +9,7 @@ import logging
 import re
 from datetime import date, datetime
 from pathlib import Path
+from dataclasses import dataclass
 
 import certifi
 import urllib3
@@ -36,6 +37,21 @@ STATUS_ERROR = 'unrecoverable'
 STATUS_SKIPPED = 'skipped'
 STATUS_ADDED = 'added'
 stop_crawl_user_input = ""
+
+
+@dataclass
+class Band:
+    genre: list
+    theme: list
+    active: list
+    emid: int = -1
+    name: str = 'not set'
+    link: str = 'not set'
+    visited: str = 'not set'
+    country: str = 'not set'
+    location: str = 'not set'
+    status: str = 'not set'
+    formed: str = 'not set'
 
 
 class VisitBandThread(threading.Thread):
@@ -202,6 +218,12 @@ class VisitBandThread(threading.Thread):
             return -1
 
         # All data of a band is collected here.  Band members are referenced and collected in their own collection.
+        band_data_ref = Band(genre=[], theme=[], active=[])
+        band_data_ref.name = str(s[0].next_element.text)
+        band_data_ref.emid = band_short_link[band_short_link.rfind('/') + 1:]
+        band_data_ref.link = band_short_link
+        band_data_ref.visited = str(self.today)
+
         band_data = {}
         band_id = band_short_link[band_short_link.rfind('/') + 1:]
         band_data[band_id] = {}
@@ -221,6 +243,11 @@ class VisitBandThread(threading.Thread):
         else:
             location = location.split("/")
 
+        band_data_ref.country = s[1].contents[3].contents[0].attrs["href"][-2:]
+        band_data_ref.location = location
+        band_data_ref.status = get_dict_key(BAND_STATUS, s[1].contents[11].text)
+        band_data_ref.formed = s[1].contents[15].text
+
         band_data[band_id]["location"] = location
         band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
         band_data[band_id]["formed"] = s[1].contents[15].text
@@ -239,10 +266,14 @@ class VisitBandThread(threading.Thread):
             # earlier incarnation exists but has a comma in the name (leading for the latter portion to be split).
             if '(as' not in year_token and ')' not in year_token:
                 band_data[band_id]["active"].append(year_token.lstrip())
+                band_data_ref.active.append(year_token.lstrip())
 
         s = band_soup.find_all(attrs={"class": "float_right"})
         band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
         band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
+        band_data_ref.genre = split_genres(s[3].contents[3].contents[0])
+        band_data_ref.theme = s[3].contents[7].contents[0].split(', ')
+
         label_node = s[3].contents[11].contents[0]
 
         # The label from band page is only the active one. All others will only be available through the individual
