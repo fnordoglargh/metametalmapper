@@ -40,6 +40,12 @@ stop_crawl_user_input = ""
 
 
 @dataclass
+class Label:
+    link: str = 'not set'
+    name: str = 'not set'
+
+
+@dataclass
 class Band:
     genre: list
     theme: list
@@ -52,6 +58,7 @@ class Band:
     location: str = 'not set'
     status: str = 'not set'
     formed: str = 'not set'
+    label: Label = Label()
 
 
 class VisitBandThread(threading.Thread):
@@ -297,6 +304,8 @@ class VisitBandThread(threading.Thread):
 
         band_data[band_id]["label"] = label_id
         label_data = {label_id: {"name": label_name, "link": label_link}}
+        band_data_ref.label.name = label_name
+        band_data_ref.label.link = label_link
 
         logger.debug("  Scraping artists from actual band.")
         artists_and_bands = band_soup.find_all(attrs={"class": "ui-tabs-panel-content"})
