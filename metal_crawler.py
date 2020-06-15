@@ -9,7 +9,8 @@ import logging
 import re
 from datetime import date, datetime
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List, Dict
 
 import certifi
 import urllib3
@@ -40,25 +41,34 @@ stop_crawl_user_input = ""
 
 
 @dataclass
-class Label:
+class DbEntity:
+    emid: int = -1
     link: str = 'not set'
     name: str = 'not set'
+    type: str = 'not set'
 
 
 @dataclass
-class Band:
-    genre: list
-    theme: list
-    active: list
-    emid: int = -1
-    name: str = 'not set'
-    link: str = 'not set'
+class Band(DbEntity):
+    lineup: Dict = field(default_factory=dict)
+    genres: List[str] = field(default_factory=list)
+    theme: List[str] = field(default_factory=list)
+    active: List[str] = field(default_factory=list)
+    artists: List[str] = field(default_factory=list)
+    label: Label = Label()
     visited: str = 'not set'
     country: str = 'not set'
     location: str = 'not set'
     status: str = 'not set'
     formed: str = 'not set'
-    label: Label = Label()
+
+    def __init__(self):
+        self.genres = []
+        self.theme = []
+        self.artists = []
+        self.active = []
+        self.lineup = {}
+        self.type = 'band'
 
 
 class VisitBandThread(threading.Thread):
@@ -225,10 +235,11 @@ class VisitBandThread(threading.Thread):
             return -1
 
         # All data of a band is collected here.  Band members are referenced and collected in their own collection.
-        band_data_ref = Band(genre=[], theme=[], active=[])
+        band_data_ref = Band()
         band_data_ref.name = str(s[0].next_element.text)
         band_data_ref.emid = band_short_link[band_short_link.rfind('/') + 1:]
         band_data_ref.link = band_short_link
+
         band_data_ref.visited = str(self.today)
 
         band_data = {}
@@ -278,7 +289,7 @@ class VisitBandThread(threading.Thread):
         s = band_soup.find_all(attrs={"class": "float_right"})
         band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
         band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
-        band_data_ref.genre = split_genres(s[3].contents[3].contents[0])
+        band_data_ref.genres = split_genres(s[3].contents[3].contents[0])
         band_data_ref.theme = s[3].contents[7].contents[0].split(', ')
 
         label_node = s[3].contents[11].contents[0]
@@ -350,6 +361,9 @@ class VisitBandThread(threading.Thread):
             # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
             # always have a valid value.
             band_data[band_id]["lineup"][header_category] = []
+            band_data_ref.lineup[header_category] = []
+            # TODO: Add line-up.
+            # band_data_ref.lineup[header_category] = []
 
             # Five elements for artists.
             if len(actual_row) is 5:
@@ -361,8 +375,6 @@ class VisitBandThread(threading.Thread):
                 temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
                 temp_artist_pseudonym = str(actual_row.contents[1].contents[1].contents[0])
                 logger.debug(f"    Recording artist data for {temp_artist_pseudonym}.")
-
-                artist = Artist(link=temp_artist_link, emid=temp_artist_id, name=temp_artist_pseudonym)
 
                 # Don't visit known band members.
                 if temp_artist_link in self.visited_entities['artists']:
