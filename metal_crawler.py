@@ -417,6 +417,8 @@ class VisitBandThread(threading.Thread):
                 if 'N/A' in name:
                     name = temp_artist_pseudonym
 
+                temp_instruments = actual_row.contents[3].contents[0]
+                instruments = cut_instruments(temp_instruments)
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
@@ -430,9 +432,6 @@ class VisitBandThread(threading.Thread):
                 artist_data[temp_artist_id]["bands"][band_id] = {}
                 artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_pseudonym
                 # Last replace is not a normal white space (\xa0).
-                temp_instruments = actual_row.contents[3].contents[0].rstrip().lstrip().replace('\t', '').replace(' ',
-                                                                                                                  '')
-                instruments = cut_instruments(temp_instruments)
                 artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
         # Happens only for the first band if -s was used as the command line switch.
@@ -744,6 +743,7 @@ def cook_soup(link, retry_count=5):
 def cut_instruments(instrument_string):
     collection = []
     # First split along the '),'.
+    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
     temp_instruments = instrument_string.split('),')
 
     # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
