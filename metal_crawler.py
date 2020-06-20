@@ -855,7 +855,7 @@ def crawl_country(country_short):
     for j in range(1):
         # Prepare the AJAX links for the actual run.
         for i in range(0, amount_entries, display_constant):
-            ajaxLinks.put_nowait(alt_link.format(country_short, (i/500)+1, i))
+            ajaxLinks.put_nowait(alt_link.format(country_short, (i / 500) + 1, i))
 
         band_links = make_band_list(ajaxLinks)
 
