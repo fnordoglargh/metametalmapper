@@ -529,6 +529,16 @@ class VisitBandThread(threading.Thread):
                     review_count = int(split_rating[0].rstrip())
                     album_rating = int(split_rating[1][:-2])
 
+            release = Release()
+            band_data_ref.releases[album_id] = release
+            release.emid = album_id
+            release.name = album_name
+            release.link = album_link
+            release.year = album_year
+            release.review_count = review_count
+            release.rating = album_rating
+            release.release_type = album_type
+
             band_data[band_id]['releases'].append({
                 'emid': album_id,
                 'name': album_name,
@@ -540,7 +550,7 @@ class VisitBandThread(threading.Thread):
             })
 
         logger.debug(f'<<< Crawling [{band_short_link}]')
-        return {'bands': band_data, 'artists': artist_data, 'labels': label_data}
+        return {'bands': band_data, 'artists': artist_data, 'labels': label_data, 'crawl_result': band_data_ref}
 
     def add_connected_bands_to_queue(self, band_soup):
         """Extracts all band links from the given band soup and adds them to the queue, resets the single mode flag and
