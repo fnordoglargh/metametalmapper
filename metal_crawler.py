@@ -362,6 +362,8 @@ class VisitBandThread(threading.Thread):
         if len(lineup_finder) == 0:
             is_lineup_diverse = False
 
+        header_category = ''
+
         # The contents of actual_category starts with a LF (`Navigable String`) and has a LF at every even position.
         # So we start at index 1 with actual payload and only take data from uneven indexes.
         # Data at even indexes are from one of three categories:
@@ -389,12 +391,14 @@ class VisitBandThread(threading.Thread):
             elif last_found_header == "lineupBandsRow":
                 pass
 
-            # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
-            # always have a valid value.
-            band_data[band_id]["lineup"][header_category] = []
-            band_data_ref.lineup[header_category] = []
-            # TODO: Add line-up.
-            # band_data_ref.lineup[header_category] = []
+            if header_category not in band_data_ref.lineup.keys() and header_category is not '':
+                # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
+                # always have a valid value.
+                band_data[band_id]["lineup"][header_category] = []
+                band_data_ref.lineup[header_category] = []
+            elif header_category is '':
+                # For the unlikely case that the header category is not found.
+                raise ValueError(f'The header category was empty while crawling {band_data_ref.name}.')
 
             # Five elements for artists.
             if len(actual_row) is 5:
