@@ -49,6 +49,13 @@ class DbEntity:
 
 
 @dataclass
+class Label(DbEntity):
+
+    def __init__(self):
+        self.type = 'label'
+
+
+@dataclass
 class Band(DbEntity):
     lineup: Dict = field(default_factory=dict)
     genres: List[str] = field(default_factory=list)
@@ -69,6 +76,19 @@ class Band(DbEntity):
         self.active = []
         self.lineup = {}
         self.type = 'band'
+
+
+@dataclass
+class Artist(DbEntity):
+    age: int = -1
+    gender: str = 'U'
+    origin: str = 'ZZ'
+    visited: str = 'not set'
+    instruments: List[str] = field(default_factory=list)
+
+    def __init__(self):
+        self.type = 'artist'
+        self.instruments = []
 
 
 class VisitBandThread(threading.Thread):
@@ -419,12 +439,23 @@ class VisitBandThread(threading.Thread):
 
                 temp_instruments = actual_row.contents[3].contents[0]
                 instruments = cut_instruments(temp_instruments)
+
+                artist = Artist()
+                band_data_ref.lineup[header_category].append(artist)
+                artist.emid = temp_artist_id
+                artist.link = temp_artist_link
+                artist.name = name
+                artist.gender = gender
+                artist.age = age
+                artist.origin = origin
+                artist.pseudonym = temp_artist_pseudonym
+                artist.instruments = cut_instruments_alt(temp_instruments)
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
+                artist_data[temp_artist_id]["name"] = name
                 artist_data[temp_artist_id]["exists"] = artist_exists
                 artist_data[temp_artist_id]["visited"] = str(self.today)
-                artist_data[temp_artist_id]["name"] = name
                 artist_data[temp_artist_id]["gender"] = gender
                 artist_data[temp_artist_id]["age"] = age
                 artist_data[temp_artist_id]["origin"] = origin
@@ -738,6 +769,77 @@ def cook_soup(link, retry_count=5):
         return None
 
     return BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
+
+
+def cut_instruments_alt(instrument_string):
+    instruments = []
+    # First split along the '),'.
+    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
+    temp_instruments = instrument_string.split('),')
+
+    # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
+    for index in range(0, len(temp_instruments) - 1):
+        temp_instruments[index] += ')'
+
+    for temp_instrument in temp_instruments:
+        temp_instrument = temp_instrument.lstrip()
+        # Test if there are any numerals in instrument_string.
+        if not bool(re.search(r'\d', temp_instrument)):
+            instruments.append([temp_instrument, []])
+        # We have at least one year.
+        else:
+            split_more = temp_instrument.split('(')
+            back_together = split_more[0]
+            ready_spans = []
+            for inner in range(1, len(split_more)):
+                if bool(re.search(r'\d', split_more[inner])):
+                    # First split by commas.
+                    time_spans = split_more[inner].split(',')
+                    # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
+                    # in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
+                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
+                    # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
+                    for time_span in time_spans:
+                        time_span = time_span.lstrip().rstrip()
+                        # Safeguard against sloppy instruments where the time span starts with a comma.
+                        if time_span == '':
+                            continue
+                        # There still is a trailing ')' in the end.
+                        if time_span[len(time_span) - 1] == ')':
+                            time_span = time_span[:-1]
+                        # (2)
+                        if len(time_span) is 4:
+                            years = [int(time_span), int(time_span)]
+                        # (1)
+                        elif len(time_span) is 9 and time_span[0] != '?' and time_span[4] == '-':
+                            years = [int(time_span[0:4]), int(time_span[5:])]
+                        # (4) Nasty special case.
+                        elif '?' in time_span:
+                            # '?-?' after removing a trailing ')'.
+                            if time_span[0] == '?' and time_span[-1:] == '?':
+                                years = ['?', '?']
+                            elif time_span[0] == '?':
+                                if re.search('[Pp]resent', time_span):
+                                    years = ['?', 'present']
+                                else:
+                                    years = ['?', int(time_span[2:])]
+                            elif time_span[-1:] == '?':
+                                years = [int(time_span[0:4]), '?']
+                            else:
+                                years = []
+                        # (5)
+                        elif not time_span.isdigit() and not re.search('[Pp]resent', time_span):
+                            continue
+                        # (3)
+                        else:
+                            years = [int(time_span[0:4]), 'present']
+
+                        ready_spans.append(years)
+                # Strings in brackets, part of the instrument we're looking for.
+                else:
+                    back_together += '(' + split_more[inner]
+            instruments.append([back_together.rstrip(), ready_spans])
+    return instruments
 
 
 def cut_instruments(instrument_string):
