@@ -61,7 +61,7 @@ class Band(DbEntity):
     genres: List[str] = field(default_factory=list)
     theme: List[str] = field(default_factory=list)
     active: List[str] = field(default_factory=list)
-    artists: List[str] = field(default_factory=list)
+    releases: Dict = field(default_factory=dict)
     label: Label = Label()
     visited: str = 'not set'
     country: str = 'not set'
@@ -72,9 +72,9 @@ class Band(DbEntity):
     def __init__(self):
         self.genres = []
         self.theme = []
-        self.artists = []
         self.active = []
         self.lineup = {}
+        self.releases = {}
         self.type = 'band'
 
 
@@ -89,6 +89,17 @@ class Artist(DbEntity):
     def __init__(self):
         self.type = 'artist'
         self.instruments = []
+
+
+@dataclass
+class Release(DbEntity):
+    release_type: str = 'not set'
+    year: str = 'not set'
+    rating: int = -1
+    review_count: int = 0
+
+    def __init__(self):
+        self.type = 'release'
 
 
 class VisitBandThread(threading.Thread):
