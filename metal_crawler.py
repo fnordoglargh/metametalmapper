@@ -324,8 +324,6 @@ class VisitBandThread(threading.Thread):
                 temp_artist_pseudonym = str(actual_row.contents[1].contents[1].contents[0])
                 logger.debug(f"    Recording artist data for {temp_artist_pseudonym}.")
 
-                artist = Artist(link=temp_artist_link, emid=temp_artist_id, name=temp_artist_pseudonym)
-
                 # Don't visit known band members.
                 if temp_artist_link in self.visited_entities['artists']:
                     logger.debug(f"      Skipping band member {temp_artist_link}.")
