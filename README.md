@@ -126,7 +126,7 @@ the best albums, EPs and demos.
   * Added a function to make the location data more usable. The earlier used
     mechanism just split the location string at every "/" (which results in
     unusable data for e.g. "Kolbotn, Viken (early); Oslo (mid); Vinterbro,
-    Viken / Trysil, Innlandet (later)". The new function returns the first
+    Viken / Trysil, Innlandet (later)"). The new function returns the first
     city and state/territory it can determine. 
 * 0.97.0 (2020-06-06):
   * Added two new modes:
