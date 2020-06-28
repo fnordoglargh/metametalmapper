@@ -17,7 +17,7 @@ import progressbar
 from settings import CRAWLER_THREAD_COUNT
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-from country_helper import COUNTRY_NAMES
+from country_helper import COUNTRY_NAMES, split_locations
 from genre import split_genres
 from global_helpers import get_dict_key
 from graph.choices import *
@@ -221,7 +221,7 @@ class VisitBandThread(threading.Thread):
         if location == "N/A":
             location = ["N/A"]
         else:
-            location = location.split("/")
+            location = split_locations(location)
 
         band_data[band_id]["location"] = location
         band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)

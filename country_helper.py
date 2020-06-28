@@ -196,3 +196,69 @@ def clean_short_links(unclean_shorts: str):
                 print(f'Ignoring {short}; not found in countries or regions.')
 
     return cleaned_short_links
+
+
+def split_locations(locations: str):
+    """Determines and returns the first city or city/state pair it finds.
+
+    Takes the first city or city/state pair it can find in the provided string and returns it in a two element list.
+    The hierarchy normally goes from a semicolon separating early and later locations to a comma to separate cities and
+    states to a slash as the weakest to be a kind of 'and' for cities.
+
+    :param locations: An untreated string that is expected to contain a pair of values, a city and a state in the
+    country of origin. It gets complicated from there on.
+    :return: A List containing at least one empty string (in case of errors). If the first element is not an empty
+    string, it's guaranteed to be a city. If followed by a second element it is (should be) a state or territory.
+    """
+    cleaned_locations = []
+
+    # Early return if the string is empty.
+    if locations is '':
+        cleaned_locations.append('')
+        return cleaned_locations
+
+    search_early = '(early)'
+    search_mid = '(mid)'
+    search_later = '(later)'
+    # Always contains at least one element.
+    split_locs = locations.split(';')
+
+    # Only consider the first item.
+    cleaned_pair = []
+    city_state_pair = split_locs[0].split(',')
+    cities = city_state_pair[0].split('/')
+
+    # Only take the first city.
+    city = cities[0].strip().rstrip()
+
+    if search_early in city:
+        early_idx = city.index(search_early)
+        cleaned_pair.append(city[:early_idx - 1])
+    elif search_mid in city or search_later in city:
+        # Not needed (yet).
+        pass
+    else:
+        cleaned_pair.append(city)
+
+    if len(city_state_pair) > 1:
+        cleaned_state = city_state_pair[1].strip().rstrip()
+        # Might still contain an 'early'.
+        if search_early in cleaned_state:
+            early_idx = cleaned_state.index(search_early)
+            cleaned_state = cleaned_state[:early_idx - 1]
+        elif search_mid in city or search_later in city:
+            # Not needed.
+            pass
+
+        # There still might be something messed up in the hierarchy (see test case #5). Just ignore it.
+        cleaned_state = cleaned_state.split('/')[0].rstrip().strip()
+
+        # In some cases the band's origin is in more than one country. M-A does not support that natively so users
+        # enter location strings like 'Lisbon, Portugal / Sollentuna, Sweden (early)'. In this case we only take
+        # 'Lisbon' and throw the rest away. See test case #7.
+        if cleaned_state not in COUNTRY_NAMES.values():
+            cleaned_pair.append(cleaned_state)
+
+    # The city cannot contain any invalid letters because of the three splits (first ';', then ',', and last ';').
+    # The state is split by '/'. This guarantees both strings not containing any of these letter.
+    return cleaned_pair
