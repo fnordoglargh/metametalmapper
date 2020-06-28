@@ -122,6 +122,12 @@ the best albums, EPs and demos.
 
 ## Version History
 
+* 0.97.2 (2020-06-28):
+  * Added a function to make the location data more usable. The earlier used
+    mechanism just split the location string at every "/" (which results in
+    unusable data for e.g. "Kolbotn, Viken (early); Oslo (mid); Vinterbro,
+    Viken / Trysil, Innlandet (later)"). The new function returns the first
+    city and state/territory it can determine. 
 * 0.97.0 (2020-06-06):
   * Added two new modes:
     * `-s <short link>` (e.g. Darkthrone/146): Crawls a single band and all
@@ -150,6 +156,7 @@ issue tracker in the repository or write to fnordoglargh at gmail dot com.
 
 ## Backlog
 
+* Feature for analysis for band origins (based on location).
 * Implement a flag to overwrite data unconditionally.
 * Implement option to overwrite data based on its age.
 * Connecting releases with labels. The screenshot shows additional label nodes

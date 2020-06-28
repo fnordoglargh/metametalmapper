@@ -31,7 +31,9 @@ class TestGenreCutting(unittest.TestCase):
             ('Death Metal (early); Black Metal (mid); Black/Heavy/Speed Metal (later)',
              ['Death', 'Black', 'Heavy', 'Speed']),
             ('Atmospheric Black Metal (early); Avant-garde Progressive Metal (later)',
-             ['Atmospheric Black', 'Black', 'Avant-garde Progressive', 'Experimental/Avant-garde', 'Progressive'])
+             ['Atmospheric Black', 'Black', 'Avant-garde Progressive', 'Experimental/Avant-garde', 'Progressive']),
+            ('Brutal/Technical Death Metal, Deathcore (2008)',
+             ['Brutal', 'Technical Death', 'Death', 'Deathcore', 'Metalcore/Deathcore'])
         ]
 
         for test in test_strings:
