@@ -1,21 +1,20 @@
 import argparse
 import textwrap
 from global_helpers import *
-from country_helper import COUNTRY_NAMES
-
-description_text = "Crawls and (meta) analyzes date from M-A.\n\nIt's run in two to three stages:\n1. Get a list of" \
-                   "band"
+from country_helper import COUNTRY_NAMES, REGIONS
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
 all_links_text = f'Crawls all countries for bands and saves them in files named {file_name_a} (where NN is the two ' \
-                 f'letter short form of a given country). The files are put into sub-folder "{FOLDER_LINKS}". This action can take ' \
-                 'almost 10 minutes.'
-all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and uses the standard file name together with' \
-                     ' the ID to write a file with all band links from the given country. See list (-l) below. The country shorts must ' \
-                     'always be separated by commas without spaces or be enclosed by quotation-marks if they contain spaces.'
+    f'letter short form of a given country). The files are put into sub-folder "{FOLDER_LINKS}". This action can take '\
+    'almost 10 minutes.'
+all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and uses the standard file name together ' \
+    'with the ID to write a file with all band links from the given country. See list (-l) below. The country shorts ' \
+    'must always be separated by commas without spaces or be enclosed by quotation-marks if they contain spaces.'
+region_text = '-r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO to get short links of ' \
+    'all Nordic Countries).'
 
 # Indication of a parameter
-not_set = 'not set'
+not_set = 'not_set'
 default_text = 'lazy_default'
 choices = COUNTRY_NAMES.keys()
 
@@ -34,7 +33,8 @@ arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelp
 arg_parser.add_argument('-s', '--single', nargs='?', const=not_set,
                         help='Crawls the given short link (e.g. Darkthrone/146) and all connected bands.')
 arg_parser.add_argument('-a', '--all_links', nargs='?', const=not_set, help=all_links_text)
-arg_parser.add_argument('-c', '--iso_countries', nargs='*', help=all_countries_text, choices=choices)
+arg_parser.add_argument('-c', '--iso_countries', nargs='+', help=all_countries_text)
+arg_parser.add_argument('-r', '--region', nargs='?', const=not_set, help=region_text)
 args = arg_parser.parse_args()
 
 # Test the arguments
@@ -55,8 +55,12 @@ if args.iso_countries is not None and len(args.iso_countries) > 0:
             print(f'{country} is not a valid ISO country short.')
         else:
             print(f'-c: {args.iso_countries}')
-else:
-    print('-c needs at least one ISO country short. Print a list of available countries with -l. ')
 
+if args.region is not_set:
+    print('-r needs a parameter.')
+elif args.region in REGIONS:
+    print(args.region)
+else:
+    print(f'Not a valid region: {args.region}')
 
 
