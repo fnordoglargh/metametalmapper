@@ -30,11 +30,11 @@ arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelp
 
         NOTE: Parameters are given priority based on their stage and cannot be mixed.
     '''))
-arg_parser.add_argument('-s', '--single', nargs='?', const=not_set,
+arg_parser.add_argument('-s', '--single',
                         help='Crawls the given short link (e.g. Darkthrone/146) and all connected bands.')
 arg_parser.add_argument('-a', '--all_links', nargs='?', const=not_set, help=all_links_text)
 arg_parser.add_argument('-c', '--iso_countries', nargs='+', help=all_countries_text)
-arg_parser.add_argument('-r', '--region', nargs='?', const=not_set, help=region_text)
+arg_parser.add_argument('-r', '--region', help=region_text)
 args = arg_parser.parse_args()
 
 # Test the arguments
@@ -42,9 +42,7 @@ if args.all_links is not_set:
     print('-a is set with no params.')
 
 # Check if single mode can be used.
-if args.single is not_set and args.single is not None:
-    print('-s needs a band short link (e.g. Darkthrone/146).')
-elif args.single is not None:
+if args.single is not None:
     print(f'-s {args.single}')
 
 # Check if -c --iso_countries can be used.
@@ -56,11 +54,10 @@ if args.iso_countries is not None and len(args.iso_countries) > 0:
         else:
             print(f'-c: {args.iso_countries}')
 
-if args.region is not_set:
-    print('-r needs a parameter.')
-elif args.region in REGIONS:
-    print(args.region)
-else:
-    print(f'Not a valid region: {args.region}')
+if args.region is not None:
+    if args.region in REGIONS:
+        print(args.region)
+    else:
+        print(f'Not a valid region: {args.region}')
 
 
