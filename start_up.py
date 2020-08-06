@@ -1,7 +1,8 @@
 import argparse
 import textwrap
 from global_helpers import *
-from country_helper import COUNTRY_NAMES, REGIONS
+from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
+from metal_crawler import crawl_countries
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
 all_links_text = f'Crawls all countries for bands and saves them in files named {file_name_a} (where NN is the two ' \
@@ -12,6 +13,9 @@ all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and use
     'must always be separated by commas without spaces or be enclosed by quotation-marks if they contain spaces.'
 region_text = '-r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO to get short links of ' \
     'all Nordic Countries).'
+
+
+list_text = 'List available countries and regions.'
 
 # Indication of a parameter
 not_set = 'not_set'
@@ -35,6 +39,8 @@ arg_parser.add_argument('-s', '--single',
 arg_parser.add_argument('-a', '--all_links', action="store_true", help=all_links_text)
 arg_parser.add_argument('-c', '--iso_countries', nargs='+', help=all_countries_text)
 arg_parser.add_argument('-r', '--region', help=region_text)
+
+arg_parser.add_argument('-l', '--list', action="store_true", help=list_text)
 args = arg_parser.parse_args()
 
 # Test the arguments
@@ -60,4 +66,13 @@ if args.region is not None:
     else:
         print(f'Not a valid region: {args.region}')
 
+if args.list:
+    country_string = print_countries(4, crawl_countries())
+    print()
+    print('Available countries:')
+    print(country_string)
+    regions = print_regions()
+    print()
+    print('Available regions:')
+    print(regions)
 
