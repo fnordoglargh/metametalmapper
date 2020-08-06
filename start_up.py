@@ -13,7 +13,8 @@ all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and use
     'must always be separated by commas without spaces or be enclosed by quotation-marks if they contain spaces.'
 region_text = '-r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO to get short links of ' \
     'all Nordic Countries).'
-
+crawl_text = 'Crawls a file with short links either from running -a, -i, -c or your own. If a region or country short '\
+    f'(see -l) is specified, it will try finding a generated file in sub-folder "{FOLDER_LINKS}".'
 
 list_text = 'List available countries and regions.'
 
@@ -37,9 +38,9 @@ arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelp
 arg_parser.add_argument('-s', '--single',
                         help='Crawls the given short link (e.g. Darkthrone/146) and all connected bands.')
 arg_parser.add_argument('-a', '--all_links', action="store_true", help=all_links_text)
-arg_parser.add_argument('-c', '--iso_countries', nargs='+', help=all_countries_text)
+arg_parser.add_argument('-i', '--iso_countries', nargs='+', help=all_countries_text)
 arg_parser.add_argument('-r', '--region', help=region_text)
-
+arg_parser.add_argument('-c', '--crawl', nargs='?', const=not_set, help=crawl_text)
 arg_parser.add_argument('-l', '--list', action="store_true", help=list_text)
 args = arg_parser.parse_args()
 
@@ -76,3 +77,19 @@ if args.list:
     print('Available regions:')
     print(regions)
 
+if args.crawl is not None:
+    if args.crawl is not not_set:
+        # Test if parameter is a valid region or country.
+        if args.crawl in COUNTRY_NAMES.keys() or args.crawl in REGIONS.keys():
+            country_region_file = Path(f'{FOLDER_LINKS}/{args.crawl}{LINK_EXTENSION}')
+
+            if country_region_file.is_file():
+                print('Valid region/country file.')
+            else:
+                print('File not found.')
+
+            print(f'  {country_region_file}')
+        else:
+            print('Nope')
+    else:
+        print('Parameter missing.')
