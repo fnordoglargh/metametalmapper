@@ -32,13 +32,13 @@ arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelp
     '''))
 arg_parser.add_argument('-s', '--single',
                         help='Crawls the given short link (e.g. Darkthrone/146) and all connected bands.')
-arg_parser.add_argument('-a', '--all_links', nargs='?', const=not_set, help=all_links_text)
+arg_parser.add_argument('-a', '--all_links', action="store_true", help=all_links_text)
 arg_parser.add_argument('-c', '--iso_countries', nargs='+', help=all_countries_text)
 arg_parser.add_argument('-r', '--region', help=region_text)
 args = arg_parser.parse_args()
 
 # Test the arguments
-if args.all_links is not_set:
+if args.all_links:
     print('-a is set with no params.')
 
 # Check if single mode can be used.
