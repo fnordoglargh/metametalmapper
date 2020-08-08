@@ -90,6 +90,11 @@ if args.crawl is not None:
 
             print(f'  {country_region_file}')
         else:
-            print('Nope')
+            link_file = Path(args.crawl)
+
+            if link_file.is_file():
+                print(f'Seems to be a link file: {link_file}')
+            else:
+                print('Not a valid file, country or region short.')
     else:
         print('Parameter missing.')
