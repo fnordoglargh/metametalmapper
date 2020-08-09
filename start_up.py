@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 
 import sys
+import logging.config
+import yaml
 import argparse
 import textwrap
 
 from global_helpers import *
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
 from metal_crawler import crawl_countries
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2020, Martin Woelke'
+# https://opensource.org/licenses/NPOSL-3.0
+__version__ = '0.97.2'
+__status__ = 'Development'
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
 single_text = 'Crawls the given short link (e.g. Darkthrone/146) and all connected bands.'
@@ -33,6 +42,28 @@ not_set = 'not_set'
 
 
 def main():
+    with open('loggerConfig.yaml', 'r') as log_config:
+        log_config = yaml.safe_load(log_config.read())
+        logging.config.dictConfig(log_config)
+
+    # Change to a terminal size in which everything fits.
+    # os.system('mode con: cols=153 lines=9999')
+    logger = logging.getLogger('MAIN')
+    logger.debug('***************************************************************')
+    logger.info(f'meta metal mapper {__version__}')
+
+    # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
+    for folder in FOLDERS_MAIN:
+        if not folder.exists() and not folder.is_dir():
+            try:
+                folder.mkdir()
+                logger.info(f'Successfully created the directory {folder}.')
+            except:
+                logger.fatal(f'Creation of the directory {folder} failed.')
+                sys.exit(3)
+        else:
+            logger.debug(f'Standard directory {folder} exists.')
+
     arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                          description=textwrap.dedent('''\
             Crawls and (meta) analyzes date from M-A.
