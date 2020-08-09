@@ -8,7 +8,7 @@ import textwrap
 
 from global_helpers import *
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
-from metal_crawler import crawl_countries, crawl_bands
+from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.metal_graph import GraphDatabaseContext
 from genre import save_genres
@@ -42,6 +42,41 @@ list_text = 'List available countries and regions.'
 
 # Indication of a parameter
 not_set = 'not_set'
+
+
+def flush_queue(country_short, link_list):
+    """Flushes the contents of ``link_list`` (band addresses of a country or region) into the sub-folder named
+    ``links``.
+
+    :param country_short: ISO country code used in the file name.
+    :param link_list: A list of short band links.
+    :return: A filename with the format ``links/NN.lnks``.
+    """
+    logger = logging.getLogger('Mapper')
+    country_filename = Path(f"{FOLDER_LINKS}/" + BAND_LINK_FILE_NAME.format(country_short))
+    country_or_region_code = country_short
+
+    if len(country_short) == 2:
+        country_or_region_name = COUNTRY_NAMES[country_short]
+    else:
+        country_or_region_name = REGIONS[country_short][1]
+
+    if len(link_list) > 0:
+        band_links_file = open(country_filename, 'w', encoding='utf-8')
+        counter = 0
+        for link in link_list:
+            band_links_file.write(link + '\n')
+            counter += 1
+
+        band_links_file.close()
+        logger.info(
+            f'Saved {str(counter)} bands of {country_or_region_name} ({country_or_region_code}) in file '
+            f'"{country_filename}".'
+        )
+    else:
+        logger.warning(f'No bands found for {country_or_region_name} ({country_or_region_code}).')
+
+    return country_filename
 
 
 def init_db():
@@ -102,7 +137,14 @@ def main():
 
     # All countries
     if args.a:
-        print('-a is set with no params.')
+        logger.info('Crawling countries...')
+
+        # This starts bootstrapping from the actual country list as it is on EM.
+        country_links = crawl_countries()
+
+        for country_short in country_links:
+            link_list = crawl_country(country_short)
+            flush_queue(country_short, link_list)
 
     # Single mode
     if args.s is not None:
