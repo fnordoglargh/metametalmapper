@@ -8,7 +8,10 @@ import textwrap
 
 from global_helpers import *
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
-from metal_crawler import crawl_countries
+from metal_crawler import crawl_countries, crawl_bands
+from graph.graph_neomodel_impl import NeoModelStrategy
+from graph.metal_graph import GraphDatabaseContext
+from genre import save_genres
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -39,6 +42,17 @@ list_text = 'List available countries and regions.'
 
 # Indication of a parameter
 not_set = 'not_set'
+
+
+def init_db():
+    logger = logging.getLogger('Mapper')
+    db_handle = None
+    try:
+        db_handle = GraphDatabaseContext(NeoModelStrategy())
+    except:
+        logger.error('  Need a database to function properly. Exiting...')
+
+    return db_handle
 
 
 def main():
@@ -92,7 +106,10 @@ def main():
 
     # Single mode
     if args.s is not None:
-        print(f'-s {args.s}')
+        db_handle = init_db()
+        if db_handle is not None:
+            crawl_bands([args.s], db_handle, is_single_mode=True)
+            save_genres()
 
     # ISO countries
     if args.i is not None and len(args.i) > 0:
