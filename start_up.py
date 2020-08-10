@@ -11,7 +11,10 @@ from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countrie
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.metal_graph import GraphDatabaseContext
+from graph.report import ReportMode
+from graph.export_graph import GraphExportContext, GraphMLExporter
 from genre import save_genres
+from html_exporter import generate_html_report
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -216,14 +219,67 @@ def main():
         else:
             logger.error(
                 'No bands to crawl. Check your input files.')
+    elif args.y is not None or args.z:
+        if args.z:
+            report_mode = ReportMode.CountryOff
+        else:
+            report_mode = ReportMode.CountryOn
 
+        country_links = []
 
+        if args.y is not None:
+            if len(args.y) is 1 and args.y[0].upper() == 'ALL':
+                print('Analyse entire DB.')
+            else:
+                for country in args.y:
+                    if country in COUNTRY_NAMES.keys() or country in REGIONS.keys():
+                        country_links.append(country)
+                    else:
+                        print(f'Unknown country/region: {country}')
 
+        db_handle = init_db()
 
+        if db_handle is None:
+            sys.exit(-9)
 
+        country_info = 'Generating report for: '
 
+        for clean_short in country_links:
+            country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
-    if args.l:
+        if len(country_links) is 0:
+            print(f'{country_info}Entire database.')
+        else:
+            print(country_info[:-2])
+
+        raw_report = db_handle.generate_report(country_links, report_mode)
+        print(raw_report)
+
+        if report_mode is ReportMode.CountryOn:
+            logger.info(f'Country report saved to: {raw_report.export_csv_country()}')
+        release_export_path = raw_report.album_report.export_csv_releases_per_year()
+        logger.info(f'Release reports saved to:')
+        logger.info(f'  {release_export_path}')
+        release_json_export_path = raw_report.album_report.export_json_releases_per_year()
+        logger.info(f'  {release_json_export_path}')
+        release_all_json_export_path = raw_report.album_report.export_all_releases()
+        logger.info(f'  {release_all_json_export_path}')
+        bands_formed_export_path = raw_report.export_csv_bands_formed()
+        logger.info(f'Bands formed per year report saved to: {bands_formed_export_path}')
+        export_data = [
+            (release_json_export_path, 'marker_releases_year'),
+            (release_all_json_export_path, 'marker_releases_all')
+        ]
+        html_report_location = generate_html_report(export_data)
+        logger.info(f'HTML report saved to: {html_report_location}')
+        genre_export_paths = raw_report.export_csv_genres()
+        logger.info(f'Genre reports saved to:')
+        logger.info(f'  All : {genre_export_paths[0]}')
+        logger.info(f'  Core: {genre_export_paths[1]}')
+        export_handle = GraphExportContext(GraphMLExporter())
+        relationships = db_handle.export_bands_network(country_links)
+        export_handle.export_graph(relationships)
+    elif args.l:
         country_string = print_countries(4, crawl_countries())
         print()
         print('Available countries:')
@@ -232,23 +288,8 @@ def main():
         print()
         print('Available regions:')
         print(regions)
-
-
-
-    if args.y is not None:
-        if len(args.y) is 1 and args.y[0].upper() == 'ALL':
-            print('Analyse entire DB.')
-        else:
-            for country in args.y:
-                if country in COUNTRY_NAMES.keys() or country in REGIONS.keys():
-                    print(f'Analyze {country}.')
-                else:
-                    print(f'Unknown country/region: {country}')
-
-    if args.z:
-        print('Small Analysis.')
-
-    # arg_parser.print_help()
+    else:
+        arg_parser.print_help()
 
 
 if __name__ == '__main__':
