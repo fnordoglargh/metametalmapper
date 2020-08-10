@@ -154,13 +154,36 @@ def main():
             save_genres()
     # ISO countries
     elif args.i is not None and len(args.i) > 0:
+        countries = []
         for country in args.i:
             country = country.upper()
 
             if country not in COUNTRY_NAMES.keys():
                 print(f'{country} is not a valid ISO country short.')
             else:
-                print(f'-c: {country}')
+                countries.append(country)
+
+        if len(countries) > 0:
+            for country in countries:
+                link_list = crawl_country(country)
+                flush_queue(country, link_list)
+        else:
+            print('No valid countries given.')
+
+    # Region
+    elif args.r is not None:
+        region = args.r
+        if region not in REGIONS:
+            print(f'The region key {region} is invalid. Try one from the following list:')
+            print()
+            print(print_regions())
+        else:
+            print(f'Crawling region: {REGIONS[region][1]}')
+            link_list = []
+            for country_short in REGIONS[region][2]:
+                link_list_temp = crawl_country(country_short)
+                link_list = list(set(link_list_temp + link_list))
+            flush_queue(region, link_list)
     # Crawl country, region or file.
     elif args.c is not None:
         # Test if parameter is a valid region or country.
@@ -198,12 +221,7 @@ def main():
 
 
 
-    # Region
-    if args.r is not None:
-        if args.r in REGIONS:
-            print(args.r)
-        else:
-            print(f'Not a valid region: {args.r}')
+
 
     if args.l:
         country_string = print_countries(4, crawl_countries())
