@@ -163,52 +163,36 @@ def main():
                 print(f'-c: {country}')
     # Crawl country, region or file.
     elif args.c is not None:
-        if args.c is not not_set:
-            file_names = []
-
-            # Test if parameter is a valid region or country.
-            if args.c in COUNTRY_NAMES.keys() or args.c in REGIONS.keys():
-                country_region_file = Path(f'{FOLDER_LINKS}/{args.c}{LINK_EXTENSION}')
-
-                if country_region_file.is_file():
-                    file_names.append(country_region_file)
-                else:
-                    print(f'File not found: {country_region_file}')
-            else:
-                link_file = Path(args.c)
-
-                if link_file.is_file():
-                    file_names.append(link_file)
-                else:
-                    print('Not a valid file, country or region short.')
-
-            sanitized_bands = []
-
-            for path in file_names:
-                if path.is_file():
-                    band_links = path.read_text(encoding='utf-8').split('\n')
-                    # Remove last element from list if it's a lonely, empty string.
-                    if band_links[-1] == '':
-                        del band_links[-1]
-
-                    # For testing a  file may contain hash commented lines. Here we filter for those.
-                    for line in band_links:
-                        if not line.startswith('#'):
-                            sanitized_bands.append(line)
-                else:
-                    logger.error(f'File {path} was not readable.')
-
-            if len(sanitized_bands) is not 0:
-                db_handle = init_db()
-                if db_handle is not None:
-                    crawl_bands(sanitized_bands, db_handle)
-                    save_genres()
-            else:
-                logger.error(
-                    'No bands are available. Make sure that you crawled a country or regions before -b is used.')
-
+        # Test if parameter is a valid region or country.
+        if args.c in COUNTRY_NAMES.keys() or args.c in REGIONS.keys():
+            country_region_file = Path(f'{FOLDER_LINKS}/{args.c}{LINK_EXTENSION}')
+        # ...or take it as file name unconditionally.
         else:
-            print('Parameter missing.')
+            country_region_file = Path(args.c)
+
+        sanitized_bands = []
+
+        if country_region_file.is_file():
+            band_links = country_region_file.read_text(encoding='utf-8').split('\n')
+            # Remove last element from list if it's a lonely, empty string.
+            if band_links[-1] == '':
+                del band_links[-1]
+
+            # For testing a  file may contain hash commented lines. Here we filter for those.
+            for line in band_links:
+                if not line.startswith('#'):
+                    sanitized_bands.append(line)
+        else:
+            logger.error(f'File {country_region_file} was not readable.')
+
+        if len(sanitized_bands) is not 0:
+            db_handle = init_db()
+            if db_handle is not None:
+                crawl_bands(sanitized_bands, db_handle)
+                save_genres()
+        else:
+            logger.error(
+                'No bands to crawl. Check your input files.')
 
 
 
