@@ -237,8 +237,10 @@ def main():
                 print('Analyse entire DB.')
             else:
                 for country in args.y:
-                    if country in COUNTRY_NAMES.keys() or country in REGIONS.keys():
+                    if country in COUNTRY_NAMES.keys():
                         country_links.append(country)
+                    elif country in REGIONS.keys():
+                        country_links = list(set(country_links + REGIONS[country][2]))
                     else:
                         print(f'Unknown country/region: {country}')
 
