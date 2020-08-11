@@ -80,9 +80,9 @@ parameters mean and what to do with them.
 Call `python meta_metal_mapper.py` each time with one of the following
 parameters:
 
-1. `-b -f data/true_kings.lnks`: Uses the supplied file with band names, crawls
+1. `-c data/true_kings.lnks`: Uses the supplied file with band names, crawls
   all of them and puts data in to the database.
-2. `-x`: Prints analysis into terminal and generates several files with 
+2. `-y ALL`: Prints analysis into terminal and generates several files with 
   exported data.
 
 Please note that the analysis is across the entire database and might result in
@@ -111,7 +111,7 @@ the best albums, EPs and demos.
 ### Where to go from here?
 
 * Crawl the extended network from the _True Kings of Norway_ CD with:
-  * `meta_metal_mapper -b -f data/true_kings_ext.lnks`
+  * `meta_metal_mapper -c data/true_kings_ext.lnks`
   * Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see
     exports folder) and experiment with the available data.
   * A graph of the extended _True Kings_ network could look like:
@@ -122,6 +122,9 @@ the best albums, EPs and demos.
 
 ## Version History
 
+* 0.97.3 (2020-08-11):
+  * Rewrote parameter usage. It's now much more reliable and a bit easier
+    to use.
 * 0.97.2 (2020-06-28):
   * Added a function to make the location data more usable. The earlier used
     mechanism just split the location string at every "/" (which results in

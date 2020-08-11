@@ -25,7 +25,7 @@ __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019-2020, Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
-__version__ = '0.97.2'
+__version__ = '0.97.3'
 __status__ = 'Development'
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')

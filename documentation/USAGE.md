@@ -45,7 +45,8 @@ statistics are generated.
 The initial requirement to use Meta Metal Mapper is having band links to crawl.
 There are two ways of creating band lists:
 
-* Start with the switch `-c NN` to crawl all bands in exactly one country **or**
+* Start with the switch `-i N1 [N2] ...` to crawl all bands in all supplied
+  countries **or**
 * Call with `-r NNN` where NNN is the key of the region you want to crawl.
 
 Crawling an entire region is recommended only for small regions with a low
@@ -90,12 +91,12 @@ Before bands can be crawled a database needs to be created.
 Several options are available to crawl bands from the above generated link
 files:
 
-1. `-b -f <path/to/file>`: Crawls the bands in the given file.
-2. `-b -F <countries>`: In this case `<countries>` is a comma separated list of
-   ISO shorts (`N1,N2,N3`). Don't use white spaces unless you enclose the entire
-   list in double quotes (`"N1, N2, N3"`).
-3. `-b`: Crawls _every_ band from all files found in `./links`. This mode is not
-   recommended. It will take a long time to finish.
+1. `-c <path/to/file>`: Crawls the bands in the given file.
+2. `-c <country>`: Use this for the countries you crawled wit `-i`. Just pass
+   the ISO short (e.g. NO for Norway). The program tries to find the correct
+   link file in the links folder. 
+3. `-c <region_id>`: Crawls bands from the region file found in
+   `./links`.
 
 Eight threads are used by default to crawl for bands (See the [performance
 analysis](DESIGN_NOTES.md) for the amount of crawling threads).  Data is applied
@@ -140,15 +141,15 @@ information on the command line. Far more interesting are the exported CSV and
 GraphML files. They are named after their general category followed by a
 timestamp and the file type (depicted by a * in the following sections).
 
-* `-x`: Analyses and exports data of the whole database but does not generate
+* `-z`: Analyses and exports data of the whole database but does not generate
     any country specific statistics. This mode is useful for small networks
     and simply if not all bands of a country are available. 
-* `-y`: Considers the entire database and includes country specific 
+* `-y ALL`: Considers the entire database and includes country specific 
     information.
-* `-z <countries>`: In this case `<countries>` is a comma separated list of ISO
-    shorts (`N1,N2,N3`). Don't use white spaces unless you enclose the entire
-    list in double quotes (`"N1, N2, N3"`).
-    
+* `-y <countries>`: In this case `<countries>` is a list of ISO
+    shorts (`N1 N2 N3`).
+* `-y <region_id>`: Passing a `<region_id>` analyses a list of ISO
+    shorts (see `-l`).
 Both latter options also check for:
 * Missing bands; not found in database but in the country links file.
 * Invalid bands; found in database but not in the country links file.
@@ -232,9 +233,9 @@ folder. The reports can be influences with `settings.py` as described above.
 Two switches are available to analyze data, print to the command line, and
 export `.graphml` networks:
 
-* `-y`: Analyze the entire database.
-* `-z NN`: Analyze only the given country.
-* `-z NN1,NN2,RR1`: Analyze all given countries and/or regions.
+* `-y ALL`: Analyze the entire database.
+* `-y NN`: Analyze only the given country.
+* `-y NN1,NN2,RR1`: Analyze all given countries and/or regions.
 
 The country analysis for all Norwegian band might look similar to this:
 
