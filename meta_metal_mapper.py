@@ -11,7 +11,7 @@ import yaml
 import argparse
 import textwrap
 
-from global_helpers import *
+from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
@@ -22,10 +22,9 @@ from genre import save_genres
 from html_exporter import generate_html_report
 
 __author__ = 'Martin Woelke'
+# https://opensource.org/licenses/NPOSL-3.0
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019-2020, Martin Woelke'
-# https://opensource.org/licenses/NPOSL-3.0
-__version__ = '0.97.3'
 __status__ = 'Development'
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
