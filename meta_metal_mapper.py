@@ -20,6 +20,7 @@ from graph.report import ReportMode
 from graph.export_graph import GraphExportContext, GraphMLExporter
 from genre import save_genres
 from html_exporter import generate_html_report
+from logo import get_logo
 
 __author__ = 'Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
@@ -107,6 +108,7 @@ def main():
     logger = logging.getLogger('MAIN')
     logger.debug('***************************************************************')
     logger.info(f'meta metal mapper {__version__}')
+    print(get_logo())
 
     # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
     for folder in FOLDERS_MAIN:
