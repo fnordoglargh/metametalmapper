@@ -1,5 +1,8 @@
 from global_helpers import __version__
 import random
+import shutil
+
+WIDTH_MAX = 108
 
 SMALL_1 = "\n            _                    _        _                                 \n" \
           "  _ __  ___| |_ __ _   _ __  ___| |_ __ _| |  _ __  __ _ _ __ _ __  ___ _ _ \n" \
@@ -19,10 +22,29 @@ SMALL_3 = "\n            _                    _       _                         
           " |_|_|_|___|_| |__,|  |_|_|_|___|_| |__,|_|  |_|_|_|__,|  _|  _|___|_|  \n" \
           f"                                                       |_| |_| {__version__} \n"
 
+LARGE_1 = "\n                 __                           __          __                                               \n" \
+    "   _____   _____/  |______      _____   _____/  |______  |  |     _____ _____  ______ ______   ___________ \n" \
+    "  /     \\_/ __ \\   __\\__  \\    /     \\_/ __ \\   __\\__  \\ |  |    /     \\\\__  \\ \\____ \\\\____ \\_/ __ \\_  __ \\\n" \
+    " |  Y Y  \\  ___/|  |  / __ \\_ |  Y Y  \\  ___/|  |  / __ \\|  |__ |  Y Y  \\/ __ \\|  |_> >  |_> >  ___/|  | \\/\n" \
+    " |__|_|  /\\___  >__| (____  / |__|_|  /\\___  >__| (____  /____/ |__|_|  (____  /   __/|   __/ \\___  >__|   \n" \
+    f"       \\/     \\/          \\/        \\/     \\/          \\/             \\/     \\/|__|   |__|        \\/ {__version__}\n"
+
 # Shorter than 80 columns.
 LOGOS_SMALL = [SMALL_1, SMALL_2, SMALL_3]
 
+# A bit wider than 80...
+LOGOS_LARGE = [LARGE_1]
+
+# A list with all logos.
+LOGOS = LOGOS_SMALL + LOGOS_LARGE
+
 
 def get_logo():
-    index = random.randint(0, 2)
-    return LOGOS_SMALL[index]
+
+    size = shutil.get_terminal_size()
+    if size[0] > WIDTH_MAX:
+        index = random.randint(0, len(LOGOS) - 1)
+        return LOGOS[index]
+    else:
+        index = random.randint(0, len(LOGOS_SMALL) - 1)
+        return LOGOS_SMALL[index]
