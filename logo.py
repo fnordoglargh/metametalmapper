@@ -2,6 +2,7 @@ from global_helpers import __version__
 import random
 import shutil
 
+# Width of the widest logo.
 WIDTH_MAX = 108
 
 SMALL_1 = "\n            _                    _        _                                 \n" \
@@ -29,18 +30,30 @@ LARGE_1 = "\n                 __                           __          __       
     " |__|_|  /\\___  >__| (____  / |__|_|  /\\___  >__| (____  /____/ |__|_|  (____  /   __/|   __/ \\___  >__|   \n" \
     f"       \\/     \\/          \\/        \\/     \\/          \\/             \\/     \\/|__|   |__|        \\/ {__version__}\n"
 
+LARGE_2 = "\n █▀▄▀█ ▄███▄     ▄▄▄▄▀ ██       █▀▄▀█ ▄███▄     ▄▄▄▄▀ ██   █         █▀▄▀█ ██   █ ▄▄  █ ▄▄  ▄███▄   █▄▄▄▄ \n" \
+    " █ █ █ █▀   ▀ ▀▀▀ █    █ █      █ █ █ █▀   ▀ ▀▀▀ █    █ █  █         █ █ █ █ █  █   █ █   █ █▀   ▀  █  ▄▀ \n" \
+    " █ ▄ █ ██▄▄       █    █▄▄█     █ ▄ █ ██▄▄       █    █▄▄█ █         █ ▄ █ █▄▄█ █▀▀▀  █▀▀▀  ██▄▄    █▀▀▌  \n" \
+    " █   █ █▄   ▄▀   █     █  █     █   █ █▄   ▄▀   █     █  █ ██▄       █   █ █  █ █     █     █▄   ▄▀ █  █   \n" \
+    "    █  ▀███▀    ▀         █        █  ▀███▀    ▀         █     ▀        █     █  █     █    ▀███▀     █   \n" \
+    "   ▀                     █        ▀                     █              ▀     █    ▀     ▀            ▀    \n" \
+    "                        ▀                              ▀                    ▀                             \n"
+
 # Shorter than 80 columns.
 LOGOS_SMALL = [SMALL_1, SMALL_2, SMALL_3]
 
 # A bit wider than 80...
-LOGOS_LARGE = [LARGE_1]
+LOGOS_LARGE = [LARGE_1, LARGE_2]
 
 # A list with all logos.
 LOGOS = LOGOS_SMALL + LOGOS_LARGE
 
 
 def get_logo():
+    """Randomly selects an ASCII art logo based on the terminal width. Three logos are for standard terminal widths
+        of 80 columns, two are for wider terminals.
 
+    :return: A mete metal mapper ASCII art logo.
+    """
     size = shutil.get_terminal_size()
     if size[0] > WIDTH_MAX:
         index = random.randint(0, len(LOGOS) - 1)
