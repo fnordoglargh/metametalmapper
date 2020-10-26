@@ -468,8 +468,11 @@ class VisitBandThread(threading.Thread):
             log_message = f'The chosen band does not have any outward connections.'
         else:
             log_message = f'Added {len(linked_bands)} connected bands to the crawl.'
-        print(log_message)
-        self.logger.info(log_message)
+
+        # The logger named Crawler normally is not used for console output because it interferes with the progress bar.
+        # That's why we use a different logger to notify the user about connected bands instead of the object's logger.
+        temp_logger = logging.getLogger('Connector')
+        temp_logger.info(log_message)
         # Switch off the single mode after the first call. At least for now. Maybe we'll do two levels (or more) later.
         self.is_single_mode = False
         # The additional band is the actual one because it is not in the queue right now.
@@ -858,9 +861,9 @@ def read_user_input():
 
 def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     # TODO: Add comment and parameter description.
-    logger = logging.getLogger('Crawler')
+    logger = logging.getLogger('Crawler Prep')
     logger.debug('>>> Crawling all bands.')
-    print("Starting band crawl. All logging is diverted to file. Prepping database:")
+    logger.info("Starting band crawl. All logging is diverted to file. Prepping database:")
     local_bands_queue = queue.Queue()
 
     # Put links from list into queue.

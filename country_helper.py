@@ -3,6 +3,7 @@
 """
 
 from pathlib import Path
+import logging
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -89,13 +90,14 @@ REGIONS = {
 
 # Hardcoded file paths for the countries.
 COUNTRY_FILE_PATH = Path('data/iso_countries.csv')
+logger = logging.getLogger('country_helper')
 
 if not COUNTRY_FILE_PATH.exists():
     # Unit Test
     COUNTRY_FILE_PATH = Path('../data/iso_countries.csv')
     if not COUNTRY_FILE_PATH.exists():
         # Bail out.
-        print(f'{COUNTRY_FILE_PATH} cannot be found. Bailing Out...')
+        logger.critical(f'{COUNTRY_FILE_PATH} cannot be found. Bailing Out...')
         exit(-10)
 
 
@@ -134,7 +136,7 @@ def print_countries(columns_count: int, country_links):
     :return: A string with all ISO country codes and their names neatly formatted in columns.
     """
     if columns_count < 1:
-        print('Cannot list countries with columns count smaller than one. Defaulting to one.')
+        logger.warning('Cannot list countries with columns count smaller than one. Defaulting to one.')
         columns_count = 1
 
     longest_country = 0
@@ -193,7 +195,7 @@ def clean_short_links(unclean_shorts: str):
             cleaned_short_links.append(short)
         else:
             if short is not '':
-                print(f'Ignoring {short}; not found in countries or regions.')
+                logger.warning(f'Ignoring {short}; not found in countries or regions.')
 
     return cleaned_short_links
 

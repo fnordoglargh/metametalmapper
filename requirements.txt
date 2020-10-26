@@ -4,3 +4,4 @@ progressbar2~=3.53.1
 neomodel~=4.0.1
 beautifulsoup4~=4.9.3
 pyYAML~=5.3.1
+colorlog~=4.4.0

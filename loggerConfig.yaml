@@ -2,11 +2,19 @@ version: 1
 formatters:
     simple:
         format: '%(asctime)s [%(levelname)5s] %(name)8s %(threadName)8s: %(message)s'
+    terminal:
+        format: '%(log_color)s%(message)s'
+        (): __main__.ColoredFormatter
+        log_colors:
+            DEBUG: purple
+            INFO: white
+            WARNING: red
+            ERROR: purple
 handlers:
     console:
         class: logging.StreamHandler
         level: INFO
-        formatter: simple
+        formatter: terminal
         stream: ext://sys.stdout
     file:
         class: logging.handlers.RotatingFileHandler

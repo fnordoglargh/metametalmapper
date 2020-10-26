@@ -7,11 +7,14 @@ said data.
 
 import sys
 import logging.config
+from pathlib import Path
+# Needed to correctly interpret log_color in the loggerConfig.yaml.
+from colorlog import ColoredFormatter
 import yaml
 import argparse
 import textwrap
 
-from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN
+from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN, LINK_EXTENSION
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
@@ -106,8 +109,7 @@ def main():
     # Change to a terminal size in which everything fits.
     # os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
-    logger.debug('***************************************************************')
-    logger.info(f'meta metal mapper {__version__}')
+    logger.debug(f'\nWelcome to meta metal mapper {__version__}')
     print(get_logo())
 
     # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
@@ -168,7 +170,7 @@ def main():
             country = country.upper()
 
             if country not in COUNTRY_NAMES.keys():
-                print(f'{country} is not a valid ISO country short.')
+                logger.warning(f'{country} is not a valid ISO country short.')
             else:
                 countries.append(country)
 
@@ -202,6 +204,7 @@ def main():
         else:
             country_region_file = Path(args.c)
 
+        logger.info(f'File loaded for crawling: {country_region_file}')
         sanitized_bands = []
 
         if country_region_file.is_file():
@@ -235,7 +238,7 @@ def main():
 
         if args.y is not None:
             if len(args.y) is 1 and args.y[0].upper() == 'ALL':
-                print('Analyse entire DB.')
+                logger.info('Analyse entire DB.')
             else:
                 for country in args.y:
                     if country in COUNTRY_NAMES.keys():
@@ -243,7 +246,7 @@ def main():
                     elif country in REGIONS.keys():
                         country_links = list(set(country_links + REGIONS[country][2]))
                     else:
-                        print(f'Unknown country/region: {country}')
+                        logger.info(f'Unknown country/region: {country}')
 
         db_handle = init_db()
 
@@ -256,9 +259,9 @@ def main():
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
         if len(country_links) is 0:
-            print(f'{country_info}Entire database.')
+            logger.info(f'{country_info}Entire database.')
         else:
-            print(country_info[:-2])
+            logger.info(country_info[:-2])
 
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)
