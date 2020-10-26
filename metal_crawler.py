@@ -879,8 +879,12 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     amount_artists = len(visited_entities["artists"])
     prep_report = f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.'
     logger.info(prep_report)
-    print(prep_report)
-    print(f'Crawling {local_bands_queue.qsize()} bands. This is going to take a while.')
+    band_word = 'band'
+
+    if local_bands_queue.qsize() > 1:
+        band_word += 's'
+
+    logger.info(f'Crawling {local_bands_queue.qsize()} {band_word}. This is going to take a while.')
     progress_bar = progressbar.ProgressBar(max_value=local_bands_queue.qsize())
     visited_bands = []
 
