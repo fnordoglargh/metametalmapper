@@ -346,6 +346,7 @@ class VisitBandThread(threading.Thread):
 
         band_data[band_id]["label"] = label_id
         label_data = {label_id: {"name": label_name, "link": label_link}}
+        band_data_ref.label.emid = label_id
         band_data_ref.label.name = label_name
         band_data_ref.label.link = label_link
 
