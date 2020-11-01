@@ -57,7 +57,7 @@ class Release(StructuredNode):
     emid = IntegerProperty(unique_index=True)
     name = StringProperty()
     link = StringProperty()
-    type = StringProperty(choices=RELEASE_TYPES)
+    release_type = StringProperty(choices=RELEASE_TYPES)
     rating = IntegerProperty()
     review_count = IntegerProperty()
     release_date = DateProperty()

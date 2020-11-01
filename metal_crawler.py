@@ -10,6 +10,7 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 from dataclasses import dataclass, field
+from dataclasses_serialization.json import JSONSerializer
 from typing import List, Dict
 
 import certifi
@@ -94,7 +95,7 @@ class Artist(DbEntity):
 @dataclass
 class Release(DbEntity):
     release_type: str = 'not set'
-    year: str = 'not set'
+    release_date: str = 'not set'
     rating: int = -1
     review_count: int = 0
 
@@ -202,7 +203,7 @@ class VisitBandThread(threading.Thread):
             try:
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
                 self.band_errors[STATUS_ADDED][link_band_temp] = ''
-            except Exception:
+            except Exception as e:
                 self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
                 self.logger.error(temp_band_data)
                 self.logger.error(temp_artist_data)
@@ -222,8 +223,9 @@ class VisitBandThread(threading.Thread):
                 db_path = Path(f"{actual_band_path}/{band['link'].replace('/', '_')}.json")
                 actual_band_file = open(db_path, "w", encoding="utf-8")
                 # TODO: Add try block for the dump. It crashed once because it found a Tag object.
-                json_database_string = json.dumps(crawl_result)
-                actual_band_file.write(json_database_string)
+                band_data = JSONSerializer.serialize(crawl_result['crawl_result'])
+                band_data_text = json.dumps(band_data)
+                actual_band_file.write(band_data_text)
                 actual_band_file.close()
 
     def crawl_band(self, band_short_link):
@@ -466,6 +468,7 @@ class VisitBandThread(threading.Thread):
                 artist.origin = origin
                 artist.pseudonym = temp_artist_pseudonym
                 artist.instruments = cut_instruments_alt(temp_instruments)
+                artist.visited = str(self.today)
                 band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
@@ -535,7 +538,7 @@ class VisitBandThread(threading.Thread):
             release.emid = album_id
             release.name = album_name
             release.link = album_link
-            release.year = album_year
+            release.release_date = album_year
             release.review_count = review_count
             release.rating = album_rating
             release.release_type = album_type
@@ -635,16 +638,39 @@ def make_band_list(country_links):
     return band_links
 
 
+def make_time_spans(raw_spans):
+    """"Helper function to convert time span tuples to a list of data objects.
+    """
+    time_spans = []
+    for time_span_tuple in raw_spans:
+        if time_span_tuple[0] != '?':
+            d0 = date(time_span_tuple[0], 1, 1)
+        else:
+            continue
+        t1 = time_span_tuple[1]
+        if t1 == 'present':
+            d1 = date.today()
+        elif t1 == '?':
+            continue
+        else:
+            d1 = date(time_span_tuple[1], 12, 31)
+        time_spans.append(d0)
+        time_spans.append(d1)
+
+    return time_spans
+
+
 def apply_to_db(ma_dict, db_handle, is_detailed):
     logger = logging.getLogger('Crawler')
     temp_band_data = ma_dict['bands']
     temp_artist_data = ma_dict['artists']
     temp_label_data = ma_dict['labels']
+    crawl_result = ma_dict['crawl_result']
     logger.debug("Apply to DB...")
 
     for band in temp_band_data:
 
-        active_time = temp_band_data[band]['active']
+        active_time = crawl_result.active
         active_list = []
 
         for time_slot in active_time:
@@ -665,32 +691,58 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
             active_list.append(time_slot_1)
             active_list.append(time_slot_2)
 
-        temp_band_dict = {'emid': band,
-                          'name': temp_band_data[band]['name'],
-                          'link': temp_band_data[band]['link'],
-                          'country': temp_band_data[band]['country'],
-                          'status': temp_band_data[band]['status'],
-                          'themes': temp_band_data[band]['theme'],
-                          'genres': temp_band_data[band]['genre'],
-                          'locations': temp_band_data[band]['location'],
-                          'visited': datetime.strptime(temp_band_data[band]['visited'], "%Y-%m-%d").date()
+        temp_band_dict = {'emid': crawl_result.emid,
+                          'name': crawl_result.name,
+                          'link': crawl_result.link,
+                          'country': crawl_result.country,
+                          'status': crawl_result.status,
+                          'themes': crawl_result.theme,
+                          'genres': crawl_result.genres,
+                          'locations': crawl_result.location,
+                          'visited': datetime.strptime(crawl_result.visited, "%Y-%m-%d").date()
                           # 'active': active_list
                           }
 
-        if temp_band_data[band]['formed'] != 'N/A':
-            temp_band_dict['formed'] = date(int(temp_band_data[band]['formed']), 1, 1)
+        if crawl_result.formed != 'N/A':
+            temp_band_dict['formed'] = date(int(crawl_result.formed), 1, 1)
 
-        logger.debug(f'  Writing data for band {temp_band_dict["link"]}.')
+        logger.debug(f'  Writing data for band {crawl_result.link}.')
         db_handle.add_band(temp_band_dict)
 
-        for release in temp_band_data[band]['releases']:
+        for emid, release in crawl_result.releases.items():
             # We need to copy the dict first because we need to make a date object for the release date.
-            release_copy = dict(release)
+            release_copy = JSONSerializer.serialize(release)
             # This is not the accurate date, only the year.
             release_copy['release_date'] = date(int(release_copy['release_date']), 1, 1)
             logger.debug(f'  Writing data for release {release_copy["name"]}.')
             db_handle.add_release(release_copy)
-            db_handle.band_recorded_release(band, release['emid'])
+            db_handle.band_recorded_release(crawl_result.emid, emid)
+
+    for status, members in crawl_result.lineup.items():
+        for member in members:
+            temp_member_dict = JSONSerializer.serialize(member)
+            temp_member_dict['visited'] = datetime.strptime(member.visited, "%Y-%m-%d").date()
+            logger.debug(f"  Writing data for artist {temp_member_dict['link']}.")
+            db_handle.add_member(temp_member_dict)
+
+            for instrument in member.instruments:
+                try:
+                    db_handle.member_played_in_band(
+                        member.emid,
+                        crawl_result.emid,
+                        instrument[0],
+                        member.pseudonym,
+                        make_time_spans(instrument[1]),
+                        get_dict_key(MEMBER_STATUS, status)
+                    )
+                except Exception as e:
+                    logging.getLogger('Crawler').exception("Making member connection failed.", exc_info=True)
+                    logging.getLogger('Crawler').error(member)
+                    logging.getLogger('Crawler').error(crawl_result.emid)
+                    logging.getLogger('Crawler').error(instrument[0])
+                    logging.getLogger('Crawler').error(member.pseudonym)
+                    logging.getLogger('Crawler').error(make_time_spans(instrument[1]))
+                    logging.getLogger('Crawler').error(get_dict_key(MEMBER_STATUS, status))
 
     for member in temp_artist_data:
         inner_data = temp_artist_data[member]
@@ -706,7 +758,7 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                 }
 
             logger.debug(f"  Writing data for artist {temp_member_dict['link']}.")
-            db_handle.add_member(temp_member_dict)
+            # db_handle.add_member(temp_member_dict)
 
         for band_relation in inner_data['bands']:
             inner_relation = inner_data['bands'][band_relation]
@@ -728,21 +780,21 @@ def apply_to_db(ma_dict, db_handle, is_detailed):
                                 d1 = date(time_span_tuple[1], 12, 31)
                             time_spans.append(d0)
                             time_spans.append(d1)
-                        try:
-                            db_handle.member_played_in_band(member,
-                                                            band_relation,
-                                                            instruments[0],
-                                                            inner_relation['pseudonym'],
-                                                            time_spans,
-                                                            get_dict_key(MEMBER_STATUS, status)
-                                                            )
-                        except Exception:
-                            logging.getLogger('Crawler').exception("Making member connection failed.")
-                            logging.getLogger('Crawler').error(member)
-                            logging.getLogger('Crawler').error(band_relation)
-                            logging.getLogger('Crawler').error(instruments[0])
-                            logging.getLogger('Crawler').error(inner_relation['pseudonym'])
-                            logging.getLogger('Crawler').error(time_spans)
+                        # try:
+                        #     db_handle.member_played_in_band(member,
+                        #                                     band_relation,
+                        #                                     instruments[0],
+                        #                                     inner_relation['pseudonym'],
+                        #                                     time_spans,
+                        #                                     get_dict_key(MEMBER_STATUS, status)
+                        #                                     )
+                        # except Exception:
+                        #     logging.getLogger('Crawler').exception("Making member connection failed.")
+                        #     logging.getLogger('Crawler').error(member)
+                        #     logging.getLogger('Crawler').error(band_relation)
+                        #     logging.getLogger('Crawler').error(instruments[0])
+                        #     logging.getLogger('Crawler').error(inner_relation['pseudonym'])
+                        #     logging.getLogger('Crawler').error(time_spans)
 
     # Add labels if mode is detailed.
     if is_detailed:
