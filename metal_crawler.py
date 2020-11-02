@@ -195,38 +195,30 @@ class VisitBandThread(threading.Thread):
             else:
                 self.visited_entities['bands'][link_band_temp] = ''
 
-            temp_band_data = crawl_result['bands']
-            temp_artist_data = crawl_result['artists']
-            temp_label_data = crawl_result['labels']
             self.lock.acquire()
 
             try:
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
                 self.band_errors[STATUS_ADDED][link_band_temp] = ''
             except Exception as e:
-                self.logger.exception("Writing artists failed! This is bad. Expect loss of data for:")
-                self.logger.error(temp_band_data)
-                self.logger.error(temp_artist_data)
-                self.logger.error(temp_label_data)
+                self.logger.exception("Writing artists failed! This is bad. Expect loss of data for the above band.")
                 self.band_errors[STATUS_ERROR][link_band_temp] = ''
             finally:
                 self.lock.release()
                 self.update_bar(link_band_temp)
 
             # Saving the data to disk will later enable us to limit getting live data if it is not needed.
-            for i_band in temp_band_data:
-                band = temp_band_data[i_band]
-                actual_band_path = f"databases/{band['country']}"
-                os.makedirs(actual_band_path, exist_ok=True)
-                # We take the band link because it always uses escaped sequences. This way we have the highest
-                # compatibility for writing files in underlying filesystems. The slash must be replaced of course.
-                db_path = Path(f"{actual_band_path}/{band['link'].replace('/', '_')}.json")
-                actual_band_file = open(db_path, "w", encoding="utf-8")
-                # TODO: Add try block for the dump. It crashed once because it found a Tag object.
-                band_data = JSONSerializer.serialize(crawl_result['crawl_result'])
-                band_data_text = json.dumps(band_data)
-                actual_band_file.write(band_data_text)
-                actual_band_file.close()
+            actual_band_path = f"databases/{crawl_result.country}"
+            os.makedirs(actual_band_path, exist_ok=True)
+            # We take the band link because it always uses escaped sequences. This way we have the highest
+            # compatibility for writing files in underlying filesystems. The slash must be replaced of course.
+            db_path = Path(f"{actual_band_path}/{crawl_result.link.replace('/', '_')}.json")
+            actual_band_file = open(db_path, "w", encoding="utf-8")
+            # TODO: Add try block for the dump. It crashed once because it found a Tag object.
+            band_data = JSONSerializer.serialize(crawl_result)
+            band_data_text = json.dumps(band_data)
+            actual_band_file.write(band_data_text)
+            actual_band_file.close()
 
     def crawl_band(self, band_short_link):
         """This is where the magic happens: A short band link is expanded, visited and parsed for data.
@@ -272,21 +264,15 @@ class VisitBandThread(threading.Thread):
         band_data_ref.name = str(s[0].next_element.text)
         band_data_ref.emid = band_short_link[band_short_link.rfind('/') + 1:]
         band_data_ref.link = band_short_link
-
         band_data_ref.visited = str(self.today)
 
-        band_data = {}
         band_id = band_short_link[band_short_link.rfind('/') + 1:]
-        band_data[band_id] = {}
-        band_data[band_id]["link"] = band_short_link
-        band_data[band_id]["visited"] = str(self.today)
-        band_data[band_id]["name"] = str(s[0].next_element.text)
 
         s = band_soup.find_all(attrs={"class": "float_left"})
-        # Saving the country name and link in a dict.
-        country_link = s[1].contents[3].contents[0].attrs["href"][-2:]
         # Take the last two letters of the link.
-        band_data[band_id]["country"] = country_link
+        band_data_ref.country = s[1].contents[3].contents[0].attrs["href"][-2:]
+
+
         location = s[1].contents[7].text
 
         if location == "N/A":
@@ -294,8 +280,8 @@ class VisitBandThread(threading.Thread):
         else:
             location = split_locations(location)
 
-        band_data_ref.country = s[1].contents[3].contents[0].attrs["href"][-2:]
         band_data_ref.location = location
+
         band_data_ref.status = get_dict_key(BAND_STATUS, s[1].contents[11].text)
         band_data_ref.formed = s[1].contents[15].text
 
