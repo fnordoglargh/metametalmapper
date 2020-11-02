@@ -465,9 +465,15 @@ class VisitBandThread(threading.Thread):
             album_link = album_id[38:]
             # Get the ID just to be sure.
             album_id = album_id[album_id.rfind('/') + 1:]
-            album_name = cells[0].text
-            album_type = get_dict_key(RELEASE_TYPES, cells[1].text)
-            album_year = cells[2].text
+
+            release = Release()
+            band_data_ref.releases[album_id] = release
+            release.emid = album_id
+            release.name = cells[0].text
+            release.release_type = get_dict_key(RELEASE_TYPES, cells[1].text)
+            release.release_date = cells[2].text
+            release.link = album_link
+
             album_rating_raw = cells[3].text.rstrip().strip()
             parenthesis_open = album_rating_raw.find('(')
             # Instantiate with data for invalid review and and ratings.
@@ -482,15 +488,8 @@ class VisitBandThread(threading.Thread):
                     review_count = int(split_rating[0].rstrip())
                     album_rating = int(split_rating[1][:-2])
 
-            release = Release()
-            band_data_ref.releases[album_id] = release
-            release.emid = album_id
-            release.name = album_name
-            release.link = album_link
-            release.release_date = album_year
-            release.review_count = review_count
             release.rating = album_rating
-            release.release_type = album_type
+            release.review_count = review_count
 
         logger.debug(f'<<< Crawling [{band_short_link}]')
         return band_data_ref
