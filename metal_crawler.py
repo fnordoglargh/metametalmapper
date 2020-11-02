@@ -235,12 +235,12 @@ class VisitBandThread(threading.Thread):
         if len(band_short_link) is 0:
             return -1
 
-        # TODO: Change your environment or this won't work!
-        # The % escaped glyphs only work if the client.py in http
-        # is changed in putrequest() before self._output() is called.
-        # The line looks like this:
+        # TODO: Change your environment or this doesn't work!
+        # The % escaped glyphs in links only work if the client.py in http
+        # of Python 3.6 is changed in putrequest() right before self._output()
+        # is called. The line looks like this:
         # url = rfc3986.uri_reference(url).unsplit()
-        # Needs to import rfc3986
+        # Needs to import rfc3986.
         link_band = em_link_main + bands + band_short_link
         logger = logging.getLogger('Crawler')
         logger.info(f'>>> Crawling [{band_short_link}]')
@@ -265,8 +265,6 @@ class VisitBandThread(threading.Thread):
         band_data_ref.emid = band_short_link[band_short_link.rfind('/') + 1:]
         band_data_ref.link = band_short_link
         band_data_ref.visited = str(self.today)
-
-        band_id = band_short_link[band_short_link.rfind('/') + 1:]
 
         s = band_soup.find_all(attrs={"class": "float_left"})
         # Take the last two letters of the link.
@@ -419,9 +417,6 @@ class VisitBandThread(threading.Thread):
                 if 'N/A' in name:
                     name = temp_artist_pseudonym
 
-                temp_instruments = actual_row.contents[3].contents[0]
-                instruments = cut_instruments(temp_instruments)
-
                 artist = Artist()
                 band_data_ref.lineup[header_category].append(artist)
                 artist.emid = temp_artist_id
@@ -431,7 +426,7 @@ class VisitBandThread(threading.Thread):
                 artist.age = age
                 artist.origin = origin
                 artist.pseudonym = temp_artist_pseudonym
-                artist.instruments = cut_instruments_alt(temp_instruments)
+                artist.instruments = cut_instruments_alt(actual_row.contents[3].contents[0])
                 artist.visited = str(self.today)
 
         # Happens only for the first band if -s was used as the command line switch.
@@ -439,7 +434,7 @@ class VisitBandThread(threading.Thread):
             self.add_connected_bands_to_queue(band_soup)
 
         # Crawl discography.
-        link_disco = f"https://www.metal-archives.com/band/discography/id/{band_id}/tab/all"
+        link_disco = f"https://www.metal-archives.com/band/discography/id/{band_data_ref.emid}/tab/all"
         disco_soup = cook_soup(link_disco)
 
         if disco_soup is None:
