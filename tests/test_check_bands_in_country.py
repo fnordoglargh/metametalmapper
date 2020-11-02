@@ -32,7 +32,7 @@ band_links_more.sort()
 band_links_less.sort()
 
 
-class MyTestCase(unittest.TestCase):
+class TestCountryCleaning(unittest.TestCase):
     def test_bands_valid(self):
         result_set = check_bands_in_country(true_kings, band_links_expected, '../data')
         self.assertEqual(result_set, ([], [], 'Not a country: "true_kings"'))
