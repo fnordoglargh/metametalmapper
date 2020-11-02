@@ -39,7 +39,7 @@ class Band(StructuredNode):
     locations = ArrayProperty()
     status = StringProperty(choices=BAND_STATUS)
     formed = DateProperty()
-    # active = ArrayProperty()
+    active = ArrayProperty(DateProperty())
     themes = ArrayProperty()  # Should a theme be a node?
     genres = ArrayProperty()
     current_lineup = RelationshipFrom("Member", "PLAYED_IN", model=MemberRelationship)
