@@ -275,7 +275,6 @@ class VisitBandThread(threading.Thread):
         band_data_ref.status = get_dict_key(BAND_STATUS, s[1].contents[11].text)
         band_data_ref.formed = s[1].contents[15].text
 
-        artist_data = {}
         s = band_soup.find_all(attrs={"class": "clear"})
 
         # Get years into a list. Earlier incarnations of a band are ignored.
@@ -434,19 +433,6 @@ class VisitBandThread(threading.Thread):
                 artist.pseudonym = temp_artist_pseudonym
                 artist.instruments = cut_instruments_alt(temp_instruments)
                 artist.visited = str(self.today)
-                artist_data[temp_artist_id] = {}
-                artist_data[temp_artist_id]["link"] = temp_artist_link
-                artist_data[temp_artist_id]["name"] = name
-                artist_data[temp_artist_id]["exists"] = artist_exists
-                artist_data[temp_artist_id]["visited"] = str(self.today)
-                artist_data[temp_artist_id]["gender"] = gender
-                artist_data[temp_artist_id]["age"] = age
-                artist_data[temp_artist_id]["origin"] = origin
-                artist_data[temp_artist_id]["bands"] = {}
-                artist_data[temp_artist_id]["bands"][band_id] = {}
-                artist_data[temp_artist_id]["bands"][band_id]["pseudonym"] = temp_artist_pseudonym
-                # Last replace is not a normal white space (\xa0).
-                artist_data[temp_artist_id]["bands"][band_id][header_category] = instruments
 
         # Happens only for the first band if -s was used as the command line switch.
         if self.is_single_mode:
