@@ -676,7 +676,11 @@ def make_active_list(raw_activity):
             continue
 
         temp_slots = time_slot.split('-')
-        time_slot_1 = date(int(temp_slots[0]), 1, 1)
+
+        try:
+            time_slot_1 = date(int(temp_slots[0]), 1, 1)
+        except ValueError:
+            continue
 
         if len(temp_slots) is 1:
             time_slot_2 = time_slot_1
@@ -684,7 +688,10 @@ def make_active_list(raw_activity):
             if 'present' in temp_slots[1] or '?' in temp_slots[1]:
                 temp_year = date.today().year
             else:
-                temp_year = int(temp_slots[1])
+                try:
+                    temp_year = int(temp_slots[1])
+                except ValueError:
+                    continue
 
             time_slot_2 = date(temp_year, 12, 31)
 

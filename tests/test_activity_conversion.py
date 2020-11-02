@@ -19,6 +19,28 @@ class TestBandActivityConversion(unittest.TestCase):
         expected_result.append(date(date.today().year, 12, 31))
         self.assertEqual(expected_result, make_active_list(valid_dates))
 
+    def test_error_cases(self):
+        invalid_date = ['?-2000']
+        expected_result = []
+        self.assertEqual(expected_result, make_active_list(invalid_date))
+
+        invalid_date = ['2000-?']
+        expected_result = []
+        self.assertEqual(expected_result, make_active_list(invalid_date))
+
+        invalid_date = ['N/A']
+        expected_result = []
+        self.assertEqual(expected_result, make_active_list(invalid_date))
+
+        invalid_date = ['gnsdofhn']
+        expected_result = []
+        self.assertEqual(expected_result, make_active_list(invalid_date))
+
+    def mixed_cases(self):
+        invalid_date = ['?-2000', '2001-2001', 'argl', '2001-asfd', 2003, '2003-?']
+        expected_result = [date(2001, 1, 1), date(2001, 12, 31), date(2003, 1, 1), date(date.today().year, 12, 31)]
+        self.assertEqual(expected_result, make_active_list(invalid_date))
+
 
 if __name__ == '__main__':
     unittest.main()
