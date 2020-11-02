@@ -395,9 +395,7 @@ class VisitBandThread(threading.Thread):
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                     gender = str(member_info.contents[9].contents[7].contents[0])
 
-                    if gender not in GENDER.values():
-                        gender = 'U'
-                    else:
+                    if gender in GENDER.values():
                         gender = get_dict_key(GENDER, gender)
 
                     temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
