@@ -228,7 +228,7 @@ class VisitBandThread(threading.Thread):
 
         :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
         :return:
-            A dictionary with band, artist and label data of the visited band or
+            A Band instance with band, artist and label data of the visited band or
             -1 in an error case.
         """
 
@@ -275,10 +275,6 @@ class VisitBandThread(threading.Thread):
         band_data_ref.status = get_dict_key(BAND_STATUS, s[1].contents[11].text)
         band_data_ref.formed = s[1].contents[15].text
 
-        band_data[band_id]["location"] = location
-        band_data[band_id]["status"] = get_dict_key(BAND_STATUS, s[1].contents[11].text)
-        band_data[band_id]["formed"] = s[1].contents[15].text
-        band_data[band_id]["active"] = []
         artist_data = {}
         s = band_soup.find_all(attrs={"class": "clear"})
 
@@ -292,12 +288,9 @@ class VisitBandThread(threading.Thread):
             # First one filters the earlier incarnation. The second one is for a bit more obscure use case. In that an
             # earlier incarnation exists but has a comma in the name (leading for the latter portion to be split).
             if '(as' not in year_token and ')' not in year_token:
-                band_data[band_id]["active"].append(year_token.lstrip())
                 band_data_ref.active.append(year_token.lstrip())
 
         s = band_soup.find_all(attrs={"class": "float_right"})
-        band_data[band_id]["genre"] = split_genres(s[3].contents[3].contents[0])
-        band_data[band_id]["theme"] = s[3].contents[7].contents[0].split(', ')
         band_data_ref.genres = split_genres(s[3].contents[3].contents[0])
         band_data_ref.theme = s[3].contents[7].contents[0].split(', ')
 
@@ -322,8 +315,6 @@ class VisitBandThread(threading.Thread):
                 logger.error(str(s[3]))
                 raise ValueError('Label node must not be empty.')
 
-        band_data[band_id]["label"] = label_id
-        label_data = {label_id: {"name": label_name, "link": label_link}}
         band_data_ref.label.emid = label_id
         band_data_ref.label.name = label_name
         band_data_ref.label.link = label_link
@@ -332,7 +323,6 @@ class VisitBandThread(threading.Thread):
         artists_and_bands = band_soup.find_all(attrs={"class": "ui-tabs-panel-content"})
         artists_and_band_element = artists_and_bands[0]
         actual_category = artists_and_band_element.contents[1].contents
-        band_data[band_id]["lineup"] = {}
 
         # This check sets a flag if a band e.g. only has a "last known" lineup. In that case it is not "diverse".
         lineup_finder = band_soup.find_all(attrs={"href": "#band_tab_members_all"})
@@ -373,7 +363,6 @@ class VisitBandThread(threading.Thread):
             if header_category not in band_data_ref.lineup.keys() and header_category is not '':
                 # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
                 # always have a valid value.
-                band_data[band_id]["lineup"][header_category] = []
                 band_data_ref.lineup[header_category] = []
             elif header_category is '':
                 # For the unlikely case that the header category is not found.
@@ -445,7 +434,6 @@ class VisitBandThread(threading.Thread):
                 artist.pseudonym = temp_artist_pseudonym
                 artist.instruments = cut_instruments_alt(temp_instruments)
                 artist.visited = str(self.today)
-                band_data[band_id]["lineup"][header_category].append(temp_artist_id)
                 artist_data[temp_artist_id] = {}
                 artist_data[temp_artist_id]["link"] = temp_artist_link
                 artist_data[temp_artist_id]["name"] = name
@@ -476,14 +464,13 @@ class VisitBandThread(threading.Thread):
         table = disco_soup.find('table', attrs={'class': 'display discog'})
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
-        band_data[band_id]['releases'] = []
 
         for row in rows:
             cells = row.findAll("td")
 
             # Guard clause for the unlikely case if a band has no releases.
             if len(cells) is 1:
-                logger.debug(f"  No releases found for {band_data[band_id]['name']}.")
+                logger.debug(f"  No releases found for {band_data_ref.name}.")
                 continue
 
             # TODO: Visit release page to get details like the actual release date instead of only the year.
@@ -519,18 +506,8 @@ class VisitBandThread(threading.Thread):
             release.rating = album_rating
             release.release_type = album_type
 
-            band_data[band_id]['releases'].append({
-                'emid': album_id,
-                'name': album_name,
-                'type': album_type,
-                'release_date': album_year,
-                'rating': album_rating,
-                'review_count': review_count,
-                'link': album_link
-            })
-
         logger.debug(f'<<< Crawling [{band_short_link}]')
-        return {'bands': band_data, 'artists': artist_data, 'labels': label_data, 'crawl_result': band_data_ref}
+        return band_data_ref
 
     def add_connected_bands_to_queue(self, band_soup):
         """Extracts all band links from the given band soup and adds them to the queue, resets the single mode flag and
@@ -679,7 +656,6 @@ def make_active_list(raw_activity):
 
 def apply_to_db(band: Band, db_handle, is_detailed):
     logger = logging.getLogger('Crawler')
-    band = band['crawl_result']
     logger.debug("Apply to DB...")
 
     # Serialize a Band object and massage it so that the DB model understands it.
