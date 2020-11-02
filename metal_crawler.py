@@ -177,10 +177,10 @@ class VisitBandThread(threading.Thread):
                 crawl_result = self.crawl_band(link_band_temp)
             except Exception:
                 self.logger.exception("Something bad happened while crawling.")
-                crawl_result = -1
+                crawl_result = None
 
             # Error case: putting the link back into circulation.
-            if crawl_result == -1:
+            if crawl_result is None:
                 if link_band_temp not in self.band_errors[STATUS_ERROR].keys():
                     self.band_errors[STATUS_ERROR][link_band_temp] = 1
                 else:
@@ -229,11 +229,11 @@ class VisitBandThread(threading.Thread):
         :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
         :return:
             A Band instance with band, artist and label data of the visited band or
-            -1 in an error case.
+            `None` in an error case.
         """
 
         if len(band_short_link) is 0:
-            return -1
+            return None
 
         # TODO: Change your environment or this doesn't work!
         # The % escaped glyphs in links only work if the client.py in http
@@ -247,7 +247,7 @@ class VisitBandThread(threading.Thread):
         band_soup = cook_soup(link_band)
 
         if band_soup is None:
-            return -1
+            return None
 
         logger.debug("  Start scraping from actual band.")
         # Finds band name; needs to extract the ID later.
@@ -257,7 +257,7 @@ class VisitBandThread(threading.Thread):
             logger.fatal(f"  Did not find the attribute band_name for {band_short_link}.")
             logger.debug("  Band page source for reference:")
             logger.debug(band_soup.text)
-            return -1
+            return None
 
         # All data of a band is collected here.  Band members are referenced and collected in their own collection.
         band_data_ref = Band()
@@ -410,7 +410,7 @@ class VisitBandThread(threading.Thread):
                 else:
                     # Error case. artist_soup is invalid and the artist does not exist.
                     if not artist_exists:
-                        return -1
+                        return None
 
                 # If the band member does not have a name in the database we simply use the pseudonym. This
                 # unfortunately overwrites the name with whatever pseudonym we found last.
@@ -440,7 +440,7 @@ class VisitBandThread(threading.Thread):
         if disco_soup is None:
             logger.error(f"  Unable to get the discography for {band_short_link}.")
             # We have to throw everything away and start anew.
-            return -1
+            return None
 
         table = disco_soup.find('table', attrs={'class': 'display discog'})
         table_body = table.find('tbody')
@@ -702,7 +702,7 @@ def cook_soup(link, retry_count=5):
 
     :param link: URL to get the web page from.
     :param retry_count: Set to any number greater than 0 (will be set internally to 1 if smaller than 1).
-    :return: Either a BeautifulSoup object of the requested page or ``None`` if the request failed.
+    :return: Either a BeautifulSoup object of the requested page or `None` if the request failed.
     """
     logger = logging.getLogger('Crawler')
     # Set to 1 if value is invalid.
