@@ -9,6 +9,10 @@ class TestLocationCutting(unittest.TestCase):
         expected = ['']
         self.assertEqual(expected, split_locations(location_ma))
 
+        location_ma = 'N/A'
+        expected = ['N/A']
+        self.assertEqual(expected, split_locations(location_ma))
+
         location_ma = 'Los Angeles/San Francisco, California'
         expected = ['Los Angeles', 'California']
         self.assertEqual(expected, split_locations(location_ma))

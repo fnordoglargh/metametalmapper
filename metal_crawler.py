@@ -271,17 +271,7 @@ class VisitBandThread(threading.Thread):
         s = band_soup.find_all(attrs={"class": "float_left"})
         # Take the last two letters of the link.
         band_data_ref.country = s[1].contents[3].contents[0].attrs["href"][-2:]
-
-
-        location = s[1].contents[7].text
-
-        if location == "N/A":
-            location = ["N/A"]
-        else:
-            location = split_locations(location)
-
-        band_data_ref.location = location
-
+        band_data_ref.location = split_locations(s[1].contents[7].text)
         band_data_ref.status = get_dict_key(BAND_STATUS, s[1].contents[11].text)
         band_data_ref.formed = s[1].contents[15].text
 

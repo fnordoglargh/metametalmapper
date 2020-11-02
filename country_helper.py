@@ -208,13 +208,16 @@ def split_locations(locations: str):
     :param locations: An untreated string that is expected to contain a pair of values, a city and a state in the
     country of origin. It gets complicated from there on.
     :return: A List containing at least one empty string (in case of errors). If the first element is not an empty
-    string, it's guaranteed to be a city. If followed by a second element it is (should be) a state or territory.
+    string or "N/A", it's guaranteed to be a city. If followed by a second element it is (should be) a state or territory.
     """
     cleaned_locations = []
 
     # Early return if the string is empty.
     if locations is '':
         cleaned_locations.append('')
+        return cleaned_locations
+    elif locations == 'N/A':
+        cleaned_locations.append('N/A')
         return cleaned_locations
 
     search_early = '(early)'
