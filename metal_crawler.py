@@ -1009,7 +1009,6 @@ def read_user_input():
 def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     # TODO: Add comment and parameter description.
     logger = logging.getLogger('Crawler Prep')
-    logger.debug('>>> Crawling all bands.')
     logger.info("Starting band crawl. All logging is diverted to file. Prepping database:")
     local_bands_queue = queue.Queue()
 
@@ -1052,7 +1051,7 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
         STATUS_INITIAL: 0
     }
 
-    print("Press Q and <ENTER> to stop crawl. All threads will finish their current work and then stop.")
+    print("\nPress Q and <ENTER> to stop crawl. All threads will finish their current work and then stop.\n")
 
     # Create threads.
     for i in range(0, thread_count):
@@ -1105,4 +1104,4 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     if len(bands_status[STATUS_ADDED]) > 0:
         logger.info(f'{len(bands_status[STATUS_ADDED])} of {band_count} bands were added.')
 
-    logger.info('<<< Crawling all bands')
+    logger.debug('Finished crawling bands,')
