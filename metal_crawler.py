@@ -397,6 +397,9 @@ class VisitBandThread(threading.Thread):
 
                     if gender in GENDER.values():
                         gender = get_dict_key(GENDER, gender)
+                    else:
+                        logger.error(f'Encountered unrecognized gender: {gender}')
+                        gender = "U"
 
                     temp_age = str(member_info.contents[7].contents[7].contents[0]).lstrip().rstrip()
                     # Age strings contain either an N/A or are YY (born ...).

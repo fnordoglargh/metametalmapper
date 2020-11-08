@@ -45,5 +45,7 @@ RELEASE_TYPES = {
 GENDER = {
     'M': 'Male',
     'F': 'Female',
-    'U': 'Unknown/other'
+    'U': 'Unknown',
+    'O': 'Other',
+    'N': 'Non-binary'
 }
