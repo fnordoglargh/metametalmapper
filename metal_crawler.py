@@ -328,6 +328,7 @@ class VisitBandThread(threading.Thread):
         if len(lineup_finder) == 0:
             is_lineup_diverse = False
 
+        # Needs to be outside because it won't be set in every iteration of the loop.
         header_category = ''
 
         # The contents of actual_category starts with a LF (`Navigable String`) and has a LF at every even position.
@@ -411,7 +412,7 @@ class VisitBandThread(threading.Thread):
                     if 'N/A' not in member_info.contents[9].contents[3].text:
                         origin = member_info.contents[9].contents[3].contents[1].attrs['href'][-2:]
                 else:
-                    # Error case. artist_soup is invalid and the artist does not exist.
+                    # Error case: artist_soup is invalid and the artist does not exist.
                     if not artist_exists:
                         return None
 
