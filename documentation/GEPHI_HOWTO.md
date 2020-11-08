@@ -6,12 +6,12 @@ how to massage a graph into something useful.
 
 ## Preparing a graph
 
-For this example we use Lebanon with its manageable 51 bands (Dec 2019). Call
-`meta_metal_mapper` three times with the following parameters:
+For this example we use Lebanon (country code _LB_) with its manageable 53 bands
+(Nov 2020). Call `meta_metal_mapper` three times with the following parameters:
 
-1. `-c LB`
-2. `-b -F LB`
-3. `-y`
+1. `-i LB`
+2. `-c LB`
+3. `-y LB`
 
 Open the resulting `.graphml` in Gephi and make the following changes. They are
 going to change the node size based on their degree (amount of connections to
@@ -47,9 +47,9 @@ not connected to the main graph won't be shown.
 The graph is a bit thin. Let's add bands from Syria (SY), United Arab Emirates
 (AE) and Kuwait (KW).
 
-1. `-c SY,AE,KW`
-2. `-b -F SY,AE,KW`
-3. `-y`
+1. `-i SY AE KW`
+2. `-c SY AE KW`
+3. `-y ALL` or `-y LB SY AE KW`
 
 Load the new file into Gephi. It looks a bit bland, but we can let Gephi apply some color.
 

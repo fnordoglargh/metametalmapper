@@ -40,7 +40,8 @@ all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and use
     'with the ID to write a file with all band links from the given country. See list (-l) below.'
 region_text = '-r <region ID>: Crawls a predefined region (call -l for sample IDs or try NCO to get short links of ' \
     'all Nordic Countries).'
-crawl_text = 'Crawls a file with short links either from running -a, -i, -c or your own. If a region or country short '\
+crawl_text = 'Crawls a list of 1 to n files, regions or country shorts. The files are generated either from running ' \
+    '-a, -i, -c or by putting links by hand into a file. If a region or country short '\
     f'(see -l) is specified, it will try finding a generated file in sub-folder "{FOLDER_LINKS}".'
 analyze_full_text = 'Prints and exports a raw data report of the active database and also exports a GraphML file of ' \
     'all bands (including their implicit connections through artists). Either use "ALL" for the entire database or a ' \
@@ -140,7 +141,7 @@ def main():
     arg_parser.add_argument('-a', action="store_true", help=all_links_text)
     arg_parser.add_argument('-i', nargs='+', help=all_countries_text, metavar='COUNTRY_SHORT')
     arg_parser.add_argument('-r', help=region_text, metavar='REGION_ID')
-    arg_parser.add_argument('-c', help=crawl_text, metavar='FILE_OR_REGION_OR_COUNTRY_SHORT')
+    arg_parser.add_argument('-c', nargs='+', help=crawl_text, metavar='FILE_OR_REGION_OR_COUNTRY_SHORT')
     arg_parser.add_argument('-y', nargs='+', help=analyze_full_text, metavar='REGION_OR_COUNTRY_SHORT')
     arg_parser.add_argument('-z', action="store_true", help=analyze_light_text)
     arg_parser.add_argument('-l', action="store_true", help=list_text)
@@ -197,37 +198,41 @@ def main():
             flush_queue(region, link_list)
     # Crawl country, region or file.
     elif args.c is not None:
-        # Test if parameter is a valid region or country.
-        if args.c in COUNTRY_NAMES.keys() or args.c in REGIONS.keys():
-            country_region_file = Path(f'{FOLDER_LINKS}/{args.c}{LINK_EXTENSION}')
-        # ...or take it as file name unconditionally.
-        else:
-            country_region_file = Path(args.c)
+        db_handle = init_db()
+        if db_handle is None:
+            # Do not continue if the DB is not available.
+            exit(-1)
 
-        logger.info(f'File loaded for crawling: {country_region_file}')
-        sanitized_bands = []
+        for argument in args.c:
+            print()
+            # Test if parameter is a valid region or country.
+            if argument in COUNTRY_NAMES.keys() or argument in REGIONS.keys():
+                country_region_file = Path(f'{FOLDER_LINKS}/{argument}{LINK_EXTENSION}')
+            # ...or take it as file name unconditionally.
+            else:
+                country_region_file = Path(argument)
 
-        if country_region_file.is_file():
-            band_links = country_region_file.read_text(encoding='utf-8').split('\n')
-            # Remove last element from list if it's a lonely, empty string.
-            if band_links[-1] == '':
-                del band_links[-1]
+            logger.info(f'File loaded for crawling: {country_region_file}')
+            sanitized_bands = []
 
-            # For testing a  file may contain hash commented lines. Here we filter for those.
-            for line in band_links:
-                if not line.startswith('#'):
-                    sanitized_bands.append(line)
-        else:
-            logger.error(f'File {country_region_file} was not readable.')
+            if country_region_file.is_file():
+                band_links = country_region_file.read_text(encoding='utf-8').split('\n')
+                # Remove last element from list if it's a lonely, empty string.
+                if band_links[-1] == '':
+                    del band_links[-1]
 
-        if len(sanitized_bands) is not 0:
-            db_handle = init_db()
-            if db_handle is not None:
+                # For testing a file may contain hash commented lines. Here we filter for those.
+                for line in band_links:
+                    if not line.startswith('#'):
+                        sanitized_bands.append(line)
+            else:
+                logger.error(f'File {country_region_file} was not readable.')
+
+            if len(sanitized_bands) is not 0:
                 crawl_bands(sanitized_bands, db_handle)
                 save_genres()
-        else:
-            logger.error(
-                'No bands to crawl. Check your input files.')
+            else:
+                logger.error('No bands to crawl. Check your input files.')
     elif args.y is not None or args.z:
         if args.z:
             report_mode = ReportMode.CountryOff
