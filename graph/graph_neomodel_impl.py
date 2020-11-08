@@ -404,7 +404,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 for release in band.releases:
                     release_report.process_release(
                         COUNTRY_NAMES[band.country], band.emid, band.name, release.name, release.link,
-                        RELEASE_TYPES[release.type], release.release_date, release.rating, release.review_count
+                        RELEASE_TYPES[release.release_type], release.release_date, release.rating, release.review_count
                     )
 
             band_counter += 1
