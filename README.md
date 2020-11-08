@@ -122,6 +122,13 @@ the best albums, EPs and demos.
 
 ## Version History
 
+### 0.97.5 (2020-11-09)
+* Integrated handling of more gender options.
+* Fixed defects where new libraries needed different error handling.
+* Made crawling (option `-c`) consistent with the other options; it now accepts
+  a list of country or region shorts or file names instead of a single argument.
+* Refactored handling of internal data to dataclasses.
+
 ### 0.97.4 (2020-10-27)
 * Added ASCII art logos at startup.
 * Refactored the console logging (colors for bad things and less detailed).
