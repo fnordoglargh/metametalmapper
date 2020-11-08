@@ -175,8 +175,8 @@ class VisitBandThread(threading.Thread):
 
             try:
                 crawl_result = self.crawl_band(link_band_temp)
-            except Exception:
-                self.logger.exception("Something bad happened while crawling.")
+            except Exception as e:
+                self.logger.exception('Something bad happened while crawling.', e)
                 crawl_result = None
 
             # Error case: putting the link back into circulation.
@@ -201,7 +201,7 @@ class VisitBandThread(threading.Thread):
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
                 self.band_errors[STATUS_ADDED][link_band_temp] = ''
             except Exception as e:
-                self.logger.exception("Writing artists failed! This is bad. Expect loss of data for the above band.")
+                self.logger.exception('Writing artists failed! This is bad. Expect loss of data for the above band.', e)
                 self.band_errors[STATUS_ERROR][link_band_temp] = ''
             finally:
                 self.lock.release()
@@ -353,7 +353,7 @@ class VisitBandThread(threading.Thread):
                 if not is_lineup_diverse:
                     test_header2 = str(band_soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                     header_category = lineup_mapping[test_header2]
-                    logger.debug(f"  Didn't find a header. Digging deeper: {header_category}")
+                    logger.debug(f"  Did not find a header. Digging deeper: {header_category}")
             elif last_found_header == "lineupBandsRow":
                 pass
 
@@ -374,7 +374,7 @@ class VisitBandThread(threading.Thread):
                 temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
                 temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
                 temp_artist_pseudonym = str(actual_row.contents[1].contents[1].contents[0])
-                logger.debug(f"    Recording artist data for {temp_artist_pseudonym}.")
+                logger.debug(f"  Recording artist data for {temp_artist_pseudonym}.")
 
                 # Don't visit known band members.
                 if temp_artist_link in self.visited_entities['artists']:
@@ -545,9 +545,8 @@ def make_band_list(country_links):
 
         try:
             json_data = json.loads(json_data_string)
-        except Exception:
-            logger.error(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
-            country_links.put(link_country_temp)
+        except Exception as e:
+            logger.exception(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...', e)
 
         if json_data is None:
             country_links.put(link_country_temp)
@@ -667,7 +666,11 @@ def apply_to_db(band: Band, db_handle, is_detailed):
             temp_member_dict = JSONSerializer.serialize(member)
             temp_member_dict['visited'] = datetime.strptime(member.visited, "%Y-%m-%d").date()
             logger.debug(f"  Writing data for artist {temp_member_dict['link']}.")
-            db_handle.add_member(temp_member_dict)
+
+            try:
+                db_handle.add_member(temp_member_dict)
+            except Exception as e:
+                logger.exception(f'Adding the band member was unsuccessful: {member.link}', e)
 
             for instrument in member.instruments:
                 try:
@@ -680,13 +683,13 @@ def apply_to_db(band: Band, db_handle, is_detailed):
                         get_dict_key(MEMBER_STATUS, status)
                     )
                 except Exception as e:
-                    logging.getLogger('Crawler').exception("Making member connection failed.", exc_info=True)
-                    logging.getLogger('Crawler').error(member)
-                    logging.getLogger('Crawler').error(band.emid)
-                    logging.getLogger('Crawler').error(instrument[0])
-                    logging.getLogger('Crawler').error(member.pseudonym)
-                    logging.getLogger('Crawler').error(make_time_spans(instrument[1]))
-                    logging.getLogger('Crawler').error(get_dict_key(MEMBER_STATUS, status))
+                    logger.exception("Making member connection failed.", e, exc_info=True)
+                    logger.error(member)
+                    logger.error(band.emid)
+                    logger.error(instrument[0])
+                    logger.error(member.pseudonym)
+                    logger.error(make_time_spans(instrument[1]))
+                    logger.error(get_dict_key(MEMBER_STATUS, status))
 
     # Add labels if mode is detailed.
     if is_detailed:
