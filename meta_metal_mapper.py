@@ -133,7 +133,7 @@ def main():
                 1.  Get a list of bands (-a, -c, -r).
                 2a. Crawl one band through its short link (-s <link>) without stage 1.
                 2b. Crawl a list of bands generated in stage 1 (by filename).
-                3.  Analyze the gathered data  
+                3.  Analyze the gathered data.
     
             NOTE: Parameters are given priority based on their stage and cannot be mixed.
         '''))
