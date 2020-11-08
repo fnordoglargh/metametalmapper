@@ -145,16 +145,16 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def get_all_links_interface(self) -> dict:
         all_links = {'bands': {}, 'artists': {}}
-        print('  Getting all known bands.')
+        self.logger.info('  Getting all known bands.')
         all_bands = Band.nodes.all()
-        print(f'    ...found {len(all_bands)}')
+        self.logger.info(f'    ...found {len(all_bands)}')
 
         for band in all_bands:
             all_links['bands'][band.link] = band.visited
 
-        print('  Getting all known artists.')
+        self.logger.info('  Getting all known artists.')
         all_artists = Member.nodes.all()
-        print(f'    ...found {len(all_artists)}')
+        self.logger.info(f'    ...found {len(all_artists)}')
 
         for artist in all_artists:
             all_links['artists'][artist.link] = artist.visited
@@ -312,7 +312,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         progress_bar = progressbar.ProgressBar(max_value=len(bands))
         band_counter = 0
         member_counter = 0
-        print(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
+        self.logger.info(f'Iterating {COUNTRY_NAMES[country_short]}\'s bands for gender and genre statistics.')
         genres = defaultdict(int)
 
         for band in bands:
@@ -354,7 +354,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         artists_total = 0
         artists_per_country = defaultdict(int)
 
-        print('  Getting all artists.')
+        self.logger.info('  Getting all artists.')
 
         for gender_key in GENDER:
             artists = Member.nodes.filter(gender__exact=gender_key)
@@ -365,13 +365,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             genders[gender_key] = len(artists)
             artists_total += genders[gender_key]
 
-        print(f'    ...found {artists_total}')
-        print('  Getting all bands.')
+        self.logger.info(f'    ...found {artists_total}')
+        self.logger.info('  Getting all bands.')
         bands_all = Band.nodes.all()
         band_count = len(bands_all)
         bands_filtered = defaultdict(list)
-        print(f'    ...found {band_count}')
-        print('  Filtering bands.')
+        self.logger.info(f'    ...found {band_count}')
+        self.logger.info('  Filtering bands.')
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
         # e.g. percentages.
@@ -392,7 +392,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             release_types.append(RELEASE_TYPES[release_type])
 
         release_report = ReleaseReport(release_types)
-        print('  Prep done. Processing releases and genres.')
+        self.logger.info('  Prep done. Processing releases and genres.')
         progress_bar = progressbar.ProgressBar(max_value=len(bands_all))
         band_counter = 0
 
@@ -411,7 +411,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             progress_bar.update(band_counter)
 
         progress_bar.finish()
-        print('  Releases processed. Creating database report.')
+        self.logger.info('  Releases processed. Creating database report.')
         db_report = DatabaseReport(band_count, genders, artists_total, artists_per_country, genres, release_report,
                                    report_mode)
         country_diff = set(country_shorts) - set(bands_filtered.keys())
@@ -428,7 +428,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             print(diff_report)
 
         if report_mode is ReportMode.CountryOn:
-            print('  Creating country reports.')
+            self.logger.info('  Creating country reports.')
         # Prepping such a loop with 11k bands may well take 2.5s to 3.2s.
         for iso_short, bands in bands_filtered.items():
             db_report.add_country_report(self.generate_country_report(iso_short, bands))

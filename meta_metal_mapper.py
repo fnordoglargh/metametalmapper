@@ -6,83 +6,53 @@ said data.
 """
 
 import sys
-import getopt
-
 import logging.config
+from pathlib import Path
+# Needed to correctly interpret log_color in the loggerConfig.yaml.
+from colorlog import ColoredFormatter
 import yaml
-from enum import Enum
+import argparse
+import textwrap
 
-from metal_crawler import *
+from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN, LINK_EXTENSION
+from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
+from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.metal_graph import GraphDatabaseContext
-from graph.export_graph import GraphExportContext, GraphMLExporter
 from graph.report import ReportMode
-from global_helpers import *
-from country_helper import REGIONS, print_regions, print_countries, COUNTRY_NAMES, clean_short_links
+from graph.export_graph import GraphExportContext, GraphMLExporter
 from genre import save_genres
 from html_exporter import generate_html_report
+from logo import get_logo
 
 __author__ = 'Martin Woelke'
+# https://opensource.org/licenses/NPOSL-3.0
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019-2020, Martin Woelke'
-# https://opensource.org/licenses/NPOSL-3.0
-__version__ = '0.97.2'
 __status__ = 'Development'
 
+file_name_a = BAND_LINK_FILE_NAME.format('NN')
+single_text = 'Crawls the given short link (e.g. Darkthrone/146) and all connected bands.'
+all_links_text = f'Crawls all countries for bands and saves them in files named {file_name_a} (where NN is the two ' \
+    f'letter short form of a given country). The files are put into sub-folder "{FOLDER_LINKS}". This action can take '\
+    'almost 10 minutes.'
+all_countries_text = 'Crawls the supplied countries (e.g. NO for Norway) and uses the standard file name together ' \
+    'with the ID to write a file with all band links from the given country. See list (-l) below.'
+region_text = '-r <region ID>: Crawls a predefined region (call -l for sample IDs or try NCO to get short links of ' \
+    'all Nordic Countries).'
+crawl_text = 'Crawls a file with short links either from running -a, -i, -c or your own. If a region or country short '\
+    f'(see -l) is specified, it will try finding a generated file in sub-folder "{FOLDER_LINKS}".'
+analyze_full_text = 'Prints and exports a raw data report of the active database and also exports a GraphML file of ' \
+    'all bands (including their implicit connections through artists). Either use "ALL" for the entire database or a ' \
+    'list of country shorts or regions as parameter. Note: The country analysis depends on having all bands for a ' \
+    'given country. It will function properly but calculate bogus numbers.'
+analyze_light_text = 'The "diet version" of -y without the country report. Use this mode to analyze data from the ' \
+    'crawl mode -s.'
 
-class CrawlMode(Enum):
-    Error = -1
-    CrawlCountry = 0
-    CrawlAllCountries = 1
-    CrawlBands = 2
-    AnalyseDatabase = 3
-    DisplayInfo = 4
-    CrawlRegion = 5
-    Test = 6
-    CrawlSingle = 7
-    AnalyseDbNoCountries = 8
+list_text = 'List available countries and regions.'
 
-
-def print_help():
-    file_name_a = BAND_LINK_FILE_NAME.format('NN')
-    print(
-        f'\n'
-        f'Supported modes:\n'
-        f'  Crawl M-A for band links:\n'
-        f'    -s: <short link>: Crawls the given short link (e.g. Darkthrone/146) and all\n'
-        f'      connected bands.'
-        f'    -a: Crawls all countries for bands and saves them in files named {file_name_a}\n'
-        f'      (where NN is the two letter short form of a given country). The files are put\n'
-        f'      into sub-folder {FOLDER_LINKS}. This action can take almost 10 minutes.\n'
-        f'    -c <country IDs>: Crawls the supplied countries (e.g. NO for Norway)\n'
-        f'      and uses the standard file name together with the ID to write a\n'
-        f'      file with all band links from the given country. See list (-l) below.\n'
-        f'      The country shorts must always be separated by commas without spaces or be\n'
-        f'      enclosed by quotation-marks if they contain spaces.\n'
-        f'    -r <region ID>: Crawls a predefined region (call -l for example IDs or try NCO\n'
-        f'      to get short links of all Nordic Countries).\n'
-        f'  Crawl M-A for band, artist and release data:\n'
-        f'    -b: Crawls all bands in the generated files from option -a\n'
-        f'      (or -c if you specify your own file with -f).\n'
-        f'    -f <filename>: filename is a parameter to override the standard file name\n'
-        f'      for -b or -c and is used either to write an output file or to read an\n'
-        f'      input file.\n'
-        f'    -F <country IDs>: Takes a list two-letter country short names and tries\n'
-        f'      to find the them in the standard file names inside the links folder.\n'
-        f'      Needs to be used with -b.\n'
-        f'  Analysis:\n'
-        f'    -y: Prints a raw data report of the active database and exports a GraphML file\n'
-        f'      of all bands (including their implicit connections through artists).\n'
-        f'    -z: Does the same as "-y" but expects a list of 1 to n countries or regions.\n'
-        f'      The list items must always be separated by commas without spaces or be\n'
-        f'      enclosed by quotation-marks.\n'
-        f'      Note: The country analysis depends on having all bands for a given country.\n'
-        f'        It will function properly but calculate bogus numbers.\n'
-        f'    -x: The "diet version of "-y" without the country report. Use this mode together\n'
-        f'      with the crawl mode "-s".\n'
-        f'  Miscellaneous:\n'
-        f'    -l: List available countries and regions.\n'
-    )
+# Indication of a parameter
+not_set = 'not_set'
 
 
 def flush_queue(country_short, link_list):
@@ -131,19 +101,7 @@ def init_db():
     return db_handle
 
 
-def main(argv):
-    try:
-        # TODO: Fix defect while using -c and -f together.
-        opts, args = getopt.getopt(argv, 'dbac:hf:F:txyz:lr:s:')
-    except getopt.GetoptError:
-        print_help()
-        sys.exit(2)
-
-    # Display help text if no switches are supplied.
-    if not opts:
-        print_help()
-        sys.exit(0)
-
+def main():
     with open('loggerConfig.yaml', 'r') as log_config:
         log_config = yaml.safe_load(log_config.read())
         logging.config.dictConfig(log_config)
@@ -151,9 +109,8 @@ def main(argv):
     # Change to a terminal size in which everything fits.
     # os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
-    logger.debug('***************************************************************')
-    logger.info(f'meta metal mapper {__version__}')
-    mode = CrawlMode.Error
+    logger.debug(f'\nWelcome to meta metal mapper {__version__}')
+    print(get_logo())
 
     # Check necessary FOLDERS_MAIN exist, try to create them otherwise.
     for folder in FOLDERS_MAIN:
@@ -167,71 +124,66 @@ def main(argv):
         else:
             logger.debug(f'Standard directory {folder} exists.')
 
-    file_names = []
-    country_links = []
-    is_detailed = False
+    arg_parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                         description=textwrap.dedent('''\
+            Crawls and (meta) analyzes date from M-A.
+    
+            It's run in two to three stages:
+                1.  Get a list of bands (-a, -c, -r).
+                2a. Crawl one band through its short link (-s <link>) without stage 1.
+                2b. Crawl a list of bands generated in stage 1 (by filename).
+                3.  Analyze the gathered data  
+    
+            NOTE: Parameters are given priority based on their stage and cannot be mixed.
+        '''))
+    arg_parser.add_argument('-s', help=single_text, metavar='MA_SHORT_LINK')
+    arg_parser.add_argument('-a', action="store_true", help=all_links_text)
+    arg_parser.add_argument('-i', nargs='+', help=all_countries_text, metavar='COUNTRY_SHORT')
+    arg_parser.add_argument('-r', help=region_text, metavar='REGION_ID')
+    arg_parser.add_argument('-c', help=crawl_text, metavar='FILE_OR_REGION_OR_COUNTRY_SHORT')
+    arg_parser.add_argument('-y', nargs='+', help=analyze_full_text, metavar='REGION_OR_COUNTRY_SHORT')
+    arg_parser.add_argument('-z', action="store_true", help=analyze_light_text)
+    arg_parser.add_argument('-l', action="store_true", help=list_text)
+    args = arg_parser.parse_args()
 
-    for opt, arg in opts:
-        if opt == '-h':
-            print_help()
-            sys.exit()
-        elif opt == '-s':
-            mode = CrawlMode.CrawlSingle
-            short_link = [arg]
-        elif opt == '-c':
-            country_links = clean_short_links(arg)
-            mode = CrawlMode.CrawlCountry
-        elif opt == '-a':
-            mode = CrawlMode.CrawlAllCountries
-        elif opt == '-b':
-            mode = CrawlMode.CrawlBands
-        elif opt == '-f':
-            file_names.append(Path(arg))
-            logger.info(f"Supplied file name: '{arg}'.")
-        elif opt == '-F':
-            country_links = clean_short_links(arg)
-            for country_link in country_links:
-                temp_path = Path(f'{FOLDER_LINKS}/{country_link}{LINK_EXTENSION}')
-                if temp_path.exists():
-                    file_names.append(temp_path)
-        elif opt == '-y':
-            mode = CrawlMode.AnalyseDatabase
-        elif opt == '-z':
-            country_links = clean_short_links(arg)
-            mode = CrawlMode.AnalyseDatabase
-        elif opt == '-x':
-            mode = CrawlMode.AnalyseDbNoCountries
-        elif opt == '-l':
-            mode = CrawlMode.DisplayInfo
-        elif opt == '-r':
-            mode = CrawlMode.CrawlRegion
-            region = arg.upper()
-        elif opt == '-t':
-            mode = CrawlMode.Test
-            file_names.append(Path('testLinks.txt'))
-        elif opt == '-m':
-            result = cut_instruments('Drums(1988-1993, 1994-present)')
-        elif opt == '-d':
-            is_detailed = True
-        else:
-            mode = CrawlMode.Error
-
-    # No filename argument given; read all files in links folder. Results in path plus filename.
-    if len(file_names) == 0 and mode not in [CrawlMode.CrawlSingle]:
-        for file_link in FOLDER_LINKS.iterdir():
-            file_names.append(file_link)
-
-    if mode in [CrawlMode.CrawlAllCountries, CrawlMode.CrawlCountry]:
+    # All countries
+    if args.a:
         logger.info('Crawling countries...')
 
-        if len(country_links) is 0:
-            # This starts bootstrapping from the actual country list as it is on EM.
-            country_links = crawl_countries()
+        # This starts bootstrapping from the actual country list as it is on EM.
+        country_links = crawl_countries()
 
         for country_short in country_links:
             link_list = crawl_country(country_short)
             flush_queue(country_short, link_list)
-    elif mode is CrawlMode.CrawlRegion:
+    # Single mode
+    elif args.s is not None:
+        db_handle = init_db()
+
+        if db_handle is not None:
+            crawl_bands([args.s], db_handle, is_single_mode=True)
+            save_genres()
+    # ISO countries
+    elif args.i is not None and len(args.i) > 0:
+        countries = []
+        for country in args.i:
+            country = country.upper()
+
+            if country not in COUNTRY_NAMES.keys():
+                logger.warning(f'{country} is not a valid ISO country short.')
+            else:
+                countries.append(country)
+
+        if len(countries) > 0:
+            for country in countries:
+                link_list = crawl_country(country)
+                flush_queue(country, link_list)
+        else:
+            print('No valid countries given.')
+
+    # Region
+    elif args.r is not None:
+        region = args.r
         if region not in REGIONS:
             print(f'The region key {region} is invalid. Try one from the following list:')
             print()
@@ -243,37 +195,59 @@ def main(argv):
                 link_list_temp = crawl_country(country_short)
                 link_list = list(set(link_list_temp + link_list))
             flush_queue(region, link_list)
-    elif mode in [CrawlMode.CrawlBands, CrawlMode.Test]:
+    # Crawl country, region or file.
+    elif args.c is not None:
+        # Test if parameter is a valid region or country.
+        if args.c in COUNTRY_NAMES.keys() or args.c in REGIONS.keys():
+            country_region_file = Path(f'{FOLDER_LINKS}/{args.c}{LINK_EXTENSION}')
+        # ...or take it as file name unconditionally.
+        else:
+            country_region_file = Path(args.c)
+
+        logger.info(f'File loaded for crawling: {country_region_file}')
         sanitized_bands = []
 
-        for path in file_names:
-            if path.is_file():
-                band_links = path.read_text(encoding='utf-8').split('\n')
-                # Remove last element from list if it's a lonely, empty string.
-                if band_links[-1] == '':
-                    del band_links[-1]
+        if country_region_file.is_file():
+            band_links = country_region_file.read_text(encoding='utf-8').split('\n')
+            # Remove last element from list if it's a lonely, empty string.
+            if band_links[-1] == '':
+                del band_links[-1]
 
-                # For testing a  file may contain hash commented lines. Here we filter for those.
-                for line in band_links:
-                    if not line.startswith('#'):
-                        sanitized_bands.append(line)
-            else:
-                logger.error(f'File {path} was not readable.')
+            # For testing a  file may contain hash commented lines. Here we filter for those.
+            for line in band_links:
+                if not line.startswith('#'):
+                    sanitized_bands.append(line)
+        else:
+            logger.error(f'File {country_region_file} was not readable.')
 
         if len(sanitized_bands) is not 0:
             db_handle = init_db()
             if db_handle is not None:
-                crawl_bands(sanitized_bands, db_handle, is_detailed)
+                crawl_bands(sanitized_bands, db_handle)
                 save_genres()
         else:
-            logger.error('No bands are available. Make sure that you crawled a country or regions before -b is used.')
-    elif mode is CrawlMode.CrawlSingle:
-        db_handle = init_db()
-        if db_handle is not None:
-            crawl_bands(short_link, db_handle, is_single_mode=True)
-            save_genres()
+            logger.error(
+                'No bands to crawl. Check your input files.')
+    elif args.y is not None or args.z:
+        if args.z:
+            report_mode = ReportMode.CountryOff
+        else:
+            report_mode = ReportMode.CountryOn
 
-    elif mode in [CrawlMode.AnalyseDatabase, CrawlMode.AnalyseDbNoCountries]:
+        country_links = []
+
+        if args.y is not None:
+            if len(args.y) is 1 and args.y[0].upper() == 'ALL':
+                logger.info('Analyse entire DB.')
+            else:
+                for country in args.y:
+                    if country in COUNTRY_NAMES.keys():
+                        country_links.append(country)
+                    elif country in REGIONS.keys():
+                        country_links = list(set(country_links + REGIONS[country][2]))
+                    else:
+                        logger.info(f'Unknown country/region: {country}')
+
         db_handle = init_db()
 
         if db_handle is None:
@@ -285,14 +259,9 @@ def main(argv):
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
         if len(country_links) is 0:
-            print(f'{country_info}Entire database.')
+            logger.info(f'{country_info}Entire database.')
         else:
-            print(country_info[:-2])
-
-        if mode is CrawlMode.AnalyseDbNoCountries:
-            report_mode = ReportMode.CountryOff
-        else:
-            report_mode = ReportMode.CountryOn
+            logger.info(country_info[:-2])
 
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)
@@ -321,7 +290,7 @@ def main(argv):
         export_handle = GraphExportContext(GraphMLExporter())
         relationships = db_handle.export_bands_network(country_links)
         export_handle.export_graph(relationships)
-    elif mode is CrawlMode.DisplayInfo:
+    elif args.l:
         country_string = print_countries(4, crawl_countries())
         print()
         print('Available countries:')
@@ -330,9 +299,9 @@ def main(argv):
         print()
         print('Available regions:')
         print(regions)
-
-    logging.shutdown()
+    else:
+        arg_parser.print_help()
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

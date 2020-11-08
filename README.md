@@ -80,9 +80,9 @@ parameters mean and what to do with them.
 Call `python meta_metal_mapper.py` each time with one of the following
 parameters:
 
-1. `-b -f data/true_kings.lnks`: Uses the supplied file with band names, crawls
+1. `-c data/true_kings.lnks`: Uses the supplied file with band names, crawls
   all of them and puts data in to the database.
-2. `-x`: Prints analysis into terminal and generates several files with 
+2. `-y ALL`: Prints analysis into terminal and generates several files with 
   exported data.
 
 Please note that the analysis is across the entire database and might result in
@@ -111,7 +111,7 @@ the best albums, EPs and demos.
 ### Where to go from here?
 
 * Crawl the extended network from the _True Kings of Norway_ CD with:
-  * `meta_metal_mapper -b -f data/true_kings_ext.lnks`
+  * `meta_metal_mapper -c data/true_kings_ext.lnks`
   * Install [Gephi](documentation/GEPHI_HOWTO.md), load a `.graphml` file (see
     exports folder) and experiment with the available data.
   * A graph of the extended _True Kings_ network could look like:
@@ -122,27 +122,44 @@ the best albums, EPs and demos.
 
 ## Version History
 
-* 0.97.2 (2020-06-28):
-  * Added a function to make the location data more usable. The earlier used
-    mechanism just split the location string at every "/" (which results in
-    unusable data for e.g. "Kolbotn, Viken (early); Oslo (mid); Vinterbro,
-    Viken / Trysil, Innlandet (later)"). The new function returns the first
-    city and state/territory it can determine. 
-* 0.97.0 (2020-06-06):
-  * Added two new modes:
-    * `-s <short link>` (e.g. Darkthrone/146): Crawls a single band and all
-      connected bands (identified by the bands links the individual members
-      played in).
-    * `-x`: Analyzes small networks (e.g. from one or several runs like above),
-      essentially leaving out the country related details which depend e.g. on
-      total band counts.
-  * Added console notification and export of link files for invalid bands 
-    (which are in the database but not on M-A anymore) and missing bands (not
-    in the database) but on M-A.
-  * Fixed a defect which prevented processing of unrated releases.
-* 0.87.1 (2020-05-01): Bugfix release.
-    * Added message in case an unsupported Neo4j 4.x database is used.
-* 0.87.0 (2020-04-19): First public release.
+### 0.97.4 (2020-10-27)
+* Added ASCII art logos at startup.
+* Refactored the console logging (colors for bad things and less detailed).
+* Fixed a log message to report the accurate number of bands added in a 
+  single run.
+
+### 0.97.3 (2020-08-11)
+* Rewrote parameter usage. It's now much more reliable and a bit easier
+to use.
+
+### 0.97.2 (2020-06-28)
+* Added a function to make the location data more usable. The earlier used
+  mechanism just split the location string at every "/". This results in
+  unusable data for e.g.
+ 
+  `Kolbotn, Viken (early); Oslo (mid); Vinterbro, Viken / Trysil, Innlandet (later)`
+
+  The new function returns the first city and state/territory it can determine
+  (and ignores the rest for now).
+
+### 0.97.0 (2020-06-06)
+* Added two new modes:
+* `-s <short link>` (e.g. Darkthrone/146): Crawls a single band and all
+  connected bands (identified by the bands links the individual members
+  played in).
+* `-x`: Analyzes small networks (e.g. from one or several runs like above),
+  essentially leaving out the country related details which depend e.g. on
+  total band counts.
+* Added console notification and export of link files for invalid bands 
+  (which are in the database but not on M-A anymore) and missing bands (not
+  in the database) but on M-A.
+* Fixed a defect which prevented processing of unrated releases.
+
+### 0.87.1 (2020-05-01): Bugfix release
+* Added message in case an unsupported Neo4j 4.x database is used.
+
+### 0.87.0 (2020-04-19):
+* First public release.
 
 ## Acknowledgments
 

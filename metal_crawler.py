@@ -38,6 +38,7 @@ lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known"
 STATUS_ERROR = 'unrecoverable'
 STATUS_SKIPPED = 'skipped'
 STATUS_ADDED = 'added'
+STATUS_INITIAL = 'initial'
 stop_crawl_user_input = ""
 
 
@@ -433,9 +434,10 @@ class VisitBandThread(threading.Thread):
                 artist.instruments = cut_instruments_alt(actual_row.contents[3].contents[0])
                 artist.visited = str(self.today)
 
+        number_added_bands = 0
         # Happens only for the first band if -s was used as the command line switch.
         if self.is_single_mode:
-            self.add_connected_bands_to_queue(band_soup)
+            number_added_bands = self.add_connected_bands_to_queue(band_soup)
 
         # Crawl discography.
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_data_ref.emid}/tab/all"
@@ -499,6 +501,7 @@ class VisitBandThread(threading.Thread):
 
         :param band_soup: The band soup of the band that's crawled right now. A band soup is cooked with
             `cook_soup(link_band)` (which expects the _full_ address of a band page).
+        :return The number of connected bands.
         """
         band_rows = band_soup.find_all('tr', attrs={'class': 'lineupBandsRow'})
         linked_bands = []
@@ -516,12 +519,18 @@ class VisitBandThread(threading.Thread):
             log_message = f'The chosen band does not have any outward connections.'
         else:
             log_message = f'Added {len(linked_bands)} connected bands to the crawl.'
-        print(log_message)
-        self.logger.info(log_message)
+            self.band_errors[STATUS_INITIAL] = len(linked_bands) + 1
+
+        # The logger named Crawler normally is not used for console output because it interferes with the progress bar.
+        # That's why we use a different logger to notify the user about connected bands instead of the object's logger.
+        temp_logger = logging.getLogger('Connector')
+        temp_logger.info(log_message)
         # Switch off the single mode after the first call. At least for now. Maybe we'll do two levels (or more) later.
         self.is_single_mode = False
         # The additional band is the actual one because it is not in the queue right now.
         self.progress_bar.max_value = self.bandLinks.qsize() + 1
+
+        return len(linked_bands)
 
 
 def make_band_list(country_links):
@@ -999,9 +1008,9 @@ def read_user_input():
 
 def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     # TODO: Add comment and parameter description.
-    logger = logging.getLogger('Crawler')
+    logger = logging.getLogger('Crawler Prep')
     logger.debug('>>> Crawling all bands.')
-    print("Starting band crawl. All logging is diverted to file. Prepping database:")
+    logger.info("Starting band crawl. All logging is diverted to file. Prepping database:")
     local_bands_queue = queue.Queue()
 
     # Put links from list into queue.
@@ -1017,8 +1026,12 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     amount_artists = len(visited_entities["artists"])
     prep_report = f'Preparing previously visited {amount_bands} bands and {amount_artists} artists took {time_delta}.'
     logger.info(prep_report)
-    print(prep_report)
-    print(f'Crawling {local_bands_queue.qsize()} bands. This is going to take a while.')
+    band_word = 'band'
+
+    if local_bands_queue.qsize() > 1:
+        band_word += 's'
+
+    logger.info(f'Crawling {local_bands_queue.qsize()} {band_word}. This is going to take a while.')
     progress_bar = progressbar.ProgressBar(max_value=local_bands_queue.qsize())
     visited_bands = []
 
@@ -1035,7 +1048,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     bands_status = {
         STATUS_ERROR: {},
         STATUS_SKIPPED: {},
-        STATUS_ADDED: {}
+        STATUS_ADDED: {},
+        STATUS_INITIAL: 0
     }
 
     print("Press Q and <ENTER> to stop crawl. All threads will finish their current work and then stop.")
@@ -1079,10 +1093,16 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
         unrecoverable_file.close()
         logger.info(f'The short links of the bands are available in [{unrecoverable_file_name}].')
 
+    # The mode -s adds an unknown number of bands. We get that number to display the correct number of added bands
+    # below.
+    band_count = len(band_links)
+    if bands_status[STATUS_INITIAL] > 0:
+        band_count = bands_status[STATUS_INITIAL]
+
     if len(bands_status[STATUS_SKIPPED]) > 0:
-        logger.info(f'{len(bands_status[STATUS_SKIPPED])} of {len(band_links)} bands were skipped.')
+        logger.info(f'{len(bands_status[STATUS_SKIPPED])} of {band_count} bands were skipped.')
 
     if len(bands_status[STATUS_ADDED]) > 0:
-        logger.info(f'{len(bands_status[STATUS_ADDED])} of {len(band_links)} bands were added.')
+        logger.info(f'{len(bands_status[STATUS_ADDED])} of {band_count} bands were added.')
 
     logger.info('<<< Crawling all bands')
