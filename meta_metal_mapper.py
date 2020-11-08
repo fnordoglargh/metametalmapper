@@ -196,15 +196,17 @@ def main():
                 link_list_temp = crawl_country(country_short)
                 link_list = list(set(link_list_temp + link_list))
             flush_queue(region, link_list)
-    # Crawl country, region or file.
+    # Crawl list of countries, regions or files.
     elif args.c is not None:
         db_handle = init_db()
+        # Do not continue if the DB is not available.
         if db_handle is None:
-            # Do not continue if the DB is not available.
             exit(-1)
 
+        sanitized_bands = []
+        print()
+
         for argument in args.c:
-            print()
             # Test if parameter is a valid region or country.
             if argument in COUNTRY_NAMES.keys() or argument in REGIONS.keys():
                 country_region_file = Path(f'{FOLDER_LINKS}/{argument}{LINK_EXTENSION}')
@@ -212,8 +214,7 @@ def main():
             else:
                 country_region_file = Path(argument)
 
-            logger.info(f'File loaded for crawling: {country_region_file}')
-            sanitized_bands = []
+            band_counter = 0
 
             if country_region_file.is_file():
                 band_links = country_region_file.read_text(encoding='utf-8').split('\n')
@@ -225,14 +226,17 @@ def main():
                 for line in band_links:
                     if not line.startswith('#'):
                         sanitized_bands.append(line)
+                        band_counter += 1
+
+                logger.info(f'Loaded {band_counter} bands from {country_region_file} for crawling.')
             else:
                 logger.error(f'File {country_region_file} was not readable.')
 
-            if len(sanitized_bands) is not 0:
-                crawl_bands(sanitized_bands, db_handle)
-                save_genres()
-            else:
-                logger.error('No bands to crawl. Check your input files.')
+        if len(sanitized_bands) is not 0:
+            crawl_bands(sanitized_bands, db_handle)
+            save_genres()
+        else:
+            logger.error('No bands to crawl. Check your input files.')
     elif args.y is not None or args.z:
         if args.z:
             report_mode = ReportMode.CountryOff
