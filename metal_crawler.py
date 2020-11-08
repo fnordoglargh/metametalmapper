@@ -344,6 +344,8 @@ class VisitBandThread(threading.Thread):
             # Normal case.
             if last_found_header == "lineupHeaders":
                 header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
+                # While crawling Tarot/4339 I found an unusual double space between Past and (Live). Let's remove it.
+                header_category = header_category.replace('  ', ' ')
                 logger.debug(f"  Found header: {header_category}")
             # Special case where a band only has one line-up.
             elif last_found_header == "lineupRow":
