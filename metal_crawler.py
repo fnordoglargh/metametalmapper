@@ -713,38 +713,46 @@ def cook_soup(link, retry_count=5):
     if retry_count < 1:
         retry_count = 1
 
-    logger.debug(f"  Cooking soup for {link}")
+    logger.debug(f"Cooking soup for {link}")
 
     while retry_count > 0:
         # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         web_page = None
+        retry_count -= 1
 
         try:
             web_page = http.request('GET', link, timeout=10.0)
         except ReadTimeoutError as e:
-            logger.error(e)
-            retry_count -= 1
+            logger.exception(e, exc_info=True)
         except MaxRetryError as e:
-            logger.error(e)
-            retry_count -= 1
+            logger.exception(e, exc_info=True)
 
-        if web_page is not None:
+        if len(web_page.data) is not 0:
             web_page_string = web_page.data.decode("utf-8")
 
             if "Forbidden.\n" == web_page_string:
                 time.sleep(.5)
-                retry_count -= 1
                 logger.debug(f"  Trying again... ({retry_count} to go)")
             else:
                 # Breaks out of the loop.
                 retry_count = -1
+        else:
+            logger.error(f'Data Length: {str(len(web_page.data))}\n{web_page.data}')
+            logger.debug(f"  Trying again... ({retry_count} to go)")
 
     # Error case: No web page data after n retries.
     if retry_count is 0:
         return None
 
-    return BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
+    soup = BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
+
+    # Extra safe guard for extremely rare cases.
+    if soup.text == '':
+        logger.error(f'Soup text is {soup.text}. Data Length: {str(len(web_page.data))}\n{web_page.data}')
+        soup = None
+
+    return soup
 
 
 def cut_instruments_alt(instrument_string):
