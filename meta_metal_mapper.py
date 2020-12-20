@@ -14,7 +14,8 @@ import yaml
 import argparse
 import textwrap
 
-from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN, LINK_EXTENSION
+from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN, LINK_EXTENSION,\
+    append_genitive_s
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.graph_neomodel_impl import NeoModelStrategy
@@ -207,12 +208,20 @@ def main():
         print()
 
         for argument in args.c:
-            info_text = ""
+            info_text = ''
+            sane_argument = argument.upper()
 
             # Test if parameter is a valid region or country.
-            if argument.upper() in COUNTRY_NAMES.keys() or argument.upper() in REGIONS.keys():
+            if sane_argument in COUNTRY_NAMES.keys() or sane_argument in REGIONS.keys():
                 country_region_file = Path(f'{FOLDER_LINKS}/{argument}{LINK_EXTENSION}')
-                info_text = f"of {COUNTRY_NAMES[argument.upper()]}'s "
+
+                if sane_argument in COUNTRY_NAMES.keys():
+                    info_text = f"{COUNTRY_NAMES[sane_argument]}"
+                elif sane_argument in REGIONS.keys():
+                    info_text = f"{REGIONS[sane_argument][1]}"
+
+                info_text = append_genitive_s(info_text)
+
             # ...or take it as file name unconditionally.
             else:
                 country_region_file = Path(argument)
@@ -231,7 +240,7 @@ def main():
                         sanitized_bands.append(line)
                         band_counter += 1
 
-                logger.info(f'Loaded {info_text}{band_counter} bands from {country_region_file} for crawling.')
+                logger.info(f'Loaded {info_text} {band_counter} bands from {country_region_file} for crawling.')
             else:
                 logger.error(f'File {country_region_file} was not readable.')
 

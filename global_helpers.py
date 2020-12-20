@@ -57,3 +57,19 @@ def get_dict_key(source_dict, value):
     :return: The key for the provided value.
     """
     return list(source_dict.keys())[list(source_dict.values()).index(value)]
+
+
+def append_genitive_s(string: str):
+    """Appends an "'s" to any string if it is not empty and an "'" if it already ends with an "s".
+
+    :param string: The string to be converted to genitive.
+    :return: The converted string. Stays empty if string was empty.
+    """
+    if string is '':
+        genitive_text = string
+    elif string[-1] is 's' or string[-1] is 'x' or string[-1] is 'z':
+        genitive_text = f"{string}'"
+    else:
+        genitive_text = f"{string}'s"
+
+    return genitive_text
