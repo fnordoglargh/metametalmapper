@@ -207,9 +207,12 @@ def main():
         print()
 
         for argument in args.c:
+            info_text = ""
+
             # Test if parameter is a valid region or country.
-            if argument in COUNTRY_NAMES.keys() or argument in REGIONS.keys():
+            if argument.upper() in COUNTRY_NAMES.keys() or argument.upper() in REGIONS.keys():
                 country_region_file = Path(f'{FOLDER_LINKS}/{argument}{LINK_EXTENSION}')
+                info_text = f"of {COUNTRY_NAMES[argument.upper()]}'s "
             # ...or take it as file name unconditionally.
             else:
                 country_region_file = Path(argument)
@@ -228,7 +231,7 @@ def main():
                         sanitized_bands.append(line)
                         band_counter += 1
 
-                logger.info(f'Loaded {band_counter} bands from {country_region_file} for crawling.')
+                logger.info(f'Loaded {info_text}{band_counter} bands from {country_region_file} for crawling.')
             else:
                 logger.error(f'File {country_region_file} was not readable.')
 
