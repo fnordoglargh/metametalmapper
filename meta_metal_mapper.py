@@ -25,6 +25,7 @@ from graph.export_graph import GraphExportContext, GraphMLExporter
 from genre import save_genres
 from html_exporter import generate_html_report
 from logo import get_logo
+from exporting import ExportMode
 
 __author__ = 'Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
@@ -50,11 +51,8 @@ analyze_full_text = 'Prints and exports a raw data report of the active database
     'given country. It will function properly but calculate bogus numbers.'
 analyze_light_text = 'The "diet version" of -y without the country report. Use this mode to analyze data from the ' \
     'crawl mode -s.'
-
 list_text = 'List available countries and regions.'
-
-# Indication of a parameter
-not_set = 'not_set'
+export_mode_text = 'Overrides the raw report/export to Markdown that can be directly used e.g. in the GitHub wiki.'
 
 
 def flush_queue(country_short, link_list):
@@ -139,13 +137,14 @@ def main():
             NOTE: Parameters are given priority based on their stage and cannot be mixed.
         '''))
     arg_parser.add_argument('-s', help=single_text, metavar='MA_SHORT_LINK')
-    arg_parser.add_argument('-a', action="store_true", help=all_links_text)
+    arg_parser.add_argument('-a', action='store_true', help=all_links_text)
     arg_parser.add_argument('-i', nargs='+', help=all_countries_text, metavar='COUNTRY_SHORT')
     arg_parser.add_argument('-r', help=region_text, metavar='REGION_ID')
     arg_parser.add_argument('-c', nargs='+', help=crawl_text, metavar='FILE_OR_REGION_OR_COUNTRY_SHORT')
     arg_parser.add_argument('-y', nargs='+', help=analyze_full_text, metavar='REGION_OR_COUNTRY_SHORT')
-    arg_parser.add_argument('-z', action="store_true", help=analyze_light_text)
-    arg_parser.add_argument('-l', action="store_true", help=list_text)
+    arg_parser.add_argument('-z', action='store_true', help=analyze_light_text)
+    arg_parser.add_argument('-l', action='store_true', help=list_text)
+    arg_parser.add_argument('--md', action='store_true', help=export_mode_text)
     args = arg_parser.parse_args()
 
     # All countries
@@ -254,6 +253,11 @@ def main():
             report_mode = ReportMode.CountryOff
         else:
             report_mode = ReportMode.CountryOn
+
+        if args.md:
+            export_mode = ExportMode.Markdown
+        else:
+            export_mode = ExportMode.Raw
 
         country_links = []
 
