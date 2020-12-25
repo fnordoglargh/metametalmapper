@@ -278,7 +278,7 @@ def main():
         if db_handle is None:
             sys.exit(-9)
 
-        country_info = 'Generating report for: '
+        country_info = f'Generating {export_mode.name} report for: '
 
         for clean_short in country_links:
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
