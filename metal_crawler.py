@@ -740,7 +740,10 @@ def cook_soup(link, retry_count=5):
         except MaxRetryError as e:
             logger.exception(e, exc_info=True)
 
-        if len(web_page.data) is not 0:
+        if web_page is None:
+            logger.error("Received no data.")
+            retry_count = 0
+        elif len(web_page.data) is not 0:
             web_page_string = web_page.data.decode("utf-8")
 
             if "Forbidden.\n" == web_page_string:
