@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from datetime import datetime
+from exporting import FOLDER_EXPORTS
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -16,7 +17,7 @@ FOLDER_LINKS = Path("links")
 FOLDER_LINKS_MISSING = Path("links_missing")
 FOLDER_LINKS_INVALID = Path("links_invalid")
 FOLDER_DB = Path("databases")
-FOLDER_EXPORTS = Path("exports")
+
 FOLDER_REPORTS = Path("reports")
 FOLDERS_MAIN = [FOLDER_LINKS, FOLDER_LINKS_MISSING, FOLDER_LINKS_INVALID, FOLDER_DB, FOLDER_EXPORTS, FOLDER_REPORTS]
 
@@ -29,24 +30,6 @@ def get_time_stamp():
     """
     actual_time = datetime.now()
     return f'{actual_time.date()}_{actual_time.time().strftime("%H%M%S")}'
-
-
-def get_export_path(name: str, extension: str):
-    """Helper function to create off the shelf Path objects to export data. Data is always exported into the folder
-        FOLDER_EXPORTS. The complete path to a file may look like "exports/name_timestamp.extension".
-
-    :param name: Name of the category of date you want to to safe. Empty strings will be overridden with
-        "no_name_given".
-    :param extension: Name of the file extension. A dot will be provided if it's missing.
-    :return: A ready made Path object to safe data in.
-    """
-    if len(name) is 0:
-        name = 'no_name_given'
-
-    if len(extension) > 0 and extension[0] != '.':
-        extension = f'.{extension}'
-
-    return Path(f'{FOLDER_EXPORTS}/{name}_{get_time_stamp()}{extension}')
 
 
 def get_dict_key(source_dict, value):
