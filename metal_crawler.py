@@ -748,6 +748,7 @@ def cook_soup(link, retry_count=5):
                 logger.debug(f"  Trying again... ({retry_count} to go)")
             elif "Error 404 -" in web_page_string or "not found" in web_page_string or 'may refer to' in web_page_string:
                 retry_count = 0
+                logger.error(f'404 for link: {link}')
             else:
                 # Breaks out of the loop.
                 retry_count = -1
@@ -771,8 +772,8 @@ def cook_soup(link, retry_count=5):
 
 def cut_instruments_alt(instrument_string):
     instruments = []
-    # First split along the '),'.
     instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
+    # First split along the '),'.
     temp_instruments = instrument_string.split('),')
 
     # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
@@ -788,6 +789,9 @@ def cut_instruments_alt(instrument_string):
         else:
             split_more = temp_instrument.split('(')
             back_together = split_more[0]
+            # The nastiest thing is users forgetting to use commas as delimiters. If `split_more` contains e.g. three
+            # elements, we might have such a case.
+            # There's currently no handling for this use case and easier to use the "report error" function on M-A.
             ready_spans = []
             for inner in range(1, len(split_more)):
                 if bool(re.search(r'\d', split_more[inner])):
