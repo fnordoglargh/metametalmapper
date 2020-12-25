@@ -90,3 +90,12 @@ class TestInstrumentCuttingAlt(unittest.TestCase):
         result = cut_instruments_alt('Bass (2004-2009, ?-?)')
         expected_cut = [['Bass', [[2004, 2009], ['?', '?']]]]
         self.assertEqual(expected_cut, result)
+
+        result = cut_instruments_alt('Vocals (female) (2010-2014, 2015-2019)')
+        expected_cut = [['Vocals (female)', [[2010, 2014], [2015, 2019]]]]
+        self.assertEqual(expected_cut, result)
+
+        # There's currently no handling for this use case and easier to use the "report error" function on M-A.
+        result = cut_instruments_alt('Drums (2014-?) Songwriting (?-present) ')
+        expected_cut = [['Drums', [[2014, '?']]], ['Songwriting', [['?', 'present']]]]
+        #self.assertEqual(expected_cut, result)
