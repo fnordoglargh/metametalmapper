@@ -1,9 +1,9 @@
 """Classes to export data into different formats."""
 from enum import Enum
 from pathlib import Path
-from global_helpers import get_time_stamp
+from abc import ABC
 
-FOLDER_EXPORTS = Path("exports")
+from global_helpers import get_time_stamp, FOLDER_EXPORTS
 
 
 def get_export_path(name: str, extension: str):
@@ -27,3 +27,30 @@ def get_export_path(name: str, extension: str):
 class ExportMode(Enum):
     Raw = 0
     Markdown = 1
+
+
+class ExportingStrategy(ABC):
+    def __init__(self):
+        self.name = 'ExportingStrategy'
+
+    def do_export(self):
+        pass
+
+
+class Exporter:
+
+    def __init__(self, strategy: ExportingStrategy) -> None:
+        self._strategy = strategy
+
+    @property
+    def strategy(self) -> ExportingStrategy:
+        return self._strategy
+
+    @strategy.setter
+    def strategy(self, strategy: ExportingStrategy) -> None:
+        self._strategy = strategy
+
+    def do_export(self) -> None:
+        self._strategy.do_export()
+
+

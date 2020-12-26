@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
-from exporting import get_export_path
+from exporter import get_export_path
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
