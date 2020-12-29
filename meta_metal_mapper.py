@@ -18,14 +18,14 @@ from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDE
     append_genitive_s
 from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
-from graph.graph_neomodel_impl import NeoModelStrategy
-from graph.metal_graph import GraphDatabaseContext
 from graph.report import ReportMode
 from graph.export_graph import GraphExportContext, GraphMLExporter
 from genre import save_genres
 from html_exporter import generate_html_report
 from logo import get_logo
-from exporting import ExportMode
+from exporter import ExportMode, Exporter
+from exporter_markdown import ExporterMarkdown
+from graph.metal_graph_context import init_db
 
 __author__ = 'Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
@@ -88,17 +88,6 @@ def flush_queue(country_short, link_list):
         logger.warning(f'No bands found for {country_or_region_name} ({country_or_region_code}).')
 
     return country_filename
-
-
-def init_db():
-    logger = logging.getLogger('Mapper')
-    db_handle = None
-    try:
-        db_handle = GraphDatabaseContext(NeoModelStrategy())
-    except:
-        logger.error('  Need a database to function properly. Exiting...')
-
-    return db_handle
 
 
 def main():
@@ -287,6 +276,8 @@ def main():
             logger.info(f'{country_info}Entire database.')
         else:
             logger.info(country_info[:-2])
+
+        exporter = Exporter(export_mode, db_handle)
 
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)

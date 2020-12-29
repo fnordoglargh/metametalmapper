@@ -1,4 +1,4 @@
-from exporter import ExportingStrategy
+from exporter_strategy import ExportingStrategy
 
 
 class ExporterMarkdown(ExportingStrategy):

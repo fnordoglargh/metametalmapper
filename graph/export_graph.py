@@ -2,9 +2,9 @@
 
 from abc import ABCMeta, abstractmethod
 import logging
-from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
-from exporter import get_export_path
+from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
+from global_helpers import get_export_path
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'

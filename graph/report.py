@@ -8,9 +8,8 @@ from pathlib import Path
 import logging
 
 from genre import GENRE_CORE_MA
-from global_helpers import get_time_stamp, FOLDER_LINKS, LINK_EXTENSION, FOLDER_LINKS_INVALID,\
+from global_helpers import get_export_path, get_time_stamp, FOLDER_LINKS, LINK_EXTENSION, FOLDER_LINKS_INVALID,\
     FOLDER_LINKS_MISSING
-from exporter import get_export_path
 from country_helper import COUNTRY_NAMES
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
