@@ -347,26 +347,26 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def prepare_export_data(self, country_shorts: list, report_mode: ReportMode) -> ExportData:
         prepped_data = ExportData()
-        artists_per_country = defaultdict(int)
-        artists_total = 0
+        self.logger.info("Preparing data export:")
 
-        self.logger.info(">>>")
+        # Prep origin data.
+        self.logger.info(" > Fetching origins")
         origins, meta = db.cypher_query("MATCH (m:Member) return m.origin, count(*)")
+        for origin in origins:
+            prepped_data.origins[origin[0]] = origin[1]
 
         # Prep the gender raw data
+        self.logger.info(" > Fetching genders")
         genders, meta = db.cypher_query("MATCH (m:Member) return m.origin, m.gender, count(*)")
         for gender_entry in genders:
             prepped_data.add_gender_country(gender_entry[0], gender_entry[1], gender_entry[2])
 
-        self.logger.info("<<<")
+        self.logger.info(" > Fetching genres")
+        genres, meta = db.cypher_query("MATCH (b:Band) return b.country, b.genres, count(*)")
+        for genre_entry in genres:
+            prepped_data.add_genre_country(genre_entry[0], genre_entry[1], genre_entry[2])
 
-        for gender_key in GENDER:
-            artists = Member.nodes.filter(gender__exact=gender_key)
-            for artist in artists:
-                artists_per_country[artist.origin] += 1
-
-            genders[gender_key] = len(artists)
-            artists_total += genders[gender_key]
+        self.logger.info(' > Preparation done.')
 
         return prepped_data
 

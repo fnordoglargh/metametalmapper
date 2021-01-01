@@ -27,9 +27,9 @@ class ExportGender:
 
 @dataclass
 class ExportData:
-    lineup: Dict = field(default_factory=dict)
     origins: Dict = field(default_factory=dict)
     genders: Dict = field(default_factory=dict)
+    genres: Dict = field(default_factory=dict)
 
     def add_gender_country(self, country, gender, count):
         """Function to add sane gender data to the underlying collection.
@@ -49,3 +49,14 @@ class ExportData:
                 is_applied = True
 
         return is_applied
+
+    def add_genre_country(self, country, genres, count):
+        if country in COUNTRY_NAMES.keys():
+            if country not in self.genres:
+                self.genres[country] = {}
+            for genre in genres:
+                if genre not in self.genres[country]:
+                    self.genres[country][genre] = count
+                else:
+                    self.genres[country][genre] += count
+
