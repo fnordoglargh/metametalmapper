@@ -1,6 +1,8 @@
 """Classes to export data into different formats."""
 from enum import Enum
+from typing import List
 
+from graph.report import DatabaseReport, ReportMode
 from graph.metal_graph_context import GraphDatabaseContext
 from exporter_strategy import ExportingStrategy
 from exporter_raw import ExporterRaw
@@ -13,7 +15,8 @@ class ExportMode(Enum):
 
 
 class Exporter:
-    def __init__(self, export_mode: ExportMode, db_handle: GraphDatabaseContext) -> None:
+    def __init__(self, export_mode: ExportMode, db_handle: GraphDatabaseContext, countries: List[str],
+                 report_mode: ReportMode) -> None:
         if export_mode is ExportMode.Markdown:
             strategy = ExporterMarkdown()
         else:
@@ -21,6 +24,8 @@ class Exporter:
 
         self._strategy = strategy
         self._db_handle = db_handle
+        prepped_data = db_handle.prepare_export_data(countries, report_mode)
+        print()
 
     @property
     def strategy(self) -> ExportingStrategy:

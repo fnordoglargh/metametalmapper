@@ -4,7 +4,8 @@
 
 from abc import ABCMeta, abstractmethod
 
-from graph.report import DatabaseReport
+from graph.report import DatabaseReport, ReportMode
+from export_data import ExportData
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -57,6 +58,10 @@ class GraphDatabaseStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def calc_bands_per_pop_interface(self, country_short, bands) -> dict:
+        pass
+
+    @abstractmethod
+    def prepare_export_data(self, country_shorts: list, report_mode: ReportMode) -> ExportData:
         pass
 
     @abstractmethod

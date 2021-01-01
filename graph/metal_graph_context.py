@@ -2,7 +2,7 @@ import logging
 
 from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.report import DatabaseReport, ReportMode
-
+from export_data import ExportData
 
 def init_db():
     logger = logging.getLogger('Mapper')
@@ -59,6 +59,9 @@ class GraphDatabaseContext:
 
     def calc_bands_per_pop(self, country_short, bands) -> dict:
         return self._strategy.calc_bands_per_pop_interface(country_short, bands)
+
+    def prepare_export_data(self, country_shorts: list, report_mode: ReportMode) -> ExportData:
+        return self._strategy.prepare_export_data(country_shorts, report_mode)
 
     def generate_report(self, country_shorts=None, report_mode=ReportMode.CountryOn) -> DatabaseReport:
         return self._strategy.generate_report_interface(country_shorts, report_mode)

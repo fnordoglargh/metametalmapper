@@ -277,7 +277,7 @@ def main():
         else:
             logger.info(country_info[:-2])
 
-        exporter = Exporter(export_mode, db_handle)
+        exporter = Exporter(export_mode, db_handle, country_links, report_mode)
 
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)

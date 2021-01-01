@@ -4,8 +4,8 @@ from collections import defaultdict
 import settings
 
 import logging
-from neomodel import StructuredNode, StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
-    RelationshipFrom, StructuredRel, config, core
+from neomodel import StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
+    RelationshipFrom, StructuredRel, config, core, db
 from neo4j import exceptions
 from neomodel.match import *
 import progressbar
@@ -14,6 +14,7 @@ from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import *
 from graph.metal_graph import GraphDatabaseStrategy, POP_BANDS, POP_PER_100K, POP_POPULATION, RAW_GENRES, POP_COUNTRY
 from graph.report import CountryReport, DatabaseReport, ReleaseReport, ReportMode
+from export_data import ExportData
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
@@ -75,6 +76,10 @@ class Member(StructuredNode):
     origin = StringProperty(choices=COUNTRY_NAMES)
     gender = StringProperty(choices=GENDER)
     played_in = RelationshipTo("Band", "PLAYED_IN", model=MemberRelationship)
+
+    def get_origins(self):
+        results, meta = db.cypher_query("MATCH (m:Member) return m.origin, count(*)")
+        return results
 
 
 class NeoModelStrategy(GraphDatabaseStrategy):
@@ -340,6 +345,31 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         return result
 
+    def prepare_export_data(self, country_shorts: list, report_mode: ReportMode) -> ExportData:
+        prepped_data = ExportData()
+        artists_per_country = defaultdict(int)
+        artists_total = 0
+
+        self.logger.info(">>>")
+        origins, meta = db.cypher_query("MATCH (m:Member) return m.origin, count(*)")
+
+        # Prep the gender raw data
+        genders, meta = db.cypher_query("MATCH (m:Member) return m.origin, m.gender, count(*)")
+        for gender_entry in genders:
+            prepped_data.add_gender_country(gender_entry[0], gender_entry[1], gender_entry[2])
+
+        self.logger.info("<<<")
+
+        for gender_key in GENDER:
+            artists = Member.nodes.filter(gender__exact=gender_key)
+            for artist in artists:
+                artists_per_country[artist.origin] += 1
+
+            genders[gender_key] = len(artists)
+            artists_total += genders[gender_key]
+
+        return prepped_data
+
     def generate_report_interface(self, country_shorts: list, report_mode: ReportMode) -> DatabaseReport:
         """Generates a report with an analysis of the entire database into an handy object.
 
@@ -358,7 +388,6 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         for gender_key in GENDER:
             artists = Member.nodes.filter(gender__exact=gender_key)
-
             for artist in artists:
                 artists_per_country[artist.origin] += 1
 
