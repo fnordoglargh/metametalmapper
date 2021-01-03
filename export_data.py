@@ -30,24 +30,32 @@ class ExportData:
     origins: Dict = field(default_factory=dict)
     genders: Dict = field(default_factory=dict)
     genres: Dict = field(default_factory=dict)
+    releases: Dict = field(default_factory=dict)
 
-    def add_gender_country(self, country, gender, count):
+    def add_gender_country(self, band_origin, artist_origin, gender, count):
         """Function to add sane gender data to the underlying genders collection. Countries and genders will be added
             as keys to the dict.
 
-        :param country: An ISO country name; used as key for the genre data.
+        :param band_origin: An ISO country name; used as key for the gender data. The origin of the band has the highest
+            priority, under that the individual band members are counted under the state of their origin.
+        :param artist_origin: An ISO country name; used as key for the gender data of artists under a country.
         :param gender: A gender key as defined in graph.choices module (GENDERS).
         :param count: The total number of entries for he supplied gender.
         :return: True if the supplied country and gender are valid, otherwise False.
         """
         is_applied = False
 
-        if country in COUNTRY_NAMES.keys():
-            if country not in self.genders:
-                self.genders[country] = {}
+        if band_origin in COUNTRY_NAMES.keys() and artist_origin in COUNTRY_NAMES.keys():
+            if band_origin not in self.genders:
+                self.genders[band_origin] = {}
+            if artist_origin not in self.genders[band_origin]:
+                self.genders[band_origin][artist_origin] = {}
             if gender in GENDER.keys():
-                self.genders[country][gender] = count
-                is_applied = True
+                if count < 0:
+                    count = 0
+                else:
+                    is_applied = True
+                self.genders[band_origin][artist_origin][gender] = count
 
         return is_applied
 

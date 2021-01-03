@@ -357,9 +357,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Prep the gender raw data
         self.logger.info(' > Fetching genders')
-        genders, meta = db.cypher_query('MATCH (m:Member) return m.origin, m.gender, count(*)')
+        if len(country_shorts) is 0:
+            query = 'MATCH (b:Band)--(m:Member) RETURN b.country, m.origin, m.gender, count(*)'
+        else:
+            query = f'MATCH (b:Band)--(m:Member) WHERE b.country IN {country_shorts} RETURN b.country, m.origin, m.gender, count(*)'
+        genders, meta = db.cypher_query(query)
         for gender_entry in genders:
-            prepped_data.add_gender_country(gender_entry[0], gender_entry[1], gender_entry[2])
+            prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
+                                            gender=gender_entry[2], count=gender_entry[3])
 
         self.logger.info(' > Fetching genres')
         if len(country_shorts) is 0:
