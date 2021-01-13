@@ -376,7 +376,22 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for genre_entry in genres:
             prepped_data.add_genre_country(country=genre_entry[0], genres=genre_entry[1], count=genre_entry[2])
 
+        self.logger.info(' ┣ Fetching releases')
+        if len(country_shorts) is 0:
+            query = 'MATCH (b:Band)--(r:Release) return b.country, b.name, r.name, r.rating, r.review_count, r.link,'
+            'r.release_type, r.release_date'
+        else:
+            query = (f'MATCH (b:Band)--(r:Release) WHERE b.country IN {country_shorts} return b.country, b.name, '
+                     'r.name, r.rating, r.review_count, r.link, r.release_type, r.release_date')
+        releases, meta = db.cypher_query(query)
+
+        for release in releases:
+            prepped_data.add_release(country=release[0], band_name=release[1], release_name=release[2],
+                                     rating=release[3], review_count=release[4], link=release[5],
+                                     release_type=release[6], date=release[7])
+
         self.logger.info(' ┗ Data prepped.')
+
         return prepped_data
 
     def generate_report_interface(self, country_shorts: list, report_mode: ReportMode) -> DatabaseReport:
