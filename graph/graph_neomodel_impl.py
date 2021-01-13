@@ -350,13 +350,13 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         self.logger.info('Preparing data export:')
 
         # Prep origin data.
-        self.logger.info(' > Fetching origins')
+        self.logger.info(' ┣ Fetching origins')
         origins, meta = db.cypher_query('MATCH (m:Member) return m.origin, count(*)')
         for origin in origins:
             prepped_data.origins[origin[0]] = origin[1]
 
         # Prep the gender raw data
-        self.logger.info(' > Fetching genders')
+        self.logger.info(' ┣ Fetching genders')
         if len(country_shorts) is 0:
             query = 'MATCH (b:Band)--(m:Member) RETURN b.country, m.origin, m.gender, count(*)'
         else:
@@ -366,7 +366,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
                                             gender=gender_entry[2], count=gender_entry[3])
 
-        self.logger.info(' > Fetching genres')
+        # Prep the raw genre data.
+        self.logger.info(' ┣ Fetching genres')
         if len(country_shorts) is 0:
             query = 'MATCH (b:Band) return b.country, b.genres, count(*)'
         else:
@@ -375,6 +376,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for genre_entry in genres:
             prepped_data.add_genre_country(country=genre_entry[0], genres=genre_entry[1], count=genre_entry[2])
 
+        self.logger.info(' ┗ Data prepped.')
         return prepped_data
 
     def generate_report_interface(self, country_shorts: list, report_mode: ReportMode) -> DatabaseReport:
