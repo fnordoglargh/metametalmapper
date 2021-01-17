@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from country_helper import COUNTRY_NAMES
+from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, RELEASE_TYPES_REVIEW
 
@@ -51,11 +51,26 @@ class ExportGender:
 
 
 @dataclass
+class CountryData:
+    country_name: str = 'not set'
+    number_bands = -1
+    bands_per_100k = -1
+    percentage_bands = -1
+
+    def __init__(self, country_short: str, number_bands: int):
+        self.country_name = COUNTRY_NAMES[country_short]
+        self.number_bands = number_bands
+        self.bands_per_100k = number_bands/(int(COUNTRY_POPULATION[country_short])/100000)
+
+
+@dataclass
 class ExportData:
     origins: Dict = field(default_factory=dict)
     genders: Dict = field(default_factory=dict)
     genres: Dict = field(default_factory=dict)
     releases: List[ExportRelease] = field(default_factory=list)
+    country_data: Dict[str, CountryData] = field(default_factory=dict)
+    bands_total = 0
 
     def add_gender_country(self, band_origin, artist_origin, gender, count):
         """Function to add sane gender data to the underlying genders collection. Countries and genders will be added
@@ -132,3 +147,10 @@ class ExportData:
 
         return True
 
+    def add_bands_per_country(self, country_short, number_bands):
+        self. country_data[country_short] = CountryData(country_short, number_bands)
+        self.bands_total += number_bands
+
+    def do_export_calc(self):
+        for country in self.country_data.values():
+            country.percentage_bands = country.number_bands / self.bands_total

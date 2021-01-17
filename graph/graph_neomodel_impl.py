@@ -366,6 +366,16 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
                                             gender=gender_entry[2], count=gender_entry[3])
 
+        # Prep the band origins.
+        self.logger.info(' ┣ Fetching bands per country')
+        if len(country_shorts) is 0:
+            query = 'MATCH (b:Band) return b.country, count(*)'
+        else:
+            query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, count(*)'
+        bands, meta = db.cypher_query(query)
+        for band_entry in bands:
+            prepped_data.add_bands_per_country(band_entry[0], band_entry[1])
+
         # Prep the raw genre data.
         self.logger.info(' ┣ Fetching genres')
         if len(country_shorts) is 0:
@@ -376,6 +386,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for genre_entry in genres:
             prepped_data.add_genre_country(country=genre_entry[0], genres=genre_entry[1], count=genre_entry[2])
 
+        # Prep the releases.
         self.logger.info(' ┣ Fetching releases')
         if len(country_shorts) is 0:
             query = 'MATCH (b:Band)--(r:Release) return b.country, b.name, r.name, r.rating, r.review_count, r.link,'
