@@ -138,7 +138,7 @@ class CountryReport:
             self._genders[gender] = ()
 
         for gender, count in genders.items():
-            # Fill with value pairs count and the percentage.
+            # Fill with value pairs count and the percentage_bands.
             self._genders[gender] = (count, (count / self._amount_people) * 100)
 
     def get_gender(self, gender_key):
@@ -146,7 +146,7 @@ class CountryReport:
 
         :param gender_key: The gender key. See GENDER for possible values.
         :return: A tuple with three values; The gender string, number of people in the given country belonging to that
-            gender and a percentage in relation to the total number of people playing in bands of this country.
+            gender and a percentage_bands in relation to the total number of people playing in bands of this country.
         """
         return self._genders[gender_key][0]
 
@@ -498,7 +498,7 @@ class ReleaseReport:
         self.country_releases[country_name][release_type] += 1
         self.releases_total[release_type] += 1
 
-        # Collect releases in a tuple. We filter by the minimum values for average percentage and review count from the
+        # Collect releases in a tuple. We filter by the minimum values for average percentage_bands and review count from the
         # settings file.
         if ratings >= RELEASE_AVERAGE_MIN and review_count >= RELEASE_REVIEW_COUNT_MIN:
             # Instantiate release types in the order we like (so that the JSON export is consistent).

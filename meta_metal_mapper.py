@@ -134,6 +134,7 @@ def main():
     arg_parser.add_argument('-z', action='store_true', help=analyze_light_text)
     arg_parser.add_argument('-l', action='store_true', help=list_text)
     arg_parser.add_argument('--md', action='store_true', help=export_mode_text)
+    arg_parser.add_argument('--raw', action='store_true', help=export_mode_text)
     args = arg_parser.parse_args()
 
     # All countries
@@ -245,7 +246,10 @@ def main():
 
         if args.md:
             export_mode = ExportMode.Markdown
+        elif args.raw:
+            export_mode = ExportMode.Raw
         else:
+            logger.warning('No export option given. Falling back to raw report.')
             export_mode = ExportMode.Raw
 
         country_links = []
@@ -278,6 +282,7 @@ def main():
             logger.info(country_info[:-2])
 
         exporter = Exporter(export_mode, db_handle, country_links, report_mode)
+        exporter.do_export()
 
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)
