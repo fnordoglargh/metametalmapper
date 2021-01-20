@@ -375,7 +375,15 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, count(*)'
         bands, meta = db.cypher_query(query)
         for band_entry in bands:
-            prepped_data.add_bands_per_country(band_entry[0], band_entry[1])
+            prepped_data.add_bands_per_country(country_short=band_entry[0], number_bands=band_entry[1])
+
+        query = 'MATCH (b:Band) return b.country, b.formed, count(*)'
+        bands_form, meta = db.cypher_query(query)
+        for band_entry in bands_form:
+            # Unknown formation dates have 'None' as the formation attribute.
+            if band_entry[1] is not None:
+                formation_year = int(band_entry[1][:4])
+                prepped_data.add_band_formation_date(country_short=band_entry[0], year=formation_year, formation_number=band_entry[2])
 
         # Prep the raw genre data.
         self.logger.info(' ┣ Fetching genres')

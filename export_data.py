@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
+from datetime import datetime
+from collections import defaultdict, OrderedDict
 
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import GENDER, RELEASE_TYPES
@@ -52,15 +54,29 @@ class ExportGender:
 
 @dataclass
 class CountryData:
+    formation_year_min = datetime.today().year
+    formation_years: Dict = field(default_factory=dict)
     country_name: str = 'not set'
-    number_bands = -1
-    bands_per_100k = -1
-    percentage_bands = -1
+    number_bands: int = -1
+    bands_per_100k: float = -1.0
+    percentage_bands: float = -1.0
+    # formation_years: Dict[int, int] = field(default_factory=dict)
 
     def __init__(self, country_short: str, number_bands: int):
         self.country_name = COUNTRY_NAMES[country_short]
         self.number_bands = number_bands
         self.bands_per_100k = number_bands/(int(COUNTRY_POPULATION[country_short])/100000)
+        self.formation_years = {}
+
+    def add_formation_year(self, year: int, number_formation: int):
+        # Fill every year which is not in the collection yet with zeros.
+        if year < self.formation_year_min:
+            for year_add in range(year, self.formation_year_min):
+                self.formation_years[year_add] = 0
+            # Set the new minimum year.
+            self.formation_year_min = year
+        # At last we write the actual data.
+        self.formation_years[year] = number_formation
 
 
 @dataclass
@@ -71,6 +87,7 @@ class ExportData:
     releases: List[ExportRelease] = field(default_factory=list)
     country_data: Dict[str, CountryData] = field(default_factory=dict)
     bands_total = 0
+    _formation_year_min = datetime.today().year
 
     def add_gender_country(self, band_origin, artist_origin, gender, count):
         """Function to add sane gender data to the underlying genders collection. Countries and genders will be added
@@ -148,9 +165,24 @@ class ExportData:
         return True
 
     def add_bands_per_country(self, country_short, number_bands):
-        self. country_data[country_short] = CountryData(country_short, number_bands)
-        self.bands_total += number_bands
+        if country_short in COUNTRY_NAMES.keys():
+            self. country_data[country_short] = CountryData(country_short, number_bands)
+            self.bands_total += number_bands
+
+    def add_band_formation_date(self, country_short: str, year: int, formation_number: int):
+        if country_short in COUNTRY_NAMES.keys() and country_short in self.country_data.keys():
+            if year < self._formation_year_min:
+                self._formation_year_min = year
+            self.country_data[country_short].add_formation_year(year, formation_number)
 
     def do_export_calc(self):
+        formation_year_min = datetime.today().year
+
+        # Determine the first year a metal band was founded.
+        for country in self.country_data.values():
+            if country.formation_year_min < formation_year_min:
+                formation_year_min = country.formation_year_min
+
         for country in self.country_data.values():
             country.percentage_bands = country.number_bands / self.bands_total
+            country.formation_years = OrderedDict(sorted(country.formation_years.items()))

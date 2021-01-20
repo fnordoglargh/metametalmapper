@@ -39,6 +39,6 @@ class Exporter:
 
     def do_export(self) -> None:
         self.prepped_data.do_export_calc()
-        self._strategy.do_export(self)
+        self._strategy.do_export(self, self.prepped_data)
 
 
