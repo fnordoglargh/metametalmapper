@@ -150,19 +150,20 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
     def get_all_links_interface(self) -> dict:
         all_links = {'bands': {}, 'artists': {}}
-        self.logger.info('  Getting all known bands.')
-        all_bands = Band.nodes.all()
-        self.logger.info(f'    ...found {len(all_bands)}')
 
-        for band in all_bands:
-            all_links['bands'][band.link] = band.visited
+        self.logger.info('  Fetching known bands from database..')
+        query = 'MATCH (b:Band) RETURN b.link, b.visited'
+        bands, meta = db.cypher_query(query)
+        for band_entry in bands:
+            all_links['bands'][band_entry[0]] = band_entry[1]
+        self.logger.info(f'    ...found {len(bands)}')
 
-        self.logger.info('  Getting all known artists.')
-        all_artists = Member.nodes.all()
-        self.logger.info(f'    ...found {len(all_artists)}')
-
-        for artist in all_artists:
-            all_links['artists'][artist.link] = artist.visited
+        self.logger.info('  Fetching known artists from database.')
+        query = 'MATCH (n:Member) RETURN n.link, n.visited'
+        artists, meta = db.cypher_query(query)
+        for artist_entry in artists:
+            all_links['artists'][artist_entry[0]] = artist_entry[1]
+        self.logger.info(f'    ...found {len(artists)}')
 
         return all_links
 
