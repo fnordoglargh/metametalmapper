@@ -25,9 +25,6 @@ class Exporter:
         self._strategy = strategy
         self._db_handle = db_handle
         self.prepped_data = db_handle.prepare_export_data(countries, report_mode)
-        print()
-
-
 
     @property
     def strategy(self) -> ExportingStrategy:

@@ -60,7 +60,6 @@ class CountryData:
     number_bands: int = -1
     bands_per_100k: float = -1.0
     percentage_bands: float = -1.0
-    # formation_years: Dict[int, int] = field(default_factory=dict)
 
     def __init__(self, country_short: str, number_bands: int):
         self.country_name = COUNTRY_NAMES[country_short]
@@ -84,8 +83,9 @@ class ExportData:
     origins: Dict = field(default_factory=dict)
     genders: Dict = field(default_factory=dict)
     genres: Dict = field(default_factory=dict)
-    releases: List[ExportRelease] = field(default_factory=list)
+    formation_year_totals: Dict[int, int] = field(default_factory=dict)
     country_data: Dict[str, CountryData] = field(default_factory=dict)
+    releases: List[ExportRelease] = field(default_factory=list)
     bands_total = 0
     _formation_year_min = datetime.today().year
 
@@ -174,6 +174,11 @@ class ExportData:
             if year < self._formation_year_min:
                 self._formation_year_min = year
             self.country_data[country_short].add_formation_year(year, formation_number)
+
+            if year not in self.formation_year_totals.keys():
+                self.formation_year_totals[year] = formation_number
+            else:
+                self.formation_year_totals[year] += formation_number
 
     def do_export_calc(self):
         formation_year_min = datetime.today().year
