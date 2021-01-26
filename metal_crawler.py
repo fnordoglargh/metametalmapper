@@ -701,9 +701,8 @@ def apply_to_db(band: Band, db_handle, is_detailed):
                     logger.exception("Making member connection failed.", e, exc_info=True)
                     logger.error(member)
                     logger.error(band.emid)
-                    logger.error(instrument[0])
+                    logger.error(instrument)
                     logger.error(member.pseudonym)
-                    logger.error(make_time_spans(instrument[1]))
                     logger.error(get_dict_key(MEMBER_STATUS, status))
 
     # Add labels if mode is detailed.
