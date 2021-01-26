@@ -370,14 +370,19 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # Prep the band origins.
         self.logger.info(' ┣ Fetching bands per country')
         if len(country_shorts) is 0:
-            query = 'MATCH (b:Band) return b.country, count(*)'
+            query = 'MATCH (b:Band) RETURN b.country, count(*)'
         else:
             query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, count(*)'
         bands, meta = db.cypher_query(query)
         for band_entry in bands:
             prepped_data.add_bands_per_country(country_short=band_entry[0], number_bands=band_entry[1])
 
-        query = 'MATCH (b:Band) return b.country, b.formed, count(*)'
+        # Prep the band origins.
+        self.logger.info(' ┣ Fetching band formation years')
+        if len(country_shorts) is 0:
+            query = 'MATCH (b:Band) RETURN b.country, b.formed, count(*)'
+        else:
+            query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, b.formed, count(*)'
         bands_form, meta = db.cypher_query(query)
         for band_entry in bands_form:
             # Unknown formation dates have 'None' as the formation attribute.
@@ -398,8 +403,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # Prep the releases.
         self.logger.info(' ┣ Fetching releases')
         if len(country_shorts) is 0:
-            query = 'MATCH (b:Band)--(r:Release) return b.country, b.name, r.name, r.rating, r.review_count, r.link,'
-            'r.release_type, r.release_date'
+            query = ('MATCH (b:Band)--(r:Release) RETURN b.country, b.name, r.name, r.rating, r.review_count, r.link,'
+                     'r.release_type, r.release_date')
         else:
             query = (f'MATCH (b:Band)--(r:Release) WHERE b.country IN {country_shorts} return b.country, b.name, '
                      'r.name, r.rating, r.review_count, r.link, r.release_type, r.release_date')

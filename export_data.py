@@ -58,6 +58,7 @@ class CountryData:
     formation_years: Dict = field(default_factory=dict)
     country_name: str = 'not set'
     number_bands: int = -1
+    number_formation_total: int = 0
     bands_per_100k: float = -1.0
     percentage_bands: float = -1.0
 
@@ -76,6 +77,7 @@ class CountryData:
             self.formation_year_min = year
         # At last we write the actual data.
         self.formation_years[year] = number_formation
+        self.number_formation_total += number_formation
 
 
 @dataclass
@@ -179,6 +181,9 @@ class ExportData:
                 self.formation_year_totals[year] = formation_number
             else:
                 self.formation_year_totals[year] += formation_number
+
+        if country_short not in self.country_data.keys():
+            pass
 
     def do_export_calc(self):
         formation_year_min = datetime.today().year
