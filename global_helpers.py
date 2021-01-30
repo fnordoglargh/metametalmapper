@@ -2,6 +2,8 @@
 
 from pathlib import Path
 from datetime import datetime
+import logging.config
+import sys
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'

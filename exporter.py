@@ -20,7 +20,7 @@ class Exporter:
         if export_mode is ExportMode.Markdown:
             strategy = ExporterMarkdown()
         else:
-            strategy = ExporterRaw
+            strategy = ExporterRaw()
 
         self._strategy = strategy
         self._db_handle = db_handle
@@ -36,6 +36,6 @@ class Exporter:
 
     def do_export(self) -> None:
         self.prepped_data.do_export_calc()
-        self._strategy.do_export(self, self.prepped_data)
+        self._strategy.do_export(self.prepped_data)
 
 

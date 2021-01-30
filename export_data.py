@@ -89,7 +89,7 @@ class ExportData:
     country_data: Dict[str, CountryData] = field(default_factory=dict)
     releases: List[ExportRelease] = field(default_factory=list)
     bands_total = 0
-    _formation_year_min = datetime.today().year
+    formation_year_min = datetime.today().year
 
     def add_gender_country(self, band_origin, artist_origin, gender, count):
         """Function to add sane gender data to the underlying genders collection. Countries and genders will be added
@@ -173,8 +173,8 @@ class ExportData:
 
     def add_band_formation_date(self, country_short: str, year: int, formation_number: int):
         if country_short in COUNTRY_NAMES.keys() and country_short in self.country_data.keys():
-            if year < self._formation_year_min:
-                self._formation_year_min = year
+            if year < self.formation_year_min:
+                self.formation_year_min = year
             self.country_data[country_short].add_formation_year(year, formation_number)
 
             if year not in self.formation_year_totals.keys():
