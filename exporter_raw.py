@@ -4,38 +4,45 @@ from country_helper import COUNTRY_NAMES
 
 
 def _export_formation_table(country_data: Dict[str, CountryData], formation_year_totals, formation_year_min: int):
-    sorted_countries = \
-        sorted(country_data,
-               key=lambda country: country_data[country].number_formation_total,
-               reverse=True)
+    """Generates a CSV string of the formation years (rows) of bands in all countries (columns).
+
+    :param country_data: The raw country data object.
+    :param formation_year_totals: A collection with the total formation numbers per year.
+    :param formation_year_min: The very first year a metal band was founded (from actual country_data and not the
+        earliest known instance).
+    :return: A string with the CSV data of all band formation years
+    """
+    sorted_countries = sorted(country_data,
+                              key=lambda country: country_data[country].number_formation_total,
+                              reverse=True)
 
     # Export formation CSV.
-    text = 'Year,Totals,'
+    formation_csv = 'Year;Totals;'
 
     # Continue prepping the headings.
     for country_iso in sorted_countries:
-        text += f'{COUNTRY_NAMES[country_iso]},'
+        formation_csv += f'{COUNTRY_NAMES[country_iso]};'
 
-    text += '\n'
+    formation_csv += '\n'
 
     for i in range(formation_year_min, datetime.today().year):
-        text += f'{i},'
+        formation_csv += f'{i};'
 
         # Totals first...
         if i in formation_year_totals.keys():
-            text += f'{formation_year_totals[i]},'
+            formation_csv += f'{formation_year_totals[i]};'
         else:
-            text += f'0,'
+            formation_csv += f'0;'
 
         # ...then the totals from sorted country keys.
         for country_iso in sorted_countries:
             if i in country_data[country_iso].formation_years.keys():
-                text += f'{country_data[country_iso].formation_years[i]},'
+                formation_csv += f'{country_data[country_iso].formation_years[i]};'
             else:
-                text += '0,'
-        text += '\n'
+                formation_csv += '0;'
+        formation_csv += '\n'
 
-    return text
+    return formation_csv
 
 
 class ExporterRaw(ExportingStrategy):
