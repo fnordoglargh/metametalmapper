@@ -83,7 +83,7 @@ class CountryData:
 @dataclass
 class ExportData:
     origins: Dict = field(default_factory=dict)
-    genders: Dict = field(default_factory=dict)
+    genders: Dict[str, ExportGender] = field(default_factory=dict)
     genres: Dict = field(default_factory=dict)
     formation_year_totals: Dict[int, int] = field(default_factory=dict)
     country_data: Dict[str, CountryData] = field(default_factory=dict)
@@ -109,15 +109,20 @@ class ExportData:
 
         if band_origin in COUNTRY_NAMES.keys() and artist_origin in COUNTRY_NAMES.keys():
             if band_origin not in self.genders:
-                self.genders[band_origin] = {}
-            if artist_origin not in self.genders[band_origin]:
-                self.genders[band_origin][artist_origin] = {}
+                self.genders[band_origin] = ExportGender()
+            if artist_origin not in self.genders[band_origin].genders:
+                self.genders[band_origin].genders[artist_origin] = {}
+
             if gender in GENDER.keys():
                 if count < 0:
                     count = 0
                 else:
                     is_applied = True
-                self.genders[band_origin][artist_origin][gender] = count
+                self.genders[band_origin].genders[artist_origin][gender] = count
+
+                if gender not in self.genders[band_origin].totals:
+                    self.genders[band_origin].totals[gender] = 0
+                self.genders[band_origin].totals[gender] += count
 
         return is_applied
 

@@ -1,5 +1,5 @@
 import unittest
-from export_data import ExportData
+from export_data import ExportData, ExportGender
 
 
 class TestGenderLoading(unittest.TestCase):
@@ -10,15 +10,13 @@ class TestGenderLoading(unittest.TestCase):
         self.assertEqual(True, result)
         result = data.add_gender_country(band_origin='US', artist_origin='US', gender='F', count=7)
         self.assertEqual(True, result)
-        expected_data = {
-            'US': {
-                'US': {
-                    'M': 77,
-                    'F': 7
-                }
-            }
-        }
-        self.assertEqual(expected_data, data.genders)
+        expected_data = ExportGender()
+        expected_data.genders['US'] = {}
+        expected_data.genders['US']['M'] = 77
+        expected_data.genders['US']['F'] = 7
+        expected_data.totals['M'] = 77
+        expected_data.totals['F'] = 7
+        self.assertEqual(expected_data, data.genders['US'])
 
     def test_invalid_origins(self):
         data = ExportData()
@@ -43,7 +41,8 @@ class TestGenderLoading(unittest.TestCase):
         data = ExportData()
         result = data.add_gender_country(band_origin='US', artist_origin='US', gender='0', count=10)
         self.assertEqual(False, result)
-        expected_data = {'US': {'US': {}}}
+        expected_data = {'US': ExportGender()}
+        expected_data['US'].genders['US'] = {}
         self.assertEqual(expected_data, data.genders)
 
     def test_invalid_gender_and_country(self):
@@ -59,42 +58,24 @@ class TestGenderLoading(unittest.TestCase):
         self.assertEqual(True, result)
         result = data.add_gender_country(band_origin='US', artist_origin='US', gender='F', count=7)
         self.assertEqual(True, result)
-        expected_data = {
-            'US': {
-                'US': {
-                    'M': 77,
-                    'F': 7
-                }
-            }
-        }
+        expected_data = {'US': ExportGender()}
+        expected_data['US'].genders['US'] = {}
+        expected_data['US'].genders['US']['M'] = 77
+        expected_data['US'].genders['US']['F'] = 7
+        expected_data['US'].totals['M'] = 77
+        expected_data['US'].totals['F'] = 7
         self.assertEqual(expected_data, data.genders)
+        # Gender invalid.
         result = data.add_gender_country(band_origin='DE', artist_origin='DK', gender='0', count=10)
         self.assertEqual(False, result)
-        expected_data = {
-            'US': {
-                'US': {
-                    'M': 77,
-                    'F': 7
-                }
-            },
-            'DE': {'DK': {}}
-        }
+        expected_data['DE'] = ExportGender()
+        expected_data['DE'].genders['DK'] = {}
         self.assertEqual(expected_data, data.genders)
+        # Negative count sets number to 0.
         result = data.add_gender_country(band_origin='DE', artist_origin='DK', gender='F', count=-100)
         self.assertEqual(False, result)
-        expected_data = {
-            'US': {
-                'US': {
-                    'M': 77,
-                    'F': 7
-                }
-            },
-            'DE': {
-                'DK': {
-                    'F': 0
-                }
-            }
-        }
+        expected_data['DE'].genders['DK']['F'] = 0
+        expected_data['DE'].totals['F'] = 0
         self.assertEqual(expected_data, data.genders)
 
 
