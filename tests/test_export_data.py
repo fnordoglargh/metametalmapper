@@ -95,6 +95,11 @@ class TestGenreLoading(unittest.TestCase):
                 'Black': 10,
                 'Power': 66
             },
+            'Total': {
+                'Death': 10,
+                'Black': 21,
+                'Power': 66
+            },
             'DK': {
                 'Black': 11
             }
@@ -112,7 +117,7 @@ class TestGenreLoading(unittest.TestCase):
         data = ExportData()
         result = data.add_genre_country(country='US', genres=[], count=10)
         self.assertEqual(False, result)
-        expected_data = {'US': {}}
+        expected_data = {'Total': {}, 'US': {}}
         self.assertEqual(expected_data, data.genres)
 
     def test_invalid_genre_and_country(self):
