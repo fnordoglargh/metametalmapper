@@ -405,7 +405,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         for band_entry in bands:
             prepped_data.add_bands_per_country(country_short=band_entry[0], number_bands=band_entry[1])
 
-        # Prep the band origins.
+        # Prep the band formation years.
         self.logger.info(' ┣ Fetching band formation years')
         if len(country_shorts) is 0:
             query = 'MATCH (b:Band) RETURN b.country, b.formed, count(*)'
