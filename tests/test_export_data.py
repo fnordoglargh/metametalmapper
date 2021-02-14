@@ -43,14 +43,14 @@ class TestGenderLoading(unittest.TestCase):
         self.assertEqual(False, result)
         expected_data = {'US': ExportGender()}
         expected_data['US'].genders['US'] = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
     def test_invalid_gender_and_country(self):
         data = ExportData()
         result = data.add_gender_country(band_origin='0', artist_origin='0', gender='0', count=10)
         self.assertEqual(False, result)
         expected_data = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
     def test_mixed_data(self):
         data = ExportData()
@@ -64,19 +64,19 @@ class TestGenderLoading(unittest.TestCase):
         expected_data['US'].genders['US']['F'] = 7
         expected_data['US'].totals['M'] = 77
         expected_data['US'].totals['F'] = 7
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
         # Gender invalid.
         result = data.add_gender_country(band_origin='DE', artist_origin='DK', gender='0', count=10)
         self.assertEqual(False, result)
         expected_data['DE'] = ExportGender()
         expected_data['DE'].genders['DK'] = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
         # Negative count sets number to 0.
         result = data.add_gender_country(band_origin='DE', artist_origin='DK', gender='F', count=-100)
         self.assertEqual(False, result)
         expected_data['DE'].genders['DK']['F'] = 0
         expected_data['DE'].totals['F'] = 0
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
 
 class TestGenreLoading(unittest.TestCase):
