@@ -50,6 +50,23 @@ class ExportRelease:
 class ExportGender:
     genders: Dict = field(default_factory=dict)
     totals: Dict = field(default_factory=dict)
+    genders: dict = field(default_factory=int)
+    totals: int = 0
+
+    def __init__(self):
+        self.genders = {}
+
+    def add_gender(self, gender, number):
+        if gender in GENDER:
+            self.genders[gender] = number
+            self.totals += number
+
+    def inc_gender(self, gender):
+        if gender in GENDER:
+            if gender not in self.genders:
+                self.genders[gender] = 0
+            self.genders[gender] += 1
+            self.totals += 1
 
 
 @dataclass
@@ -83,7 +100,11 @@ class CountryData:
 @dataclass
 class ExportData:
     origins: Dict = field(default_factory=dict)
-    genders: Dict[str, ExportGender] = field(default_factory=dict)
+    # Genders of all artists hailing from a certain country.
+    genders_country: Dict[str, ExportGender] = field(default_factory=dict)
+    # Genders of all artists playing in bands from a certain country. Every artists is counted once per country but can
+    # play in different countries.
+    genders_origins: Dict[str, dict] = field(default_factory=dict)
     genres: Dict = field(default_factory=dict)
     formation_year_totals: Dict[int, int] = field(default_factory=dict)
     country_data: Dict[str, CountryData] = field(default_factory=dict)
@@ -94,35 +115,39 @@ class ExportData:
     # def __init__(self):
     #     self.genres['Totals'] = {}
 
-    def add_gender_country(self, band_origin, artist_origin, gender, count):
-        """Function to add sane gender data to the underlying genders collection. Countries and genders will be added
+    def add_gender_country(self, artist_origin, gender, count=1, band_origin=''):
+        """Function to add sane gender data to the underlying genders_country collection. Countries and genders_country will be added
             as keys to the dict.
 
-        :param band_origin: An ISO country name; used as key for the gender data. The origin of the band has the highest
-            priority, under that the individual band members are counted under the state of their origin.
         :param artist_origin: An ISO country name; used as key for the gender data of artists under a country.
         :param gender: A gender key as defined in graph.choices module (GENDERS).
-        :param count: The total number of entries for he supplied gender.
+        :param count: The total number of entries for he supplied gender. Number will be set to 0 if the given number is
+            smaller than 0.
+        :param band_origin: An ISO country name; used as key for the gender data. The origin of the band has the highest
+            priority, under that the individual band members are counted under the state of their origin.
         :return: True if the supplied country and gender are valid, otherwise False.
         """
         is_applied = False
 
-        if band_origin in COUNTRY_NAMES.keys() and artist_origin in COUNTRY_NAMES.keys():
-            if band_origin not in self.genders:
-                self.genders[band_origin] = ExportGender()
-            if artist_origin not in self.genders[band_origin].genders:
-                self.genders[band_origin].genders[artist_origin] = {}
-
+        if band_origin == '':
+            if artist_origin not in self.genders_country:
+                self.genders_country[artist_origin] = ExportGender()
+            self.genders_country[artist_origin].add_gender(gender, count)
+            is_applied = True
+        elif band_origin in COUNTRY_NAMES.keys() and artist_origin in COUNTRY_NAMES.keys():
             if gender in GENDER.keys():
-                if count < 0:
-                    count = 0
-                else:
-                    is_applied = True
-                self.genders[band_origin].genders[artist_origin][gender] = count
+                if band_origin not in self.genders_origins.keys():
+                    self.genders_origins[band_origin] = {}
+                if artist_origin not in self.genders_origins[band_origin].keys():
+                    self.genders_origins[band_origin][artist_origin] = ExportGender()
 
-                if gender not in self.genders[band_origin].totals:
-                    self.genders[band_origin].totals[gender] = 0
-                self.genders[band_origin].totals[gender] += count
+                self.genders_origins[band_origin][artist_origin].inc_gender(gender)
+                is_applied = True
+
+                # if band_origin not in self.genders_origins.keys():
+                #     self.genders_origins[band_origin] = ExportGender()
+                # self.genders_origins[band_origin].inc_gender(gender)
+                # print(f'{band_origin} {artist_origin}')
 
         return is_applied
 

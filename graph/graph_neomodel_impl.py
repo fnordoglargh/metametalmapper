@@ -357,15 +357,43 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             prepped_data.origins[origin[0]] = origin[1]
 
         # Prep the gender raw data
-        self.logger.info(' ┣ Fetching genders')
+        # First we get the numbers per origin country of an artist.
+        self.logger.info(' ┣ Fetching genders_country (country origins)')
         if len(country_shorts) is 0:
-            query = 'MATCH (b:Band)--(m:Member) RETURN b.country, m.origin, m.gender, count(*)'
+            query = 'MATCH (m:Member) RETURN m.origin, m.gender, count(*)'
         else:
-            query = f'MATCH (b:Band)--(m:Member) WHERE b.country IN {country_shorts} RETURN b.country, m.origin, m.gender, count(*)'
+            query = f'MATCH (m:Member) WHERE b.country IN {country_shorts} RETURN m.origin, m.gender, count(*)'
         genders, meta = db.cypher_query(query)
         for gender_entry in genders:
-            prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
-                                            gender=gender_entry[2], count=gender_entry[3])
+            prepped_data.add_gender_country(artist_origin=gender_entry[0],
+                                            gender=gender_entry[1], count=gender_entry[2])
+
+        # The second gender block collects the origins of artists for every country. An artist is counted once per
+        # country.
+        if len(country_shorts) is 0:
+            self.logger.info(' ┗ Fetching genders_country (this will take a while longer)')
+
+            for country in COUNTRY_NAMES.keys():
+                # Stores artist IDs once per country to count them only once.
+                artist_ids = []
+                self.logger.info(f'   ┣ {COUNTRY_NAMES[country]}')
+                query2 = f'MATCH (b:Band)--(m:Member) WHERE b.country = "{country}" RETURN b.country, m.origin, m.gender, m.emid'
+                genders2, meta = db.cypher_query(query2)
+                for gender_entry in genders2:
+                    if gender_entry[3] not in artist_ids:
+                        artist_ids.append(gender_entry[3])
+
+                    prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
+                                                    gender=gender_entry[2])
+            self.logger.info(f'   ┗ Done')
+
+        else:
+            self.logger.info(' ┣ Fetching genders_country')
+            query = f'MATCH (b:Band)--(m:Member) WHERE b.country IN {country_shorts} RETURN b.country, m.origin, m.gender, m.emid'
+            genders, meta = db.cypher_query(query)
+            for gender_entry in genders:
+                prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
+                                                gender=gender_entry[2])
 
         # Prep the band origins.
         self.logger.info(' ┣ Fetching bands per country')
