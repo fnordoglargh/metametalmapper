@@ -16,26 +16,26 @@ class TestGenderLoading(unittest.TestCase):
         expected_data.genders['US']['F'] = 7
         expected_data.totals['M'] = 77
         expected_data.totals['F'] = 7
-        self.assertEqual(expected_data, data.genders['US'])
+        self.assertEqual(expected_data, data.genders_country['US'])
 
     def test_invalid_origins(self):
         data = ExportData()
         result = data.add_gender_country(band_origin='0', artist_origin='US', gender='M', count=10)
         self.assertEqual(False, result)
         expected_data = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
         data = ExportData()
         result = data.add_gender_country(band_origin='US', artist_origin='0', gender='M', count=10)
         self.assertEqual(False, result)
         expected_data = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
         data = ExportData()
         result = data.add_gender_country(band_origin='0', artist_origin='0', gender='M', count=10)
         self.assertEqual(False, result)
         expected_data = {}
-        self.assertEqual(expected_data, data.genders)
+        self.assertEqual(expected_data, data.genders_country)
 
     def test_invalid_gender(self):
         data = ExportData()
