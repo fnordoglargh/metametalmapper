@@ -48,13 +48,14 @@ class ExportRelease:
 
 @dataclass
 class ExportGender:
-    genders: Dict = field(default_factory=dict)
-    totals: Dict = field(default_factory=dict)
+    totals: int
     genders: dict = field(default_factory=int)
-    totals: int = 0
+    percentages: dict = field(default_factory=float)
 
     def __init__(self):
         self.genders = {}
+        self.percentages = {}
+        self.totals = 0
 
     def add_gender(self, gender, number):
         if gender in GENDER:
@@ -67,6 +68,11 @@ class ExportGender:
                 self.genders[gender] = 0
             self.genders[gender] += 1
             self.totals += 1
+
+    def update_percentages(self, totals=-1):
+        # TODO: Add totals for the worlds total artist numbers.
+        for gender, number in self.genders.items():
+            self.percentages[gender] = number/self.totals
 
 
 @dataclass
@@ -143,11 +149,6 @@ class ExportData:
 
                 self.genders_origins[band_origin][artist_origin].inc_gender(gender)
                 is_applied = True
-
-                # if band_origin not in self.genders_origins.keys():
-                #     self.genders_origins[band_origin] = ExportGender()
-                # self.genders_origins[band_origin].inc_gender(gender)
-                # print(f'{band_origin} {artist_origin}')
 
         return is_applied
 
@@ -234,6 +235,10 @@ class ExportData:
             if country.formation_year_min < formation_year_min:
                 formation_year_min = country.formation_year_min
 
+        for entry in self.genders_country.values():
+            entry.update_percentages()
+
         for country in self.country_data.values():
             country.percentage_bands = country.number_bands / self.bands_total
             country.formation_years = OrderedDict(sorted(country.formation_years.items()))
+

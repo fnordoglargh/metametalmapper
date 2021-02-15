@@ -362,7 +362,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         if len(country_shorts) is 0:
             query = 'MATCH (m:Member) RETURN m.origin, m.gender, count(*)'
         else:
-            query = f'MATCH (m:Member) WHERE b.country IN {country_shorts} RETURN m.origin, m.gender, count(*)'
+            query = f'MATCH (m:Member) WHERE m.origin IN {country_shorts} RETURN m.origin, m.gender, count(*)'
         genders, meta = db.cypher_query(query)
         for gender_entry in genders:
             prepped_data.add_gender_country(artist_origin=gender_entry[0],

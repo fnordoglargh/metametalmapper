@@ -100,6 +100,44 @@ def _export_formation_table(country_data: Dict[str, CountryData], formation_year
     return formation_csv
 
 
+def _export_country_table(country_data: Dict[str, CountryData], genders_country, genres):
+    """Generates a CSV string of country reports which contains the key information of the evaluated countries. It lists
+        country name, population, number of bands, bands per 100k people, artist breakdown with total numbers and
+        percentages. The last column contains the most popular metal genre.
+
+    :param country_data: Prepared country data.
+    :param genders_country: Prepped country gender data.
+    :param genres: Genres on a per country basis.
+    :return: A CSV string of the converted data, ready to be saved into a file.
+    """
+    # Determine existing gender keys first. We want to use what we have and not all possible entries.
+    gender_keys = []
+    for export_data in genders_country.values():
+        for gender_key in export_data.genders.keys():
+            if gender_key not in gender_keys:
+                gender_keys.append(gender_key)
+
+    # Prep the header.
+    export_text = 'Country;Population;# Bands;Bands per 100k;# Artists;'
+    for gender in gender_keys:
+        export_text += f'# {GENDER[gender]};% {GENDER[gender]};'
+    export_text += 'TOP genre;\n'
+
+    for country, data_entry in country_data.items():
+        export_text += f'{data_entry.country_name};{COUNTRY_POPULATION[country]};{data_entry.number_bands};'
+        export_text += f'{data_entry.bands_per_100k:.2f};{genders_country[country].totals};'
+        for gender in gender_keys:
+            actual_number = 0
+            actual_percentage = 0
+            if gender in genders_country[country].genders:
+                actual_number = genders_country[country].genders[gender]
+                actual_percentage = genders_country[country].percentages[gender] * 100
+            export_text += f'{actual_number};{actual_percentage:.2f};'
+        top_genre = max(genres[country], key=genres[country].get)
+        export_text += f'{top_genre};\n'
+    return export_text
+
+
 class ExporterRaw(ExportingStrategy):
 
     def __init__(self):
@@ -118,3 +156,6 @@ class ExporterRaw(ExportingStrategy):
         file_name.write_text(genre_tables[0], encoding='utf-8')
         file_name = self.generate_file_name('genres_core', 'csv')
         file_name.write_text(genre_tables[1], encoding='utf-8')
+        country_table = _export_country_table(export_data.country_data, export_data.genders_country, export_data.genres)
+        file_name = self.generate_file_name('countries', 'csv')
+        file_name.write_text(country_table, encoding='utf-8')
