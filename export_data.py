@@ -183,13 +183,13 @@ class ExportData:
 
         return is_applied
 
-    def add_release(self, country, band_name, release_name, rating, review_count, link, release_type, date):
+    def add_release(self, country, band_name, name, rating, review_count, link, release_type, date):
         """Add a release to the dataclass if rating, review_count and release_type match the values from the settings
             file.
 
         :param country:
         :param band_name:
-        :param release_name:
+        :param name:
         :param rating:
         :param review_count:
         :param link:
@@ -202,7 +202,7 @@ class ExportData:
             return False
 
         release_year = int(date[:4])
-        release = ExportRelease(country, release_year, band_name, release_name, link, release_type, rating, review_count)
+        release = ExportRelease(country, release_year, band_name, name, link, release_type, rating, review_count)
 
         self.releases.append(release)
 

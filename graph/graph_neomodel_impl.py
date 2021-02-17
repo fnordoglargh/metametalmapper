@@ -351,14 +351,14 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         self.logger.info('Preparing data export:')
 
         # Prep origin data.
-        self.logger.info(' ┣ Fetching origins')
+        self.logger.info(' ┣ Fetching artist origins')
         origins, meta = db.cypher_query('MATCH (m:Member) return m.origin, count(*)')
         for origin in origins:
             prepped_data.origins[origin[0]] = origin[1]
 
         # Prep the gender raw data
         # First we get the numbers per origin country of an artist.
-        self.logger.info(' ┣ Fetching genders_country (country origins)')
+        self.logger.info(' ┣ Fetching genders (country origins)')
         if len(country_shorts) is 0:
             query = 'MATCH (m:Member) RETURN m.origin, m.gender, count(*)'
         else:
@@ -377,7 +377,8 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                 # Stores artist IDs once per country to count them only once.
                 artist_ids = []
                 self.logger.info(f'   ┣ {COUNTRY_NAMES[country]}')
-                query2 = f'MATCH (b:Band)--(m:Member) WHERE b.country = "{country}" RETURN b.country, m.origin, m.gender, m.emid'
+                query2 = f'MATCH (b:Band)--(m:Member) WHERE b.country = "{country}" RETURN b.country, m.origin,' \
+                         f'm.gender, m.emid'
                 genders2, meta = db.cypher_query(query2)
                 for gender_entry in genders2:
                     if gender_entry[3] not in artist_ids:
@@ -386,10 +387,10 @@ class NeoModelStrategy(GraphDatabaseStrategy):
                     prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
                                                     gender=gender_entry[2])
             self.logger.info(f'   ┗ Done')
-
         else:
             self.logger.info(' ┣ Fetching genders_country')
-            query = f'MATCH (b:Band)--(m:Member) WHERE b.country IN {country_shorts} RETURN b.country, m.origin, m.gender, m.emid'
+            query = f'MATCH (b:Band)--(m:Member) WHERE b.country IN {country_shorts} RETURN b.country, m.origin, ' \
+                    f'm.gender, m.emid'
             genders, meta = db.cypher_query(query)
             for gender_entry in genders:
                 prepped_data.add_gender_country(band_origin=gender_entry[0], artist_origin=gender_entry[1],
@@ -416,7 +417,11 @@ class NeoModelStrategy(GraphDatabaseStrategy):
             # Unknown formation dates have 'None' as the formation attribute.
             if band_entry[1] is not None:
                 formation_year = int(band_entry[1][:4])
-                prepped_data.add_band_formation_date(country_short=band_entry[0], year=formation_year, formation_number=band_entry[2])
+                prepped_data.add_band_formation_date(
+                    country_short=band_entry[0],
+                    year=formation_year,
+                    formation_number=band_entry[2]
+                )
 
         # Prep the raw genre data.
         self.logger.info(' ┣ Fetching genres')
@@ -439,7 +444,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         releases, meta = db.cypher_query(query)
 
         for release in releases:
-            prepped_data.add_release(country=release[0], band_name=release[1], release_name=release[2],
+            prepped_data.add_release(country=release[0], band_name=release[1], name=release[2],
                                      rating=release[3], review_count=release[4], link=release[5],
                                      release_type=release[6], date=release[7])
 
