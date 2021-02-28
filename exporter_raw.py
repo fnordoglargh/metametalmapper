@@ -2,7 +2,7 @@ from exporter_strategy import ExportingStrategy
 from export_data import *
 from country_helper import COUNTRY_NAMES
 from genre import GENRE_CORE_MA
-from settings import RELEASE_TYPES_REVIEW
+from settings import RELEASE_TYPES_REVIEW, RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN
 
 def _export_core_genre_table(raw_genres):
     """Generates CSV strings of the genres (rows) for all countries (columns).
@@ -197,22 +197,32 @@ class ExporterRaw(ExportingStrategy):
         super().__init__('raw')
 
     def do_export(self, export_data: ExportData):
+        self.logger.info('')
+        self.logger.info('Exporting data:')
         formation_csv = _export_formation_table(export_data.country_data,
                                                 export_data.formation_year_totals,
                                                 export_data.formation_year_min)
         file_name = self.generate_file_name('formation_data', 'csv')
         file_name.write_text(formation_csv, encoding='utf-8')
+        self.logger.info(f'  Formation data (per year and country): {file_name}')
 
         # We get a tuple with two csv strings from the genre function.
         genre_tables = _export_core_genre_table(export_data.genres)
         file_name = self.generate_file_name('genres', 'csv')
         file_name.write_text(genre_tables[0], encoding='utf-8')
+        self.logger.info(f'  All recorded genres (per country): {file_name}')
         file_name = self.generate_file_name('genres_core', 'csv')
         file_name.write_text(genre_tables[1], encoding='utf-8')
+        self.logger.info(f'  Core genres (per country): {file_name}')
+
         country_table = _export_country_table(export_data.country_data, export_data.genders_country, export_data.genres)
         file_name = self.generate_file_name('countries', 'csv')
         file_name.write_text(country_table, encoding='utf-8')
+        self.logger.info(f'  Basic statistics (per country): {file_name}')
 
         release_table = _export_releases(export_data.releases)
         file_name = self.generate_file_name('releases_per_year', 'csv')
         file_name.write_text(release_table, encoding='utf-8')
+        self.logger.info(f'  All releases (per year with at least {RELEASE_REVIEW_COUNT_MIN} '
+                         f'reviews and a min. average rating of {RELEASE_AVERAGE_MIN}%):')
+        self.logger.info(f'    CSV: {file_name}')

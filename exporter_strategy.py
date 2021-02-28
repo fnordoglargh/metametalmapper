@@ -30,18 +30,18 @@ class ExportingStrategy(ABC):
     def __init__(self, name):
         self.name = name
         self.folder = Path(f'{FOLDER_REPORTS}/{name}')
-        logger = logging.getLogger('ExportingStrategy')
+        self.logger = logging.getLogger('ExportingStrategy')
         # Check folder existence, try to create them otherwise.
 
         if not self.folder.exists() and not self.folder.is_dir():
             try:
                 self.folder.mkdir()
-                logger.info(f'Successfully created the directory {self.folder}.')
+                self.logger.info(f'Successfully created the directory {self.folder}.')
             except:
-                logger.fatal(f'Creation of the directory {self.folder} failed.')
+                self.logger.fatal(f'Creation of the directory {self.folder} failed.')
                 sys.exit(3)
         else:
-            logger.debug(f'Reports directory {self.folder} exists.')
+            self.logger.debug(f'Reports directory {self.folder} exists.')
 
 
     @abstractmethod
