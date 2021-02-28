@@ -38,6 +38,9 @@ class ExportRelease:
 
         if release_type in RELEASE_TYPES:
             self.release_type = RELEASE_TYPES[release_type]
+        else:
+            # TODO: Add Exception?
+            pass
 
         self.country = country
         self.year = year
@@ -117,7 +120,7 @@ class ExportData:
     genres: Dict = field(default_factory=dict)
     formation_year_totals: Dict[int, int] = field(default_factory=dict)
     country_data: Dict[str, CountryData] = field(default_factory=dict)
-    releases: List[ExportRelease] = field(default_factory=list)
+    releases: Dict[int, dict] = field(default_factory=dict)
     bands_total = 0
     formation_year_min = datetime.today().year
 
@@ -251,4 +254,3 @@ class ExportData:
         for country in self.country_data.values():
             country.percentage_bands = country.number_bands / self.bands_total
             country.formation_years = OrderedDict(sorted(country.formation_years.items()))
-

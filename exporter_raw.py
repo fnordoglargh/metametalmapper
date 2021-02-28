@@ -2,7 +2,7 @@ from exporter_strategy import ExportingStrategy
 from export_data import *
 from country_helper import COUNTRY_NAMES
 from genre import GENRE_CORE_MA
-
+from settings import RELEASE_TYPES_REVIEW
 
 def _export_core_genre_table(raw_genres):
     """Generates CSV strings of the genres (rows) for all countries (columns).
@@ -138,6 +138,59 @@ def _export_country_table(country_data: Dict[str, CountryData], genders_country,
     return export_text
 
 
+def _export_releases(releases):
+    # Sorted by year (descending).
+    sorted_releases = dict(sorted(releases.items(), reverse=True))
+    sorting = {}
+
+    # The raw report is not interested in previously filtered items.
+
+    for year, release_types in sorted_releases.items():
+        sorting[year] = {}
+
+        for release_type in RELEASE_TYPES_REVIEW:
+            sorting[year][release_type] = []
+
+        for release_type, releases in release_types.items():
+            sorted_type = []
+
+            for release in releases:
+                if not release.is_filtered:
+                    sorted_type.append(release)
+
+            sorting[year][release_type] = sorted(sorted_type, key=lambda x: x.rating, reverse=True)
+
+    csv_releases = 'Year;'
+
+    for release_type in RELEASE_TYPES_REVIEW:
+        csv_releases += f'{RELEASE_TYPES[release_type]};'
+
+    csv_releases += '\n'
+
+    for year, release_types in sorting.items():
+        csv_releases += f'{year};'
+        longest_category = 1
+
+        for release_type in RELEASE_TYPES_REVIEW:
+            category_length = len(release_types[release_type])
+            if category_length > longest_category:
+                longest_category = category_length
+
+        for i in range(0, longest_category):
+            for release_type in RELEASE_TYPES_REVIEW:
+                if len(release_types[release_type]) < longest_category:
+                    csv_releases += ';'
+                else:
+                    actual_release = release_types[release_type][i]
+                    csv_releases += f'{actual_release.release_name} ({actual_release.rating}%) by {actual_release.band_name};'
+
+            csv_releases += '\n;'
+
+        csv_releases = csv_releases[:-1]
+
+    return csv_releases
+
+
 class ExporterRaw(ExportingStrategy):
 
     def __init__(self):
@@ -159,3 +212,7 @@ class ExporterRaw(ExportingStrategy):
         country_table = _export_country_table(export_data.country_data, export_data.genders_country, export_data.genres)
         file_name = self.generate_file_name('countries', 'csv')
         file_name.write_text(country_table, encoding='utf-8')
+
+        release_table = _export_releases(export_data.releases)
+        file_name = self.generate_file_name('releases_per_year', 'csv')
+        file_name.write_text(release_table, encoding='utf-8')
