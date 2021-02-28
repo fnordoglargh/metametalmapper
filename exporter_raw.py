@@ -138,12 +138,10 @@ def _export_country_table(country_data: Dict[str, CountryData], genders_country,
     return export_text
 
 
-def _export_releases(releases):
+def _get_releases_per_year(releases):
     # Sorted by year (descending).
     sorted_releases = dict(sorted(releases.items(), reverse=True))
     sorting = {}
-
-    # The raw report is not interested in previously filtered items.
 
     for year, release_types in sorted_releases.items():
         sorting[year] = {}
@@ -154,12 +152,17 @@ def _export_releases(releases):
         for release_type, releases in release_types.items():
             sorted_type = []
 
+            # The raw report is not interested in previously filtered items.
             for release in releases:
                 if not release.is_filtered:
                     sorted_type.append(release)
 
             sorting[year][release_type] = sorted(sorted_type, key=lambda x: x.rating, reverse=True)
 
+    return sorting
+
+
+def _get_release_csv(sorted_releases):
     csv_releases = 'Year;'
 
     for release_type in RELEASE_TYPES_REVIEW:
@@ -167,7 +170,7 @@ def _export_releases(releases):
 
     csv_releases += '\n'
 
-    for year, release_types in sorting.items():
+    for year, release_types in sorted_releases.items():
         csv_releases += f'{year};'
         longest_category = 1
 
@@ -189,6 +192,14 @@ def _export_releases(releases):
         csv_releases = csv_releases[:-1]
 
     return csv_releases
+
+
+def _export_releases(releases):
+    # Sorted by year (descending).
+    sorted_releases = _get_releases_per_year(releases)
+    release_csv = _get_release_csv(sorted_releases)
+
+    return release_csv, ''
 
 
 class ExporterRaw(ExportingStrategy):
@@ -220,9 +231,9 @@ class ExporterRaw(ExportingStrategy):
         file_name.write_text(country_table, encoding='utf-8')
         self.logger.info(f'  Basic statistics (per country): {file_name}')
 
-        release_table = _export_releases(export_data.releases)
+        exported_releases = _export_releases(export_data.releases)
         file_name = self.generate_file_name('releases_per_year', 'csv')
-        file_name.write_text(release_table, encoding='utf-8')
+        file_name.write_text(exported_releases[0], encoding='utf-8')
         self.logger.info(f'  All releases (per year with at least {RELEASE_REVIEW_COUNT_MIN} '
                          f'reviews and a min. average rating of {RELEASE_AVERAGE_MIN}%):')
         self.logger.info(f'    CSV: {file_name}')
