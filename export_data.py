@@ -33,7 +33,9 @@ class ExportRelease:
     review_count: int = -1
     release_type: str = 'not set'
 
-    def __init__(self, country, year: int, band_name: str, release_name: str, link: str, release_type, rating: int, review_count: int):
+    def __init__(self, country, year: int, band_name: str, release_name: str, link: str, release_type, rating: int,
+                 review_count: int, is_filtered: bool):
+
         if release_type in RELEASE_TYPES:
             self.release_type = RELEASE_TYPES[release_type]
 
@@ -44,6 +46,7 @@ class ExportRelease:
         self.link = link
         self.rating = rating
         self.review_count = review_count
+        self.is_filtered = is_filtered
 
 
 @dataclass
@@ -184,7 +187,8 @@ class ExportData:
         return is_applied
 
     def add_release(self, country, band_name, name, rating, review_count, link, release_type, date):
-        """Add a release to the dataclass if rating, review_count and release_type match the values from the settings
+        """Add a release to the dataclass. A flag (if the release was filtered) is automatically applied if rating and
+            review_count are below the threshold from the settings file. An unwanted release_type is never added.
             file.
 
         :param country:
@@ -195,18 +199,27 @@ class ExportData:
         :param link:
         :param release_type:
         :param date:
-        :return: True if the release was added and False if it was filtered.
+        :return: True is the release was added and False if not. This only happens if the release type is unwanted.
         """
-        if review_count < RELEASE_REVIEW_COUNT_MIN or release_type not in RELEASE_TYPES_REVIEW \
-                or rating < RELEASE_AVERAGE_MIN:
+
+        if release_type not in RELEASE_TYPES_REVIEW:
             return False
 
+        is_filtered = False
+
+        if review_count < RELEASE_REVIEW_COUNT_MIN or rating < RELEASE_AVERAGE_MIN:
+            is_filtered = True
+
         release_year = int(date[:4])
-        release = ExportRelease(country, release_year, band_name, name, link, release_type, rating, review_count)
+        release = ExportRelease(country, release_year, band_name, name, link, release_type, rating, review_count,
+                                is_filtered)
+        if release_year not in self.releases:
+            self.releases[release_year] = {}
 
-        self.releases.append(release)
+        if release_type not in self.releases[release_year]:
+            self.releases[release_year][release_type] = []
 
-        return True
+        self.releases[release_year][release_type].append(release)
 
     def add_bands_per_country(self, country_short, number_bands):
         if country_short in COUNTRY_NAMES.keys():
