@@ -121,9 +121,6 @@ class ExportData:
     bands_total = 0
     formation_year_min = datetime.today().year
 
-    # def __init__(self):
-    #     self.genres['Totals'] = {}
-
     def add_gender_country(self, artist_origin, gender, count=1, band_origin=''):
         """Function to add sane gender data to the underlying genders_country collection. Countries and genders_country will be added
             as keys to the dict.
