@@ -194,12 +194,50 @@ def _get_release_csv(sorted_releases):
     return csv_releases
 
 
+def _get_release_per_year_json(sorted_releases):
+    # Define valid release types for functionality using the JSON export.
+    workable_types = []
+    for release_type in RELEASE_TYPES_REVIEW:
+        workable_types.append(RELEASE_TYPES[release_type])
+
+    export_string = '[{"categories": ['
+
+    for release_type in RELEASE_TYPES_REVIEW:
+        export_string += f'"{RELEASE_TYPES[release_type]}", '
+        
+    export_string = export_string[:-2]
+    export_string += ']}'
+
+    for year, releases_types in sorted_releases.items():
+        # Double curly brace for escaping.
+        export_string += f', {{"year": "{year}", '
+
+        for release_type, releases in releases_types.items():
+            export_string += f'"{RELEASE_TYPES[release_type]}": ['
+            for release in releases:
+                # TODO: Move this hotfix to data entry.
+                release_name = release.release_name.replace('"', '&quot;')
+                export_string += f'{{"name": "{release_name}", "band": "{release.band_name}",'
+                export_string += f'"rating": "{release.rating}", "link": "{release.link}"}}, '
+
+            if len(releases) > 0:
+                export_string = export_string[:-2]
+
+            export_string += '], '
+        export_string = export_string[:-2]
+        export_string += '}'
+    export_string += ']'
+
+    return export_string
+
+
 def _export_releases(releases):
     # Sorted by year (descending).
     sorted_releases = _get_releases_per_year(releases)
     release_csv = _get_release_csv(sorted_releases)
+    release_json_year = _get_release_per_year_json(sorted_releases)
 
-    return release_csv, ''
+    return release_csv, release_json_year
 
 
 class ExporterRaw(ExportingStrategy):
@@ -237,3 +275,7 @@ class ExporterRaw(ExportingStrategy):
         self.logger.info(f'  All releases (per year with at least {RELEASE_REVIEW_COUNT_MIN} '
                          f'reviews and a min. average rating of {RELEASE_AVERAGE_MIN}%):')
         self.logger.info(f'    CSV: {file_name}')
+
+        file_name = self.generate_file_name('releases_per_year', 'json')
+        file_name.write_text(exported_releases[1], encoding='utf-8')
+        self.logger.info(f'    JSON: {file_name}')
