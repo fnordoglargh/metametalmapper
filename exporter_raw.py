@@ -194,6 +194,49 @@ def _get_release_csv(sorted_releases):
     return csv_releases
 
 
+def _get_releases_ordered(sorted_releases):
+    releases_all = {}
+
+    for releases_types in sorted_releases.values():
+        for release_type, releases in releases_types.items():
+            if release_type not in releases_all:
+                releases_all[release_type] = []
+
+            releases_all[release_type] += releases
+            releases_all[release_type] = sorted(releases_all[release_type], key=lambda x: x.rating, reverse=True)
+
+    export_string = '{ '
+
+    for release_type, releases in releases_all.items():
+        export_string += f'"{RELEASE_TYPES[release_type]}": [ '
+        counter = 1
+        last_used_number = 0
+        # No release can be better than 100%. But it ensures that the conditions inside the loop works even if the
+        # first ratings value is 100.
+        last_rating = 101
+
+        for release in releases:
+            # As soon as the rating is different from the last, we save the rating and increment the rank counter.
+            if release.rating < last_rating:
+                last_rating = release.rating
+                last_used_number = counter
+
+            # TODO: Move this hotfix to data entry.
+            release_name = release.release_name.replace('"', '&quot;')
+            export_string += f'{{ "release_name": "{release_name}", "link": "{release.link}", '
+            export_string += f'"ratings": "{release.rating}", "band_name": "{release.band_name}", '
+            export_string += f' "rank": {last_used_number} }}, '
+            counter += 1
+
+        export_string = export_string[:-2]
+        export_string += '], '
+
+    export_string = export_string[:-2]
+    export_string += '}'
+
+    return export_string
+
+
 def _get_release_per_year_json(sorted_releases):
     # Define valid release types for functionality using the JSON export.
     workable_types = []
@@ -204,7 +247,7 @@ def _get_release_per_year_json(sorted_releases):
 
     for release_type in RELEASE_TYPES_REVIEW:
         export_string += f'"{RELEASE_TYPES[release_type]}", '
-        
+
     export_string = export_string[:-2]
     export_string += ']}'
 
@@ -236,8 +279,8 @@ def _export_releases(releases):
     sorted_releases = _get_releases_per_year(releases)
     release_csv = _get_release_csv(sorted_releases)
     release_json_year = _get_release_per_year_json(sorted_releases)
-
-    return release_csv, release_json_year
+    releases_all = _get_releases_ordered(sorted_releases)
+    return release_csv, release_json_year, releases_all
 
 
 class ExporterRaw(ExportingStrategy):
@@ -278,4 +321,8 @@ class ExporterRaw(ExportingStrategy):
 
         file_name = self.generate_file_name('releases_per_year', 'json')
         file_name.write_text(exported_releases[1], encoding='utf-8')
+        self.logger.info(f'    JSON: {file_name}')
+
+        file_name = self.generate_file_name('releases_all', 'json')
+        file_name.write_text(exported_releases[2], encoding='utf-8')
         self.logger.info(f'    JSON: {file_name}')
