@@ -1,8 +1,11 @@
+from pathlib import Path
 from exporter_strategy import ExportingStrategy
 from export_data import *
 from country_helper import COUNTRY_NAMES
 from genre import GENRE_CORE_MA
 from settings import RELEASE_TYPES_REVIEW, RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN
+
+REPORT_TEMPLATE = Path('data/report.tpl')
 
 def _export_core_genre_table(raw_genres):
     """Generates CSV strings of the genres (rows) for all countries (columns).
@@ -274,6 +277,23 @@ def _get_release_per_year_json(sorted_releases):
     return export_string
 
 
+def _generate_html_report(report_locations: list):
+    """ Generates an HTML report from a template with pre-generated JSON data.
+
+    Loads a HTML template and replaces markers with given JSON data.
+
+    :param report_locations: A list of tuples (JSON string and marker name).
+    :return: The HTML report as a string.
+    """
+
+    template_text = REPORT_TEMPLATE.read_text(encoding="utf-8")
+
+    for data_tuple in report_locations:
+        template_text = template_text.replace(data_tuple[1], data_tuple[0])
+
+    return template_text
+
+
 def _export_releases(releases):
     # Sorted by year (descending).
     sorted_releases = _get_releases_per_year(releases)
@@ -326,3 +346,12 @@ class ExporterRaw(ExportingStrategy):
         file_name = self.generate_file_name('releases_all', 'json')
         file_name.write_text(exported_releases[2], encoding='utf-8')
         self.logger.info(f'    JSON: {file_name}')
+
+        html_text = _generate_html_report([
+            (exported_releases[1], 'marker_releases_year'),
+            (exported_releases[2], 'marker_releases_all')
+        ])
+        file_name = self.generate_file_name('release_report', 'html')
+        file_name.write_text(html_text, encoding='utf-8')
+        self.logger.info(f'    HTML: {file_name}')
+
