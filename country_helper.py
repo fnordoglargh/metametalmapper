@@ -20,7 +20,7 @@ REG_EUR_CENTRAL = ('CEU', 'Central Europe', ['AT', 'CZ', 'DE', 'HU', 'LI', 'PL',
                                              'HR', 'SI'])
 REG_EUR_SOUTH = ('SEU', 'Southern Europe', ['PT', 'ES', 'IT', 'SM', 'MT'])
 REG_EUR_EAST = ('EEU', 'Eastern Europe', ['AT', 'BY', 'RU'])
-# As of Nov 2019: No Bands in Kosovo.
+# As of Mar 2021: No Bands in Kosovo.
 REG_EUR_SOUTH_EAST = ('SEE', 'Southeastern Europe', ['RO', 'MD', 'BG', 'RS', 'BA', 'MK', 'GR', 'ME', 'AL', 'CY'])
 REG_EURO = ('EURO', 'Europe', list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_EUR_CENTRAL[2] + REG_EUR_SOUTH[2] +
                                        REG_EUR_EAST[2] + REG_EUR_SOUTH_EAST[2])))
@@ -33,16 +33,15 @@ REG_AMC_SOUTH = ('SAM', 'South America', ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'G
                                           'AW'])
 REG_AMS = ('AMS', 'Americas', list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 
-# As of Nov 2019: No bands in TL (Timor Leste).
-REG_ASE = ('ASE', 'South East Asia', ['BN', 'KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN'])
-# As of Nov 2019: No bands in Bhutan and Pakistan.
-REG_ASA = ('ASA', 'South Asia', ['AF', 'BD', 'IN', 'MV', 'NP', 'LK'])
+REG_ASE = ('ASE', 'South East Asia', ['BN', 'KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN', 'TL'])
+# As of Mar 2021: No bands in Bhutan.
+REG_ASA = ('ASA', 'South Asia', ['AF', 'BD', 'IN', 'MV', 'NP', 'LK', 'PK'])
 REG_ACA = ('ACA', 'Central Asia', ['KZ', 'KG', 'TJ', 'TM', 'UZ'])
 # Will there ever be metal in North Korea?
 REG_AEA = ('AEA', 'East Asia', ['CN', 'JP', 'MN', 'KR', 'TW'])
-# As of Nov 2019: No bands in Palestine and Yemen.
+# As of Nov 2019: No bands in Yemen.
 REG_AWA = ('AWA', 'Western Asia', ['AM', 'AZ', 'BH', 'CY', 'EG', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KW', 'LB', 'OM', 'QA',
-                                   'SA', 'SY', 'TR', 'AE'])
+                                   'SA', 'SY', 'TR', 'AE', 'PS'])
 REG_ASIA = ('ASIA', 'Asia', list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
 
 # As of Dec 2019: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
