@@ -3,6 +3,7 @@
 """
 
 from pathlib import Path
+from collections import defaultdict
 import logging
 
 __author__ = 'Martin Woelke'
@@ -86,6 +87,13 @@ REGIONS = {
     REG_AFR[0]: REG_AFR,
     REG_TST[0]: REG_TST
 }
+
+COUNTRY_TO_REGIONS = defaultdict(list)
+
+for region_key, region in REGIONS.items():
+    for country in region[2]:
+        COUNTRY_TO_REGIONS[country].append(region[0])
+
 
 # Hardcoded file paths for the countries.
 COUNTRY_FILE_PATH = Path('data/iso_countries.csv')
