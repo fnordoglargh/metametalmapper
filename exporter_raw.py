@@ -7,6 +7,7 @@ from settings import RELEASE_TYPES_REVIEW, RELEASE_AVERAGE_MIN, RELEASE_REVIEW_C
 
 REPORT_TEMPLATE = Path('data/report.tpl')
 
+
 def _export_core_genre_table(raw_genres):
     """Generates CSV strings of the genres (rows) for all countries (columns).
 
@@ -327,11 +328,13 @@ class ExporterRaw(ExportingStrategy):
         file_name.write_text(genre_tables[1], encoding='utf-8')
         self.logger.info(f'  Core genres (per country): {file_name}')
 
+        # Prepare and export country statistics.
         country_table = _export_country_table(export_data.country_data, export_data.genders_country, export_data.genres)
         file_name = self.generate_file_name('countries', 'csv')
         file_name.write_text(country_table, encoding='utf-8')
         self.logger.info(f'  Basic statistics (per country): {file_name}')
 
+        # Prepare and export release statistics.
         exported_releases = _export_releases(export_data.releases)
         file_name = self.generate_file_name('releases_per_year', 'csv')
         file_name.write_text(exported_releases[0], encoding='utf-8')
@@ -339,6 +342,7 @@ class ExporterRaw(ExportingStrategy):
                          f'reviews and a min. average rating of {RELEASE_AVERAGE_MIN}%):')
         self.logger.info(f'    CSV: {file_name}')
 
+        # Write JSON exports.
         file_name = self.generate_file_name('releases_per_year', 'json')
         file_name.write_text(exported_releases[1], encoding='utf-8')
         self.logger.info(f'    JSON: {file_name}')
@@ -347,6 +351,7 @@ class ExporterRaw(ExportingStrategy):
         file_name.write_text(exported_releases[2], encoding='utf-8')
         self.logger.info(f'    JSON: {file_name}')
 
+        # Use JSON strings for teh HTML exports.
         html_text = _generate_html_report([
             (exported_releases[1], 'marker_releases_year'),
             (exported_releases[2], 'marker_releases_all')
