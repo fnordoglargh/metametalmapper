@@ -125,8 +125,8 @@ class ExportData:
     formation_year_min = datetime.today().year
 
     def add_gender_country(self, artist_origin, gender, count=1, band_origin=''):
-        """Function to add sane gender data to the underlying genders_country collection. Countries and genders_country will be added
-            as keys to the dict.
+        """Function to add sane gender data to the underlying genders_country collection. Countries and genders_country
+            will be added as keys to the dict.
 
         :param artist_origin: An ISO country name; used as key for the gender data of artists under a country.
         :param gender: A gender key as defined in graph.choices module (GENDERS).
