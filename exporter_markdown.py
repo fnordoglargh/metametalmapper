@@ -32,11 +32,18 @@ class ExporterMarkdown(ExportingStrategy):
             for gender, number in gender_info.genders.items():
                 gender_totals[gender] += number
 
-        missing_countries = sorted(COUNTRY_NAMES - COUNTRY_TO_REGIONS.keys())
+        # ISO codes of countries without metal bands.
+        missing_countries_short = COUNTRY_NAMES - COUNTRY_TO_REGIONS.keys()
+        missing_countries_names = []
+
+        for country in missing_countries_short:
+            missing_countries_names.append(COUNTRY_NAMES[country])
+
+        missing_countries_names = sorted(missing_countries_names)
 
         texts['world'] += f'Approximately {number_people/1000000000:.3f} billion people lived on earth that year. ' \
                           f'{export_data.bands_total} bands hail from {len(export_data.country_data)} countries. '
-        texts['world'] += f'No metal bands are known in {len(missing_countries)} (out of {len(COUNTRY_NAMES)}) ' \
+        texts['world'] += f'No metal bands are known in {len(missing_countries_names)} (out of {len(COUNTRY_NAMES)}) ' \
                           'countries.\n\n'
 
         texts['world'] += '# Gender Overview\n\n' \
@@ -47,8 +54,8 @@ class ExporterMarkdown(ExportingStrategy):
 
         texts['world'] += '# Countries without metal bands\n\n'
 
-        for country in missing_countries:
-            texts['world'] += f'  * {COUNTRY_NAMES[country]}\n'
+        for country in missing_countries_names:
+            texts['world'] += f'  * {country}\n'
         # Write metal world.
         file_name = self.generate_file_name('world', 'md')
         file_name.write_text(texts['world'], encoding='utf-8')
