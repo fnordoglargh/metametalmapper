@@ -62,7 +62,7 @@ REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU
 
 REG_TST = ('TST', 'Test', ['IS', 'GL', 'FO', 'AX', 'SJ'])
 
-REGIONS = {
+REGIONS_ALL = {
     REG_NC[0]: REG_NC,
     REG_SCA[0]: REG_SCA,
     REG_EUR_NORTH[0]: REG_EUR_NORTH,
@@ -90,7 +90,7 @@ REGIONS = {
 
 COUNTRY_TO_REGIONS = defaultdict(list)
 
-for region_key, region in REGIONS.items():
+for region_key, region in REGIONS_ALL.items():
     for country in region[2]:
         COUNTRY_TO_REGIONS[country].append(region[0])
 
@@ -173,7 +173,7 @@ def print_regions():
     :return: String with all regions and their containing countries.
     """
     lines = ''
-    for key, value in REGIONS.items():
+    for key, value in REGIONS_ALL.items():
         lines += f'  [{value[0]}] {value[1]}: '
         for country_key in value[2]:
             lines += COUNTRY_NAMES[country_key] + ', '
@@ -194,8 +194,8 @@ def clean_short_links(unclean_shorts: str):
     cleaned_short_links = []
 
     for short in not_yet_clean_short_links:
-        if short in REGIONS.keys():
-            region_elements = REGIONS[short][2]
+        if short in REGIONS_ALL.keys():
+            region_elements = REGIONS_ALL[short][2]
             for country in region_elements:
                 cleaned_short_links.append(country)
         elif short in COUNTRY_NAMES.keys():

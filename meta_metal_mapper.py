@@ -16,7 +16,7 @@ import textwrap
 
 from global_helpers import __version__, BAND_LINK_FILE_NAME, FOLDER_LINKS, FOLDERS_MAIN, LINK_EXTENSION,\
     append_genitive_s
-from country_helper import COUNTRY_NAMES, REGIONS, print_regions, print_countries
+from country_helper import COUNTRY_NAMES, REGIONS_ALL, print_regions, print_countries
 from metal_crawler import crawl_country, crawl_countries, crawl_bands
 from graph.report import ReportMode
 from graph.export_graph import GraphExportContext, GraphMLExporter
@@ -70,7 +70,7 @@ def flush_queue(country_short, link_list):
     if len(country_short) == 2:
         country_or_region_name = COUNTRY_NAMES[country_short]
     else:
-        country_or_region_name = REGIONS[country_short][1]
+        country_or_region_name = REGIONS_ALL[country_short][1]
 
     if len(link_list) > 0:
         band_links_file = open(country_filename, 'w', encoding='utf-8')
@@ -175,14 +175,14 @@ def main():
     # Region
     elif args.r is not None:
         region = args.r
-        if region not in REGIONS:
+        if region not in REGIONS_ALL:
             print(f'The region key {region} is invalid. Try one from the following list:')
             print()
             print(print_regions())
         else:
-            print(f'Crawling region: {REGIONS[region][1]}')
+            print(f'Crawling region: {REGIONS_ALL[region][1]}')
             link_list = []
-            for country_short in REGIONS[region][2]:
+            for country_short in REGIONS_ALL[region][2]:
                 link_list_temp = crawl_country(country_short)
                 link_list = list(set(link_list_temp + link_list))
             flush_queue(region, link_list)
@@ -201,13 +201,13 @@ def main():
             sane_argument = argument.upper()
 
             # Test if parameter is a valid region or country.
-            if sane_argument in COUNTRY_NAMES.keys() or sane_argument in REGIONS.keys():
+            if sane_argument in COUNTRY_NAMES.keys() or sane_argument in REGIONS_ALL.keys():
                 country_region_file = Path(f'{FOLDER_LINKS}/{argument}{LINK_EXTENSION}')
 
                 if sane_argument in COUNTRY_NAMES.keys():
                     info_text = f"{COUNTRY_NAMES[sane_argument]}"
-                elif sane_argument in REGIONS.keys():
-                    info_text = f"{REGIONS[sane_argument][1]}"
+                elif sane_argument in REGIONS_ALL.keys():
+                    info_text = f"{REGIONS_ALL[sane_argument][1]}"
 
                 info_text = append_genitive_s(info_text)
 
@@ -261,8 +261,8 @@ def main():
                 for country in args.y:
                     if country in COUNTRY_NAMES.keys():
                         country_links.append(country)
-                    elif country in REGIONS.keys():
-                        country_links = list(set(country_links + REGIONS[country][2]))
+                    elif country in REGIONS_ALL.keys():
+                        country_links = list(set(country_links + REGIONS_ALL[country][2]))
                     else:
                         logger.info(f'Unknown country/region: {country}')
 
