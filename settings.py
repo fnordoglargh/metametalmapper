@@ -28,3 +28,8 @@ FILTER_UNCONNECTED = False
 # Useful flag to find inconsistencies in M-A data. Don't set to True unless you know what you're doing. Setting to True
 # will result in graphs with invalid connections. This _might_ actually be useful while merging graphs with Gephi.
 FIND_MA_INCONSISTENCIES = False
+
+# Used by the markdown report. There's no functionality associated with it. You need to fill it with something that
+# makes sense in the context of your report. For the world report I intend to use, a database filled with end of year
+# data is the basis.
+YEAR_REPORT = 2020

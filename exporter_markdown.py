@@ -4,6 +4,7 @@ from exporter_strategy import ExportingStrategy
 from export_data import ExportData
 from country_helper import COUNTRY_TO_REGIONS, COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import GENDER
+from settings import YEAR_REPORT
 
 
 class ExporterMarkdown(ExportingStrategy):
@@ -12,7 +13,7 @@ class ExporterMarkdown(ExportingStrategy):
 
     def do_export(self, export_data: ExportData):
         texts = defaultdict(str)
-        texts['world'] = '# Summary\n\n'
+        texts['world'] = f'# Summary {YEAR_REPORT}\n\n'
 
         number_people = 0
 
