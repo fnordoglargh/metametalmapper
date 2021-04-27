@@ -52,7 +52,9 @@ analyze_full_text = 'Prints and exports a raw data report of the active database
 analyze_light_text = 'The "diet version" of -y without the country report. Use this mode to analyze data from the ' \
     'crawl mode -s.'
 list_text = 'List available countries and regions.'
-export_mode_text = 'Overrides the raw report/export to Markdown that can be directly used e.g. in the GitHub wiki.'
+export_mode_raw_text = 'Exports raw data into csv, html and json files.'
+export_mode_md_text = 'Exports the database into Markdown files which  can be directly used e.g. in the GitHub wiki.'
+export_mode_gml_text = 'Exports a graph (as GraphML) of bands. Use the settings file to change the defaults.'
 
 
 def flush_queue(country_short, link_list):
@@ -133,8 +135,9 @@ def main():
     arg_parser.add_argument('-y', nargs='+', help=analyze_full_text, metavar='REGION_OR_COUNTRY_SHORT')
     arg_parser.add_argument('-z', action='store_true', help=analyze_light_text)
     arg_parser.add_argument('-l', action='store_true', help=list_text)
-    arg_parser.add_argument('--md', action='store_true', help=export_mode_text)
-    arg_parser.add_argument('--raw', action='store_true', help=export_mode_text)
+    arg_parser.add_argument('--md', action='store_true', help=export_mode_md_text)
+    arg_parser.add_argument('--raw', action='store_true', help=export_mode_raw_text)
+    arg_parser.add_argument('--gml', action='store_true', help=export_mode_gml_text)
     args = arg_parser.parse_args()
 
     # All countries
@@ -238,6 +241,7 @@ def main():
             save_genres()
         else:
             logger.error('No bands to crawl. Check your input files.')
+    # TODO: Refactor into else block below, positively identify the export mode then assume countries.
     elif args.y is not None or args.z:
         if args.z:
             report_mode = ReportMode.CountryOff
@@ -248,6 +252,8 @@ def main():
             export_mode = ExportMode.Markdown
         elif args.raw:
             export_mode = ExportMode.Raw
+        elif args.gml:
+            export_mode = ExportMode.Gml
         else:
             logger.warning('No export option given. Falling back to raw report.')
             export_mode = ExportMode.Raw
@@ -284,6 +290,7 @@ def main():
         exporter = Exporter(export_mode, db_handle, country_links, report_mode)
         exporter.do_export()
 
+        # Old exporting.
         raw_report = db_handle.generate_report(country_links, report_mode)
         print(raw_report)
 
@@ -308,6 +315,7 @@ def main():
         logger.info(f'Genre reports saved to:')
         logger.info(f'  All : {genre_export_paths[0]}')
         logger.info(f'  Core: {genre_export_paths[1]}')
+
         export_handle = GraphExportContext(GraphMLExporter())
         relationships = db_handle.export_bands_network(country_links)
         export_handle.export_graph(relationships)

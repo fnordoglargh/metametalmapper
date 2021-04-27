@@ -43,7 +43,6 @@ class ExportingStrategy(ABC):
         else:
             self.logger.debug(f'Reports directory {self.folder} exists.')
 
-
     @abstractmethod
     def do_export(self, export_data: ExportData) -> list:
         pass

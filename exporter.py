@@ -7,11 +7,13 @@ from graph.metal_graph_context import GraphDatabaseContext
 from exporter_strategy import ExportingStrategy
 from exporter_raw import ExporterRaw
 from exporter_markdown import ExporterMarkdown
+from exporter_graphml import ExporterGraphML
 
 
 class ExportMode(Enum):
     Raw = 0
     Markdown = 1
+    GraphML = 2
 
 
 class Exporter:
@@ -19,6 +21,8 @@ class Exporter:
                  report_mode: ReportMode) -> None:
         if export_mode is ExportMode.Markdown:
             strategy = ExporterMarkdown()
+        elif export_mode is ExportMode.GraphML:
+            strategy = ExporterGraphML()
         else:
             strategy = ExporterRaw()
 
