@@ -243,6 +243,7 @@ def main():
             logger.error('No bands to crawl. Check your input files.')
     # TODO: Refactor into else block below, positively identify the export mode then assume countries.
     elif args.y is not None or args.z:
+        # TODO: z is not used in the new implementation.
         if args.z:
             report_mode = ReportMode.CountryOff
         else:
@@ -253,7 +254,7 @@ def main():
         elif args.raw:
             export_mode = ExportMode.Raw
         elif args.gml:
-            export_mode = ExportMode.Gml
+            export_mode = ExportMode.GraphML
         else:
             logger.warning('No export option given. Falling back to raw report.')
             export_mode = ExportMode.Raw
@@ -272,6 +273,7 @@ def main():
                     else:
                         logger.info(f'Unknown country/region: {country}')
 
+        # Only one DB implemented; uses Neo4j.
         db_handle = init_db()
 
         if db_handle is None:

@@ -19,6 +19,7 @@ class ExportMode(Enum):
 class Exporter:
     def __init__(self, export_mode: ExportMode, db_handle: GraphDatabaseContext, countries: List[str],
                  report_mode: ReportMode) -> None:
+        self._mode = export_mode
         if export_mode is ExportMode.Markdown:
             strategy = ExporterMarkdown()
         elif export_mode is ExportMode.GraphML:
@@ -28,7 +29,12 @@ class Exporter:
 
         self._strategy = strategy
         self._db_handle = db_handle
-        self.prepped_data = db_handle.prepare_export_data(countries, report_mode)
+
+        if export_mode is ExportMode.GraphML:
+            # TODO: Looks ugly already. Introduce dict into ExportData for the graph?
+            self.prepped_data = db_handle.export_bands_network(countries)
+        else:
+            self.prepped_data = db_handle.prepare_export_data(countries, report_mode)
 
     @property
     def strategy(self) -> ExportingStrategy:
@@ -39,7 +45,8 @@ class Exporter:
         self._strategy = strategy
 
     def do_export(self) -> None:
-        self.prepped_data.do_export_calc()
+        if self._mode is not ExportMode.GraphML:
+            self.prepped_data.do_export_calc()
         self._strategy.do_export(self.prepped_data)
 
 
