@@ -7,7 +7,7 @@ from global_helpers import get_time_stamp
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2020, Martin Woelke'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
 
 REPORT_TEMPLATE = Path('data/report.tpl')
 

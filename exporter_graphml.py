@@ -2,6 +2,10 @@ from exporter_strategy import ExportingStrategy
 from export_data import ExportData
 from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+
 
 def escape_band_names(unclean_band_name):
     """Removes (some) XML/HTML control characters from the band name.
@@ -25,7 +29,7 @@ class ExporterGraphML(ExportingStrategy):
     def __init__(self):
         super().__init__('graphml')
 
-    def do_export(self, export_data):
+    def do_export(self, export_data: ExportData):
         self.logger.info('Starting GraphML export to file.')
 
         header = (
@@ -48,7 +52,7 @@ class ExporterGraphML(ExportingStrategy):
         filtered_nodes = []
 
         # Go through collection once to create nodes.
-        for node, payload in export_data.items():
+        for node, payload in export_data.band_network.items():
             if FILTER_UNCONNECTED and len(payload['relations']) is 0:
                 pass
             else:
@@ -63,7 +67,7 @@ class ExporterGraphML(ExportingStrategy):
 
         # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
         # connections mixed with the nodes.
-        for node, payload in export_data.items():
+        for node, payload in export_data.band_network.items():
             if FILTER_UNCONNECTED and len(payload['relations']) is 0:
                 pass
             else:
@@ -75,7 +79,7 @@ class ExporterGraphML(ExportingStrategy):
                 # Check if the relation is valid for this export. E.g. While exporting a Norwegian-only graph,
                 # every other country is invalid. Another special case is inconsistencies in raw data; one relation is
                 # reported as core member and another is a live member.
-                if relation not in export_data and not FIND_MA_INCONSISTENCIES:
+                if relation not in export_data.band_network and not FIND_MA_INCONSISTENCIES:
                     continue
                 elif relation not in connections_made:
                     connections_made[relation] = []

@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 from export_data import ExportData
 from global_helpers import *
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+
 
 def get_file_path(name: str, sub_folder: str, extension: str):
     """Helper function to create off the shelf Path objects to export data. Data is always exported into the folder

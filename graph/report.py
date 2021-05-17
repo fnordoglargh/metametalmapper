@@ -16,7 +16,7 @@ from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2020, Martin Woelke'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'

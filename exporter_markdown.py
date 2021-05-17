@@ -6,6 +6,10 @@ from country_helper import COUNTRY_TO_REGIONS, COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import GENDER
 from settings import YEAR_REPORT
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+
 
 class ExporterMarkdown(ExportingStrategy):
     def __init__(self):

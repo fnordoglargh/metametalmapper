@@ -5,6 +5,10 @@ from country_helper import COUNTRY_NAMES
 from genre import GENRE_CORE_MA
 from settings import RELEASE_TYPES_REVIEW, RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+
 REPORT_TEMPLATE = Path('data/report.tpl')
 
 

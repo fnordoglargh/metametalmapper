@@ -7,6 +7,9 @@ from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
 from graph.choices import GENDER, RELEASE_TYPES
 from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, RELEASE_TYPES_REVIEW
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
 
 # def load_list(raw_lists: list, lookup_table: dict) -> dict:
 #     """Loads data from a list of lists into a dictionary.
@@ -21,6 +24,7 @@ from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, RELEASE_TYPE
 #         resulting_dict[lookup_table[element[0]]] = element[1]
 #
 #     return resulting_dict
+
 
 @dataclass
 class ExportRelease:
@@ -123,6 +127,7 @@ class ExportData:
     releases: Dict[int, dict] = field(default_factory=dict)
     bands_total = 0
     formation_year_min = datetime.today().year
+    band_network = {}
 
     def add_gender_country(self, artist_origin, gender, count=1, band_origin=''):
         """Function to add sane gender data to the underlying genders_country collection. Countries and genders_country

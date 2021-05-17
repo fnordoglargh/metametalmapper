@@ -4,6 +4,11 @@ from graph.graph_neomodel_impl import NeoModelStrategy
 from graph.report import DatabaseReport, ReportMode
 from export_data import ExportData
 
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+
+
 def init_db():
     logger = logging.getLogger('Mapper')
     db_handle = None

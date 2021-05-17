@@ -8,6 +8,11 @@ from exporter_strategy import ExportingStrategy
 from exporter_raw import ExporterRaw
 from exporter_markdown import ExporterMarkdown
 from exporter_graphml import ExporterGraphML
+from export_data import ExportData
+
+__author__ = 'Martin Woelke'
+__license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
+__copyright__ = 'Copyright 2019-2021, Martin Woelke'
 
 
 class ExportMode(Enum):
@@ -32,7 +37,8 @@ class Exporter:
 
         if export_mode is ExportMode.GraphML:
             # TODO: Looks ugly already. Introduce dict into ExportData for the graph?
-            self.prepped_data = db_handle.export_bands_network(countries)
+            self.prepped_data = ExportData()
+            self.prepped_data.band_network = db_handle.export_bands_network(countries)
         else:
             self.prepped_data = db_handle.prepare_export_data(countries, report_mode)
 
@@ -48,5 +54,3 @@ class Exporter:
         if self._mode is not ExportMode.GraphML:
             self.prepped_data.do_export_calc()
         self._strategy.do_export(self.prepped_data)
-
-
