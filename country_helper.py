@@ -36,23 +36,23 @@ REG_AMC_SOUTH = ('SAM', 'South America', ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'G
 REG_AMS = ('AMS', 'Americas', list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 
 REG_ASE = ('ASE', 'South East Asia', ['BN', 'KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN', 'TL'])
-# As of Mar 2021: No bands in Bhutan.
+# As of Dec 2021: No bands in Bhutan.
 REG_ASA = ('ASA', 'South Asia', ['AF', 'BD', 'IN', 'MV', 'NP', 'LK', 'PK'])
 REG_ACA = ('ACA', 'Central Asia', ['KZ', 'KG', 'TJ', 'TM', 'UZ'])
 # Will there ever be metal in North Korea?
 REG_AEA = ('AEA', 'East Asia', ['CN', 'JP', 'MN', 'KR', 'TW'])
-# As of Nov 2019: No bands in Yemen.
+# As of Dec 2021: No bands in Yemen.
 REG_AWA = ('AWA', 'Western Asia', ['AM', 'AZ', 'BH', 'CY', 'EG', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KW', 'LB', 'OM', 'QA',
                                    'SA', 'SY', 'TR', 'AE', 'PS'])
 REG_ASIA = ('ASIA', 'Asia', list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
 
-# As of Dec 2019: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
+# As of Dec 2021: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
 REG_AAS = ('AAS', 'Australasia', ['AU', 'NZ', 'NC'])
-# As of Dec 2019: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
+# As of Dec 2021: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
 # Papua New Guinea (PG), Samoa (WS), Solomon Islands (SB), Tonga (TO), Tuvalu (TV) and Vanuatu (VU).
 REG_OCE = ('OCE', 'Oceania', ['PF', 'ID', 'AU', 'NZ', 'NC', ])
 
-# As of Dec 2019: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
+# As of Dec 2021: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
 # African Republic (CF), Chad (TD), Comoros (KM), DR Congo (CD), Congo (CG), Ivory Coast (CI), Djibouti (DJ), Equatorial
 # Guinea (GQ), Eritrea (ER), Eswatini (SZ), Gabon (GA), The Gambia (GM), Ghana (GH), Guinea (GN), Guinea-Bissau (GW),
 # Lesotho (LS), Liberia (LR), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
