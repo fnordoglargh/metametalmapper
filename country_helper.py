@@ -14,7 +14,8 @@ REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 
 REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])
 
 # Europe's region definitions: https://en.wikipedia.org/wiki/Central_Europe#/media/File:Grossgliederung_Europas-en.svg
-REG_EUR_NORTH = ('NEU', 'Northern Europe', ['DK', 'SE', 'NO', 'IS', 'FI'])
+# Faeroes, Åland and Svalbard and Jan Mayen can be seen as part of NEU.
+REG_EUR_NORTH = ('NEU', 'Northern Europe', ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX', 'SJ'])
 # Isle of Man (IM) and Guernsey (GG) can be seen as part of WEU.
 REG_EUR_WEST = ('WEU', 'Western Europe', ['BE', 'FR', 'IE', 'MC', 'NL', 'GB', 'MC', 'AD', 'GG', 'IM'])
 REG_EUR_CENTRAL = ('CEU', 'Central Europe', ['AT', 'CZ', 'DE', 'HU', 'LI', 'PL', 'SK', 'CH', 'LU', 'EE', 'LV', 'LT',
