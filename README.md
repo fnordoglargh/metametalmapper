@@ -122,6 +122,11 @@ the best albums, EPs and demos.
 
 ## Version History
 
+### 0.97.6 (2021-12-19)
+
+* Added Malawi to the list of African countries and checked all other for new bands.
+* Fixed a defect in a country definition where Austria was used instead of Ukraine.
+
 ### 0.97.5 (2020-11-09)
 * Integrated handling of more gender options.
 * Fixed defects where new libraries needed different error handling.
