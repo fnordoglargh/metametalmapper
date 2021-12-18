@@ -54,11 +54,11 @@ REG_OCE = ('OCE', 'Oceania', ['PF', 'ID', 'AU', 'NZ', 'NC', ])
 # As of Dec 2019: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
 # African Republic (CF), Chad (TD), Comoros (KM), DR Congo (CD), Congo (CG), Ivory Coast (CI), Djibouti (DJ), Equatorial
 # Guinea (GQ), Eritrea (ER), Eswatini (SZ), Gabon (GA), The Gambia (GM), Ghana (GH), Guinea (GN), Guinea-Bissau (GW),
-# Lesotho (LS), Liberia (LR), Malawi (MW), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
+# Lesotho (LS), Liberia (LR), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
 # and Príncipe (ST), Senegal (SN), Seychelles (SC), Sierra Leone (SL), Somalia (SO), South Sudan (SS), Tanzania (TZ),
 # Togo (TG), Zambia (ZM).
-REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU', 'MA', 'MZ', 'NA', 'ZA', 'TN', 'UG',
-                             'ZW'])
+REG_AFR = ('AFR', 'Africa', ['DZ', 'AO', 'BW', 'EG', 'ET', 'KE', 'LY', 'MG', 'MU', 'MA', 'MW', 'MZ', 'NA', 'ZA', 'TN',
+                             'UG', 'ZW'])
 
 REG_TST = ('TST', 'Test', ['IS', 'GL', 'FO', 'AX', 'SJ'])
 
