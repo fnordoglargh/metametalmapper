@@ -799,6 +799,10 @@ def cut_instruments_alt(instrument_string):
                 if bool(re.search(r'\d', split_more[inner])):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
+                    # Nasty special case for just one band (The_Flesh_Trading_Company/3540340934).
+                    if 'Live' in time_spans or 'live' in time_spans:
+                        continue
+
                     # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
                     # in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
                     # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
