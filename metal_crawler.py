@@ -753,7 +753,7 @@ def cook_soup(link, retry_count=5):
                 logger.error(f'404 for link: {link}')
             elif "not found" in web_page_string:
                 logger.info(f'Not found: {link}')
-                # Ignore use case for now but log the page string. 
+                # Ignore use case for now but log the page string.
                 retry_count = -1
                 logger.debug(web_page_string)
             elif 'may refer to' in web_page_string:
@@ -772,7 +772,7 @@ def cook_soup(link, retry_count=5):
 
     soup = BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
 
-    # Extra safe guard for extremely rare cases.
+    # Extra safeguard for extremely rare cases.
     if soup.text == '':
         logger.error(f'Soup text is {soup.text}. Data Length: {str(len(web_page.data))}\n{web_page.data}')
         soup = None
