@@ -748,9 +748,17 @@ def cook_soup(link, retry_count=5):
             if "Forbidden.\n" == web_page_string:
                 time.sleep(.5)
                 logger.debug(f"  Trying again... ({retry_count} to go)")
-            elif "Error 404 -" in web_page_string or "not found" in web_page_string or 'may refer to' in web_page_string:
+            elif "Error 404 -" in web_page_string:
                 retry_count = 0
                 logger.error(f'404 for link: {link}')
+            elif "not found" in web_page_string:
+                logger.info(f'Not found: {link}')
+                # Ignore use case for now but log the page string. 
+                retry_count = -1
+                logger.debug(web_page_string)
+            elif 'may refer to' in web_page_string:
+                retry_count = 0
+                logger.error(f'May refer: {link}')
             else:
                 # Breaks out of the loop.
                 retry_count = -1
