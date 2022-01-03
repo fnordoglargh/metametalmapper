@@ -6,7 +6,7 @@ from export_data import ExportData
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+__copyright__ = 'Copyright 2019-2022, Martin Woelke'
 
 
 def init_db():

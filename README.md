@@ -122,6 +122,12 @@ the best albums, EPs and demos.
 
 ## Version History
 
+### 0.97.7 (2022-01-03)
+
+* Fixed two parsing errors which prevented adding ~12 bands and their band members.
+  The "404" check should work as-is. Please raise a defect report if you encounter
+  problems related to "not found" errors.
+
 ### 0.97.6 (2021-12-19)
 
 * Added Malawi to the list of African countries and checked all other for new bands.

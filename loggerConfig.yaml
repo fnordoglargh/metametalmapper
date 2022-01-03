@@ -26,7 +26,7 @@ handlers:
         encoding: utf8
 loggers:
     Crawler:
-        level: INFO
+        level: DEBUG
         handlers: [file]
         propagate: no
     neobolt:

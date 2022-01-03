@@ -8,7 +8,7 @@ import logging
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+__copyright__ = 'Copyright 2019-2022, Martin Woelke'
 
 REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 'AX', 'SJ'])
 REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])

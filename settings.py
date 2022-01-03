@@ -3,10 +3,10 @@
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+__copyright__ = 'Copyright 2019-2022, Martin Woelke'
 
 NEO4J_USERNAME = "neo4j"
-NEO4J_PASSWORD = "CHANGE_ME"
+NEO4J_PASSWORD = "tst"
 NEO4J_IP_ADDRESS = "localhost"
 
 # 8 might be a bit high (leaves some forbidden messages on getting the JSON data or the bands).

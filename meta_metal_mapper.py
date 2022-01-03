@@ -30,7 +30,7 @@ from graph.metal_graph_context import init_db
 __author__ = 'Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2021, Martin Woelke'
+__copyright__ = 'Copyright 2019-2022, Martin Woelke'
 __status__ = 'Development'
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
