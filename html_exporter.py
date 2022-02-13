@@ -18,7 +18,7 @@ CSS_FILE = Path('data/w3.css')
 def generate_html_report(report_locations: list):
     """ Generates an HTML report from a template with pre-generated JSON data.
 
-    Loads a HTML template and replaces markers with given JSON data.
+    Loads an HTML template and replaces markers with given JSON data.
 
     :param report_locations: A list of tuples (path to JSON file and marker name).
     :return: The location of the generated report file or -1 for any error cases.

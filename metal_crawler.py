@@ -107,7 +107,7 @@ class Release(DbEntity):
 class VisitBandThread(threading.Thread):
     def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, progress_bar,
                  visited_bands, is_detailed=False, is_single_mode=True):
-        """Constructs an worker object which is used to get prepared data from a band page.
+        """Constructs a worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number

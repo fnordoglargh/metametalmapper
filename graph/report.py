@@ -556,7 +556,7 @@ class ReleaseReport:
                 sorted_types[release_type] = sorted(releases, key=self._get_sort_key, reverse=True)
 
             for i in range(0, type_size):
-                # We want the the year column to be empty and only contain the year.
+                # We want the year column to be empty and only contain the year.
                 if i > 0:
                     export_text += ';'
 

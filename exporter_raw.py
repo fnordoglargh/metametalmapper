@@ -355,7 +355,7 @@ class ExporterRaw(ExportingStrategy):
         file_name.write_text(exported_releases[2], encoding='utf-8')
         self.logger.info(f'    JSON: {file_name}')
 
-        # Use JSON strings for teh HTML exports.
+        # Use JSON strings for the HTML exports.
         html_text = _generate_html_report([
             (exported_releases[1], 'marker_releases_year'),
             (exported_releases[2], 'marker_releases_all')

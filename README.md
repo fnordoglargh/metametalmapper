@@ -2,7 +2,7 @@
 
 _Meta Metal Mapper_ is a Python3 program to crawl
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/)
-(M-A) for bands, artists and releases. The data is stored in a in a local 
+(M-A) for bands, artists and releases. The data is stored in a local 
 database and can be analyzed and exported into band networks.
 
 The first time I saw a band network was in the liner notes of the 7" EP
@@ -21,7 +21,7 @@ on M-A:
 Neither project release the means of _how_ they acquire the presented data. The
 Metal Graph is limited to Norwegian black metal and the Metal Map lacks e.g.
 album or gender statistics. Meta Metal Mapper closes these gaps and add even
-more analyzed data. It's not flashy but it's the base for your own data science
+more analyzed data. It's not flashy, but it's the base for your own data science
 projects.
 
 ## Highlight Reel
@@ -96,7 +96,7 @@ meaningless data e.g. when data is put into relation to a country.
 3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) 
   and hit the play button.
 4. The displayed graph contains all crawled band, artist and album nodes.
-5. Click on some of the nodes or edges to see the individual properties.
+5. Click on some nodes or edges to see the individual properties.
 
 To filter the albums try `MATCH (b:Band)--(m:Member) RETURN b, m` and hit the
 play button. The resulting graph is a bit slimmer.
