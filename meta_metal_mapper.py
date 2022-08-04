@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3.9
 
 """_Meta Metal Mapper_ is a Python3 program and intended to be the basis to develop a toolset to crawl data of
 [Encyclopaedia Metallum: The Metal Archives](https://www.metal-archives.com/) (M-A), write it into a database  and query
