@@ -256,7 +256,7 @@ def main():
         elif args.gml:
             export_mode = ExportMode.GraphML
         else:
-            logger.warning('No export option given. Falling back to raw report.')
+            logger.info('No export option given. Falling back to raw report.')
             export_mode = ExportMode.Raw
 
         country_links = []
