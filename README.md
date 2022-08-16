@@ -58,7 +58,7 @@ is also available.
 
 Install the following tools:
 
-1. Python >= 3.6.0.
+1. Python >= 3.9.0.
 2. Libraries: `pip3 install -r requirements.txt`.
 3. Neo4j for [Windows](https://neo4j.com/download/) or
    [Linux](https://neo4j.com/docs/operations-manual/current/installation/linux/debian/).
