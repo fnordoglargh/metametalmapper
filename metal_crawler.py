@@ -394,7 +394,7 @@ class VisitBandThread(threading.Thread):
                 age = -1
                 origin = 'ZZ'
 
-                if artist_soup is not None:
+                if artist_soup != 0:
                     member_info = artist_soup.find('div', attrs={'id': 'member_info'})
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                     gender = str(member_info.contents[9].contents[7].contents[0])
@@ -548,7 +548,7 @@ def make_band_list(country_links):
         country_json = http.request('GET', link_country_temp)
         json_data_string = country_json.data.decode('utf-8')
 
-        if json_data_string not in json_strings:
+        if json_data_string not in json_strings or json_data_string != '0':
             json_strings.append(json_data_string)
         else:
             logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
@@ -563,8 +563,9 @@ def make_band_list(country_links):
         except Exception as e:
             logger.exception(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...', e)
 
-        if json_data is None:
+        if json_data is None or json_data == 0:
             country_links.put(link_country_temp)
+            logger.info(f'    json_data was {json_data}.')
             continue
 
         for band in json_data["aaData"]:
@@ -942,18 +943,17 @@ def crawl_country(country_short):
     logger = logging.getLogger('Crawler')
     logger.debug(f">>> Crawling Country: {COUNTRY_NAMES[country_short]}")
     link_country = "https://www.metal-archives.com/browse/ajax-country/c/" + country_short
-    json_data_string = ""
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
     while True:
         country_json = http.request('GET', link_country)
         json_data_string = country_json.data.decode("utf-8")
 
-        if "Forbidden." not in json_data_string:
-            break
-        else:
+        if "Forbidden." in json_data_string or json_data_string == "0":
             logger.debug("  trying again...")
             time.sleep(.5)
+        else:
+            break
 
     json_data_string = json_data_string.replace("\"sEcho\": ,", '')
     json_data = json.loads(json_data_string)
