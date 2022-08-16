@@ -43,7 +43,7 @@ def get_export_path(name: str, extension: str):
 
 
 def get_time_stamp():
-    """Makes a timestamp e.g. to be used for file names. The format format is "YYYY-MM-DD_hhmmss" and may look like
+    """Makes a timestamp e.g. to be used for file names. The format is "YYYY-MM-DD_hhmmss" and may look like
         "2019-08-17_125427".
 
     :return: A string timestamp of the described format.
