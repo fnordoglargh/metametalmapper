@@ -8,7 +8,7 @@ import sys
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019-2022, Martin Woelke'
-__version__ = '0.97.7'
+__version__ = '0.97.8'
 __status__ = 'Development'
 
 LINK_EXTENSION = ".lnks"
