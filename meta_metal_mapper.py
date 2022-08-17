@@ -100,7 +100,7 @@ def main():
     # Change to a terminal size in which everything fits.
     # os.system('mode con: cols=153 lines=9999')
     logger = logging.getLogger('MAIN')
-    logger.debug(f'\nWelcome to meta metal mapper {__version__}')
+    logger.info(f'\nWelcome to meta metal mapper {__version__}')
     print(get_logo())
 
     # Check necessary FOLDERS_MAIN exist, try to create them otherwise.

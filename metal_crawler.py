@@ -565,7 +565,7 @@ def make_band_list(country_links):
 
         if json_data is None or json_data == 0:
             country_links.put(link_country_temp)
-            logger.info(f'    json_data was {json_data}.')
+            logger.debug(f'    json_data was {json_data}.')
             continue
 
         for band in json_data["aaData"]:
