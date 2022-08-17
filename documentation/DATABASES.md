@@ -87,7 +87,9 @@ in M-A.
 
     'M': 'Male',
     'F': 'Female',
-    'U': 'Unknown/other'
+    'U': 'Unknown',
+    'O': 'Other',
+    'N': 'Non-binary'
 
 #### COUNTRY_NAMES
 
@@ -119,4 +121,13 @@ in M-A.
     'B': 'Boxed set',
     'P': 'Split video',
     'O': 'Collaboration'
+
+#### MEMBER_STATUS
+
+    'C': 'Current',
+    'L': 'Last known',
+    'P': 'Past',
+    'CL': 'Current (Live)',
+    'PL': 'Past (Live)',
+    'LL': 'Last known (Live)'
 
