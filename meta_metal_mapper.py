@@ -236,7 +236,7 @@ def main():
             else:
                 logger.error(f'File {country_region_file} was not readable.')
 
-        if len(sanitized_bands) is not 0:
+        if len(sanitized_bands) != 0:
             crawl_bands(sanitized_bands, db_handle)
             save_genres()
         else:
@@ -262,7 +262,7 @@ def main():
         country_links = []
 
         if args.y is not None:
-            if len(args.y) is 1 and args.y[0].upper() == 'ALL':
+            if len(args.y) == 1 and args.y[0].upper() == 'ALL':
                 logger.info('Analyse entire DB.')
             else:
                 for country in args.y:
@@ -284,7 +284,7 @@ def main():
         for clean_short in country_links:
             country_info += f'{COUNTRY_NAMES[clean_short]}, '
 
-        if len(country_links) is 0:
+        if len(country_links) == 0:
             logger.info(f'{country_info}Entire database.')
         else:
             logger.info(country_info[:-2])
