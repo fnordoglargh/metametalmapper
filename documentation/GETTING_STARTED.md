@@ -5,7 +5,7 @@ libraries and Neo4j.
 
 ## Python3
 
-A Python3 installation >= 3.7 is needed to execute Meta Metal Mapper.
+A Python3 installation >= 3.9 is needed to execute Meta Metal Mapper.
 
 If you see output like this
 
