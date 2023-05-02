@@ -8,7 +8,7 @@ from global_helpers import get_export_path
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 
 def escape_band_names(unclean_band_name):
@@ -82,7 +82,7 @@ class GraphMLExporter(GraphExportStrategy):
 
         # Go through collection once to create nodes.
         for node, payload in data_dict.items():
-            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+            if FILTER_UNCONNECTED and len(payload['relations']) == 0:
                 pass
             else:
                 band_name = escape_band_names(payload['name'])
@@ -99,7 +99,7 @@ class GraphMLExporter(GraphExportStrategy):
         # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
         # connections mixed with the nodes.
         for node, payload in data_dict.items():
-            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+            if FILTER_UNCONNECTED and len(payload['relations']) == 0:
                 pass
             else:
                 # Add an empty list for the actual ID (node).

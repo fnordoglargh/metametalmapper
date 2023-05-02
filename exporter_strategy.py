@@ -4,7 +4,7 @@ from global_helpers import *
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 
 def get_file_path(name: str, sub_folder: str, extension: str):
@@ -18,10 +18,10 @@ def get_file_path(name: str, sub_folder: str, extension: str):
     :param extension: Name of the file extension. A dot will be provided if it's missing.
     :return: A ready made Path object to safe data in.
     """
-    if len(name) is 0:
+    if len(name) == 0:
         name = 'no_name_given'
 
-    if len(sub_folder) is 0:
+    if len(sub_folder) == 0:
         name = 'no_sub_folder_given'
 
     if len(extension) > 0 and extension[0] != '.':

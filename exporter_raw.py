@@ -7,7 +7,7 @@ from settings import RELEASE_TYPES_REVIEW, RELEASE_AVERAGE_MIN, RELEASE_REVIEW_C
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 REPORT_TEMPLATE = Path('data/report.tpl')
 
@@ -34,7 +34,7 @@ def _export_core_genre_table(raw_genres):
     for country in sorted_countries:
         # Because I was lazy I just put 'Total' into the raw collection. This is where we need to handle it differently
         # from all other ISO country names.
-        if country is not 'Total':
+        if country != 'Total':
             table_text += f'{COUNTRY_NAMES[country]};'
             table_text_core += f'{COUNTRY_NAMES[country]};'
         else:

@@ -121,7 +121,7 @@ def load_data_file(file_name: Path, value_column, key_column=0):
     file = file_name.open(encoding='utf-8')
     line = file.readline().rstrip()
 
-    while line is not '':
+    while line != '':
         split_line = line.split(';')
         collection[split_line[key_column]] = split_line[value_column]
         line = file.readline().rstrip()
@@ -202,7 +202,7 @@ def clean_short_links(unclean_shorts: str):
         elif short in COUNTRY_NAMES.keys():
             cleaned_short_links.append(short)
         else:
-            if short is not '':
+            if short != '':
                 logger.warning(f'Ignoring {short}; not found in countries or regions.')
 
     return cleaned_short_links
@@ -223,7 +223,7 @@ def split_locations(locations: str):
     cleaned_locations = []
 
     # Early return if the string is empty.
-    if locations is '':
+    if locations == '':
         cleaned_locations.append('')
         return cleaned_locations
     elif locations == 'N/A':

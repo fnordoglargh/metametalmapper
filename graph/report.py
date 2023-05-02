@@ -16,7 +16,7 @@ from settings import RELEASE_AVERAGE_MIN, RELEASE_REVIEW_COUNT_MIN, TOP
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 POP_PER_100K = 'Bands per 100k people'
 POP_POPULATION = 'Population'
@@ -432,7 +432,7 @@ class DatabaseReport:
         return 'Country;Population;Bands;Bands per 100k;# Male;% Male;# Female;% Female;# Unknown;% Unknown;TOP genre'
 
     def __str__(self):
-        if len(self._country_reports) is 1:
+        if len(self._country_reports) == 1:
             word = 'country'
         else:
             word = 'countries'
@@ -470,7 +470,7 @@ class ReleaseReport:
 
         :param workable_types: List of release types to consider when `process_release` is called.
         """
-        if len(workable_types) is 0:
+        if len(workable_types) == 0:
             raise ValueError('List or workable types was empty.')
 
         for workable_type in workable_types:
@@ -670,7 +670,7 @@ class ReleaseReport:
                 top_temp = len(releases[RELEASE_TYPES['F']])
 
             # No full-length releases in this year.
-            if top_temp is 0:
+            if top_temp == 0:
                 continue
 
             sorted_releases = sorted(releases[RELEASE_TYPES["F"]], key=lambda x: x[2], reverse=True)

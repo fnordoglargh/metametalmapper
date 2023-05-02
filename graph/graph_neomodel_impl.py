@@ -18,7 +18,7 @@ from export_data import ExportData
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 
 class MemberRelationship(StructuredRel):
@@ -168,7 +168,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         return all_links
 
     def export_bands_network_interface(self, country_shorts: list):
-        if len(country_shorts) is not 0:
+        if len(country_shorts) != 0:
             bands = Band.nodes.filter(country__in=country_shorts)
         else:
             bands = Band.nodes.all()
@@ -226,7 +226,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         number_bands = len(bands)
 
         # No need to go further if there are no bands.
-        if number_bands is 0:
+        if number_bands == 0:
             return None
 
         population = COUNTRY_POPULATION[country_short]
@@ -295,7 +295,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         """
         result = {}
 
-        if len(bands) is 0:
+        if len(bands) == 0:
             return result
 
         population = COUNTRY_POPULATION[country_short]
@@ -359,7 +359,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # Prep the gender raw data
         # First we get the numbers per origin country of an artist.
         self.logger.info(' ┣ Fetching genders (country origins)')
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             query = 'MATCH (m:Member) RETURN m.origin, m.gender, count(*)'
         else:
             query = f'MATCH (m:Member) WHERE m.origin IN {country_shorts} RETURN m.origin, m.gender, count(*)'
@@ -370,7 +370,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # The second gender block collects the origins of artists for every country. An artist is counted once per
         # country.
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             self.logger.info(' ┗ Fetching genders_country (this will take a while longer)')
 
             for country in COUNTRY_NAMES.keys():
@@ -398,7 +398,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Prep the band origins.
         self.logger.info(' ┣ Fetching bands per country')
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             query = 'MATCH (b:Band) RETURN b.country, count(*)'
         else:
             query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, count(*)'
@@ -408,7 +408,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Prep the band formation years.
         self.logger.info(' ┣ Fetching band formation years')
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             query = 'MATCH (b:Band) RETURN b.country, b.formed, count(*)'
         else:
             query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, b.formed, count(*)'
@@ -425,7 +425,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Prep the raw genre data.
         self.logger.info(' ┣ Fetching genres')
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             query = 'MATCH (b:Band) return b.country, b.genres, count(*)'
         else:
             query = f'MATCH (b:Band) WHERE b.country IN {country_shorts} RETURN b.country, b.genres, count(*)'
@@ -435,7 +435,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Prep the releases.
         self.logger.info(' ┣ Fetching releases')
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             query = ('MATCH (b:Band)--(r:Release) RETURN b.country, b.name, r.name, r.rating, r.review_count, r.link,'
                      'r.release_type, r.release_date')
         else:
@@ -486,7 +486,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         # Two sets of bands are needed: First the bands from the requested countries and second all bands to calculate
         # e.g. percentages.
-        if len(country_shorts) is 0:
+        if len(country_shorts) == 0:
             for band in bands_all:
                 bands_filtered[band.country].append(band)
         else:

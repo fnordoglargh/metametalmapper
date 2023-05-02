@@ -4,7 +4,7 @@ from settings import FILTER_UNCONNECTED, FIND_MA_INCONSISTENCIES
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 
 def escape_band_names(unclean_band_name):
@@ -53,7 +53,7 @@ class ExporterGraphML(ExportingStrategy):
 
         # Go through collection once to create nodes.
         for node, payload in export_data.band_network.items():
-            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+            if FILTER_UNCONNECTED and len(payload['relations']) == 0:
                 pass
             else:
                 band_name = escape_band_names(payload['name'])
@@ -68,7 +68,7 @@ class ExporterGraphML(ExportingStrategy):
         # Only in a second run we write the connections. This might seem odd, but Cytoscape does not like the
         # connections mixed with the nodes.
         for node, payload in export_data.band_network.items():
-            if FILTER_UNCONNECTED and len(payload['relations']) is 0:
+            if FILTER_UNCONNECTED and len(payload['relations']) == 0:
                 pass
             else:
                 # Add an empty list for the actual ID (node).

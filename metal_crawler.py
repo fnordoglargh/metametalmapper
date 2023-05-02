@@ -27,7 +27,7 @@ from graph.choices import *
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 em_link_main = 'https://www.metal-archives.com/'
 em_link_label = em_link_main + 'labels/'
@@ -160,7 +160,7 @@ class VisitBandThread(threading.Thread):
         """
         self.logger.debug("Running " + self.name)
 
-        while stop_crawl_user_input is not "Q":
+        while stop_crawl_user_input != "Q":
             try:
                 link_band_temp = self.bandLinks.get_nowait()
             except queue.Empty:
@@ -233,7 +233,7 @@ class VisitBandThread(threading.Thread):
             `None` in an error case.
         """
 
-        if len(band_short_link) is 0:
+        if len(band_short_link) == 0:
             return None
 
         # TODO: Change your environment or this doesn't work!
@@ -298,7 +298,7 @@ class VisitBandThread(threading.Thread):
         # releases. TODO: Visit all releases and get more detailed info.
         if type(label_node) is NavigableString:
             label_name = str(s[3].contents[11].contents[0])
-            if label_name is "Unsigned/independent":
+            if label_name == "Unsigned/independent":
                 label_id = -1
             else:
                 label_id = label_name
@@ -361,16 +361,16 @@ class VisitBandThread(threading.Thread):
             elif last_found_header == "lineupBandsRow":
                 pass
 
-            if header_category not in band_data_ref.lineup.keys() and header_category is not '':
+            if header_category not in band_data_ref.lineup.keys() and header_category != '':
                 # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
                 # always have a valid value.
                 band_data_ref.lineup[header_category] = []
-            elif header_category is '':
+            elif header_category == '':
                 # For the unlikely case that the header category is not found.
                 raise ValueError(f'The header category was empty while crawling {band_data_ref.name}.')
 
             # Five elements for artists.
-            if len(actual_row) is 5:
+            if len(actual_row) == 5:
                 temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
 
                 # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
@@ -456,7 +456,7 @@ class VisitBandThread(threading.Thread):
             cells = row.findAll("td")
 
             # Guard clause for the unlikely case if a band has no releases.
-            if len(cells) is 1:
+            if len(cells) == 1:
                 logger.debug(f"  No releases found for {band_data_ref.name}.")
                 continue
 
@@ -485,7 +485,7 @@ class VisitBandThread(threading.Thread):
                 split_rating = album_rating_raw.split('(')
 
                 # Get the average rating and review count from a string looking like this: '8 (64%)'
-                if len(split_rating) is 2:
+                if len(split_rating) == 2:
                     review_count = int(split_rating[0].rstrip())
                     album_rating = int(split_rating[1][:-2])
 
@@ -515,7 +515,7 @@ class VisitBandThread(threading.Thread):
                     self.bandLinks.put(band_link)
 
         # Most of the time the crawler log is off, so this goes to the screen and the log file.
-        if len(linked_bands) is 0:
+        if len(linked_bands) == 0:
             log_message = f'The chosen band does not have any outward connections.'
         else:
             log_message = f'Added {len(linked_bands)} connected bands to the crawl.'
@@ -628,7 +628,7 @@ def make_active_list(raw_activity):
         except ValueError:
             continue
 
-        if len(temp_slots) is 1:
+        if len(temp_slots) == 1:
             time_slot_2 = time_slot_1
         else:
             if 'present' in temp_slots[1] or '?' in temp_slots[1]:
@@ -743,7 +743,7 @@ def cook_soup(link, retry_count=5):
         if web_page is None:
             logger.error("Received no data.")
             retry_count = 0
-        elif len(web_page.data) is not 0:
+        elif len(web_page.data) != 0:
             web_page_string = web_page.data.decode("utf-8")
 
             if "Forbidden.\n" == web_page_string:
@@ -768,7 +768,7 @@ def cook_soup(link, retry_count=5):
             logger.debug(f"  Trying again... ({retry_count} to go)")
 
     # Error case: No web page data after n retries.
-    if retry_count is 0:
+    if retry_count == 0:
         return None
 
     soup = BeautifulSoup(web_page.data.decode('utf-8', 'ignore'), "html.parser")
@@ -825,10 +825,10 @@ def cut_instruments_alt(instrument_string):
                         if time_span[len(time_span) - 1] == ')':
                             time_span = time_span[:-1]
                         # (2)
-                        if len(time_span) is 4:
+                        if len(time_span) == 4:
                             years = [int(time_span), int(time_span)]
                         # (1)
-                        elif len(time_span) is 9 and time_span[0] != '?' and time_span[4] == '-':
+                        elif len(time_span) == 9 and time_span[0] != '?' and time_span[4] == '-':
                             years = [int(time_span[0:4]), int(time_span[5:])]
                         # (4) Nasty special case.
                         elif '?' in time_span:
@@ -896,10 +896,10 @@ def cut_instruments(instrument_string):
                         if time_span[len(time_span) - 1] == ')':
                             time_span = time_span[:-1]
                         # (2)
-                        if len(time_span) is 4:
+                        if len(time_span) == 4:
                             years = (int(time_span), int(time_span))
                         # (1)
-                        elif len(time_span) is 9 and time_span[0] != '?' and time_span[4] == '-':
+                        elif len(time_span) == 9 and time_span[0] != '?' and time_span[4] == '-':
                             years = (int(time_span[0:4]), int(time_span[5:]))
                         # (4) Nasty special case.
                         elif '?' in time_span:
@@ -977,15 +977,15 @@ def crawl_country(country_short):
 
         band_links = make_band_list(ajaxLinks)
 
-        if amount_entries - len(band_links) is not 0:
+        if amount_entries - len(band_links) != 0:
             logger.error(f'  {amount_entries - len(band_links)} bands are missing.')
 
-            if j is 0:
+            if j == 0:
                 logger.info('  Preparing a second run.')
             else:
                 break
 
-    if amount_entries - len(band_links) is not 0:
+    if amount_entries - len(band_links) != 0:
         logger.fatal('Despite trying twice, the band list is not complete. Run again in single run.')
 
     logger.debug("<<< Crawling Country")
@@ -1020,7 +1020,7 @@ def read_user_input():
     """
     global stop_crawl_user_input
 
-    while stop_crawl_user_input is not "Q":
+    while stop_crawl_user_input != "Q":
         stop_crawl_user_input = input()
 
     print('Received request to quit. Stand by for threads to finish.')

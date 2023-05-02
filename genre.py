@@ -8,7 +8,7 @@ from pathlib import Path
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 # Hardcoded file path for the genre cache.
 GENRES_FILE_PATH = Path('genre_cache.json')
@@ -112,7 +112,7 @@ def split_genres(genre_string):
             if position > 0 and position + 5 == len(temp_genre):
                 temp_genre = temp_genre[:position].rstrip()
             # A lone 'Metal'.
-            elif position is 0:
+            elif position == 0:
                 continue
 
             # Test existence in genre_list and append core item if parts match.
