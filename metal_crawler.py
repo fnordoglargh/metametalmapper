@@ -394,8 +394,24 @@ class VisitBandThread(threading.Thread):
                 age = -1
                 origin = 'ZZ'
 
-                if artist_soup != 0:
-                    member_info = artist_soup.find('div', attrs={'id': 'member_info'})
+                if artist_soup is not None and artist_soup != 0:
+                    member_info = None
+
+                    # The artist soup is not always reliably cooked. I'll leave the debug print logs in for now.
+                    try:
+                        member_info = artist_soup.find('div', attrs={'id': 'member_info'})
+                    except Exception as e:
+                        print('e >>>>>>>>>>>>>>>>>>>>')
+                        print(f'artist_soup: {artist_soup}')
+                        print()
+
+                    if member_info is None:
+                        print('n >>>>>>>>>>>>>>>>>>>>')
+                        print(f'artist_soup: {artist_soup}')
+                        logger.error(f'Crawling artist failed (member info is None): {temp_artist_soup_link}')
+                        print('<<<<<<<<<<<<<<<<<<<<')
+                        continue
+
                     name = str(member_info.contents[7].contents[3].contents[0]).lstrip().rstrip()
                     gender = str(member_info.contents[9].contents[7].contents[0])
 
@@ -413,6 +429,7 @@ class VisitBandThread(threading.Thread):
                     if 'N/A' not in member_info.contents[9].contents[3].text:
                         origin = member_info.contents[9].contents[3].contents[1].attrs['href'][-2:]
                 else:
+                    logger.error(f'Crawling artist failed: {temp_artist_soup_link}')
                     # Error case: artist_soup is invalid and the artist does not exist.
                     if not artist_exists:
                         return None
@@ -588,8 +605,9 @@ def make_time_spans(raw_spans):
     """Helper function to convert time span tuples to a list of data objects.
     """
     time_spans = []
+
     for time_span_tuple in raw_spans:
-        if time_span_tuple[0] != '?':
+        if len(time_span_tuple) != 0 and time_span_tuple[0] != '?':
             d0 = date(time_span_tuple[0], 1, 1)
         else:
             continue
@@ -672,7 +690,16 @@ def apply_to_db(band: Band, db_handle, is_detailed):
         # We need to copy the dict first because we need to make a date object for the release date.
         release_copy = JSONSerializer.serialize(release)
         # This is not the accurate date, only the year.
-        release_copy['release_date'] = date(int(release_copy['release_date']), 1, 1)
+        date_sanitized = release_copy['release_date']
+
+        # If the date is unknown, it sometimes comes as the string "0000". In this case we use 1900 as a default .
+        if date_sanitized == "0000":
+            date_sanitized = 1900
+
+        date_sanitized = int(date_sanitized)
+        date_sanitized = date(date_sanitized, 1, 1)
+
+        release_copy['release_date'] = date_sanitized
         logger.debug(f'  Writing data for release {release_copy["name"]}.')
         db_handle.add_release(release_copy)
         db_handle.band_recorded_release(band.emid, emid)

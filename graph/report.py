@@ -211,6 +211,8 @@ class CountryReport:
             second is used to save the list to a file for later processing. If no bands are available the function
             returns None.
         """
+        if self._checked_bands is None:
+            return None
         # TODO: No boundary checks. Rewrite to named tuple.
         bands = self._checked_bands[index]
 
