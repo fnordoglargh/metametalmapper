@@ -30,7 +30,7 @@ from graph.metal_graph_context import init_db
 __author__ = 'Martin Woelke'
 # https://opensource.org/licenses/NPOSL-3.0
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 __status__ = 'Development'
 
 file_name_a = BAND_LINK_FILE_NAME.format('NN')
@@ -135,7 +135,7 @@ def main():
     arg_parser.add_argument('-y', nargs='+', help=analyze_full_text, metavar='REGION_OR_COUNTRY_SHORT')
     arg_parser.add_argument('-z', action='store_true', help=analyze_light_text)
     arg_parser.add_argument('-l', action='store_true', help=list_text)
-    arg_parser.add_argument('--md', action='store_true', help=export_mode_md_text)
+    # arg_parser.add_argument('--md', action='store_true', help=export_mode_md_text)
     arg_parser.add_argument('--raw', action='store_true', help=export_mode_raw_text)
     arg_parser.add_argument('--gml', action='store_true', help=export_mode_gml_text)
     args = arg_parser.parse_args()
@@ -249,12 +249,12 @@ def main():
         else:
             report_mode = ReportMode.CountryOn
 
-        if args.md:
-            export_mode = ExportMode.Markdown
-        elif args.raw:
+        if args.raw:
             export_mode = ExportMode.Raw
         elif args.gml:
             export_mode = ExportMode.GraphML
+#        elif args.md:
+#            export_mode = ExportMode.Markdown
         else:
             logger.info('No export option given. Falling back to raw report.')
             export_mode = ExportMode.Raw
