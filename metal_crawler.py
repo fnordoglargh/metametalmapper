@@ -107,7 +107,7 @@ class Release(DbEntity):
 class VisitBandThread(threading.Thread):
     def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, progress_bar,
                  visited_bands, is_detailed=False, is_single_mode=True):
-        """Constructs an worker object which is used to get prepared data from a band page.
+        """Constructs a worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
@@ -787,7 +787,8 @@ def cut_instruments_alt(instrument_string):
     # First split along the '),'.
     temp_instruments = instrument_string.split('),')
 
-    # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
+    # Put the closing parenthesis back into every element but the last one. It's needed to preserve parts like
+    # "(earlier)".
     for index in range(0, len(temp_instruments) - 1):
         temp_instruments[index] += ')'
 
@@ -865,7 +866,8 @@ def cut_instruments(instrument_string):
     instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
     temp_instruments = instrument_string.split('),')
 
-    # Put the ')' back into every element but the last one. It's needed to preserve parts like "(earlier)".
+    # Put the closing parenthesis back into every element but the last one. It's needed to preserve parts like
+    # "(earlier)".
     for index in range(0, len(temp_instruments) - 1):
         temp_instruments[index] += ')'
 
@@ -1036,8 +1038,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    # We do it once and give the collection to all threads. It was formerly done inside the thread initialization but it
-    # took longer and longer the larger the database got.
+    # We do it once and give the collection to all threads. It was formerly done inside the thread initialization, but
+    # it took longer and longer the larger the database got.
     time_start = datetime.now()
     visited_entities = db_handle.get_all_links()
     time_delta = datetime.now() - time_start

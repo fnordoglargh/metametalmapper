@@ -290,7 +290,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
 
         :param country_short: The country's ISO code to get the data from the database.
         :param bands: A list of bands used as basis for the calculation for the given country.
-        :return: A dictionary with the the calculated data. Keys to data are the country short and the constants above.
+        :return: A dictionary with the calculated data. Keys to data are the country short and the constants above.
             The dict will be empty for the error cases described above.
         """
         result = {}
@@ -453,7 +453,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         return prepped_data
 
     def generate_report_interface(self, country_shorts: list, report_mode: ReportMode) -> DatabaseReport:
-        """Generates a report with an analysis of the entire database into an handy object.
+        """Generates a report with an analysis of the entire database into a handy object.
 
         :param country_shorts: The list either contains the ISO names of countries to analyze or it is empty. In that
             case we take all countries of all bands into account.

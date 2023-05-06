@@ -65,7 +65,7 @@ Install the following tools:
 
 ### Setup
 
-1. Start Neo4j Desktop and [create a 3.5.x graph](documentation/USAGE.md).
+1. Start Neo4j Desktop and [create a graph database](documentation/USAGE.md) (3.5.x or higher).
 2. Start the created graph.
 3. In the Neo4j Desktop application use _Add Application_ to install the Neo4j
    Browser.
