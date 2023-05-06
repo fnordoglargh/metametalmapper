@@ -8,7 +8,7 @@ import logging
 
 __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
-__copyright__ = 'Copyright 2019-2022, Martin Woelke'
+__copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
 REG_NC = ('NCO', 'Nordic Countries', ['DK', 'SE', 'NO', 'IS', 'FI', 'GL', 'FO', 'AX', 'SJ'])
 REG_SCA = ('SCA', 'Scandinavia',  ['DK', 'SE', 'NO', 'IS', 'FI', 'FO', 'AX'])
@@ -22,7 +22,7 @@ REG_EUR_CENTRAL = ('CEU', 'Central Europe', ['AT', 'CZ', 'DE', 'HU', 'LI', 'PL',
                                              'HR', 'SI'])
 REG_EUR_SOUTH = ('SEU', 'Southern Europe', ['PT', 'ES', 'IT', 'SM', 'MT'])
 REG_EUR_EAST = ('EEU', 'Eastern Europe', ['UA', 'BY', 'RU'])
-# As of Mar 2021: No Bands in Kosovo.
+# As of May 2023: No Bands in Kosovo.
 REG_EUR_SOUTH_EAST = ('SEE', 'Southeastern Europe', ['RO', 'MD', 'BG', 'RS', 'BA', 'MK', 'GR', 'ME', 'AL', 'CY'])
 REG_EURO = ('EURO', 'Europe', list(set(REG_EUR_NORTH[2] + REG_EUR_WEST[2] + REG_EUR_CENTRAL[2] + REG_EUR_SOUTH[2] +
                                        REG_EUR_EAST[2] + REG_EUR_SOUTH_EAST[2])))
@@ -36,23 +36,23 @@ REG_AMC_SOUTH = ('SAM', 'South America', ['AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'G
 REG_AMS = ('AMS', 'Americas', list(set(REG_AMC_CENTRAL[2] + REG_AMC_NORTH[2] + REG_AMC_SOUTH[2])))
 
 REG_ASE = ('ASE', 'South East Asia', ['BN', 'KH', 'ID', 'LA', 'MY', 'MM', 'PH', 'SG', 'TH', 'VN', 'TL'])
-# As of Dec 2021: No bands in Bhutan.
+# As of May 2023: No bands in Bhutan.
 REG_ASA = ('ASA', 'South Asia', ['AF', 'BD', 'IN', 'MV', 'NP', 'LK', 'PK'])
 REG_ACA = ('ACA', 'Central Asia', ['KZ', 'KG', 'TJ', 'TM', 'UZ'])
 # Will there ever be metal in North Korea?
 REG_AEA = ('AEA', 'East Asia', ['CN', 'JP', 'MN', 'KR', 'TW'])
-# As of Dec 2021: No bands in Yemen.
+# As of May 2023: No bands in Yemen.
 REG_AWA = ('AWA', 'Western Asia', ['AM', 'AZ', 'BH', 'CY', 'EG', 'GE', 'IR', 'IQ', 'IL', 'JO', 'KW', 'LB', 'OM', 'QA',
                                    'SA', 'SY', 'TR', 'AE', 'PS'])
 REG_ASIA = ('ASIA', 'Asia', list(set(REG_ASE[2] + REG_ASA[2] + REG_ACA[2] + REG_AEA[2] + REG_AWA[2])))
 
-# As of Dec 2021: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
+# As of May 2023: No bands in Fiji (FJ), Papua New Guinea (PG), Solomon Islands (SB) and Vanuatu (VU).
 REG_AAS = ('AAS', 'Australasia', ['AU', 'NZ', 'NC'])
-# As of Dec 2021: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
+# As of May 2023: No bands in Fiji (FJ), Kiribati (KI), Marshall Islands (MH), Micronesia (FM), Nauru (NR), Palau (PW),
 # Papua New Guinea (PG), Samoa (WS), Solomon Islands (SB), Tonga (TO), Tuvalu (TV) and Vanuatu (VU).
 REG_OCE = ('OCE', 'Oceania', ['PF', 'ID', 'AU', 'NZ', 'NC', ])
 
-# As of Dec 2021: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
+# As of May 2023: No bands in Benin (BJ), Burkina Faso (BF), Burundi (BI), Cameroon (CM), Cape Verde (CV), Central
 # African Republic (CF), Chad (TD), Comoros (KM), DR Congo (CD), Congo (CG), Ivory Coast (CI), Djibouti (DJ), Equatorial
 # Guinea (GQ), Eritrea (ER), Eswatini (SZ), Gabon (GA), The Gambia (GM), Ghana (GH), Guinea (GN), Guinea-Bissau (GW),
 # Lesotho (LS), Liberia (LR), Mali (ML), Mauritania (MR), Niger (NE), Nigeria (NG), Rwanda (RW), São Tomé
