@@ -186,6 +186,7 @@ def main():
             print(f'Crawling region: {REGIONS_ALL[region][1]}')
             link_list = []
             for country_short in REGIONS_ALL[region][2]:
+                print(f'  Crawling country: {COUNTRY_NAMES[country_short]}')
                 link_list_temp = crawl_country(country_short)
                 link_list = list(set(link_list_temp + link_list))
             flush_queue(region, link_list)

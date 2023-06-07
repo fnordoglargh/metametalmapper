@@ -15,6 +15,7 @@ from typing import List, Dict
 
 import certifi
 import urllib3
+import cloudscraper
 from urllib3.exceptions import ReadTimeoutError, MaxRetryError
 import progressbar
 from settings import CRAWLER_THREAD_COUNT
@@ -145,7 +146,7 @@ class VisitBandThread(threading.Thread):
         self.is_detailed = is_detailed
         self.is_single_mode = is_single_mode
         self.band_errors = band_errors
-        self.retries_max = 3
+        self.retries_max = 5
         self.progress_bar = progress_bar
         global stop_crawl_user_input
 
@@ -247,7 +248,7 @@ class VisitBandThread(threading.Thread):
         logger.info(f'>>> Crawling [{band_short_link}]')
         band_soup = cook_soup(link_band)
 
-        if band_soup is None:
+        if band_soup is None or band_soup.text == '0':
             return None
 
         logger.debug("  Start scraping from actual band.")
@@ -394,7 +395,7 @@ class VisitBandThread(threading.Thread):
                 age = -1
                 origin = 'ZZ'
 
-                if artist_soup is not None and artist_soup != 0:
+                                if artist_soup is not None and artist_soup != 0:
                     member_info = None
 
                     # The artist soup is not always reliably cooked. I'll leave the debug print logs in for now.
@@ -460,13 +461,16 @@ class VisitBandThread(threading.Thread):
         link_disco = f"https://www.metal-archives.com/band/discography/id/{band_data_ref.emid}/tab/all"
         disco_soup = cook_soup(link_disco)
 
-        if disco_soup is None:
+        if disco_soup is None or disco_soup.text == '0':
             logger.error(f"  Unable to get the discography for {band_short_link}.")
             # We have to throw everything away and start anew.
             return None
 
         table = disco_soup.find('table', attrs={'class': 'display discog'})
-        table_body = table.find('tbody')
+        try:
+            table_body = table.find('tbody')
+        except:
+            print()
         rows = table_body.find_all('tr')
 
         for row in rows:
@@ -564,6 +568,13 @@ def make_band_list(country_links):
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         country_json = http.request('GET', link_country_temp)
         json_data_string = country_json.data.decode('utf-8')
+
+        scraper = cloudscraper.create_scraper(delay=10, browser={'custom': 'ScraperBot/1.0', })
+        json_data_string_alt = scraper.get(link_country_temp).text
+        #soup = BeautifulSoup(req.content, "html.parser")
+
+        if json_data_string_alt != json_data_string:
+            print()
 
         if json_data_string not in json_strings or json_data_string != '0':
             json_strings.append(json_data_string)
@@ -810,7 +821,7 @@ def cook_soup(link, retry_count=5):
 
 def cut_instruments_alt(instrument_string):
     instruments = []
-    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace('Â ', '')
+    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
     # First split along the '),'.
     temp_instruments = instrument_string.split('),')
 
@@ -890,7 +901,7 @@ def cut_instruments_alt(instrument_string):
 def cut_instruments(instrument_string):
     collection = []
     # First split along the '),'.
-    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace('Â ', '')
+    instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
     temp_instruments = instrument_string.split('),')
 
     # Put the closing parenthesis back into every element but the last one. It's needed to preserve parts like
@@ -1031,7 +1042,7 @@ def crawl_countries():
     country_links = []
     country_soup = cook_soup("https://www.metal-archives.com/browse/country", retry_count=10)
 
-    if country_soup is not None:
+    if country_soup is not None and country_soup.text != '0':
         s = country_soup.find_all(attrs={"class": "countryCol"})
 
         for i in range(0, len(s)):
