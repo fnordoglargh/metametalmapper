@@ -8,7 +8,7 @@ exported into band networks.
 The first time I saw a band network was in the liner notes of the 7" EP
 compilation
 [True Kings of Norway](https://www.metal-archives.com/albums/Immortal/True_Kings_of_Norway/111142)
-almost 20 years ago. Networks and info-graphics fascinated me ever since. My
+almost 20 years ago. Networks and infographics fascinated me ever since. My
 interest in band networks and statistics was renewed when I found two projects
 in the _Others_ section of [Add-ons](https://www.metal-archives.com/content/tools)
 on M-A:
@@ -121,6 +121,10 @@ the best albums, EPs and demos.
   [examples](documentation/EXAMPLES.md) for inspiration.
 
 ## Version History
+
+### 0.97.8 (2023-07-23)
+
+* Maintenance release with small fixes.
 
 ### 0.97.7 (2022-01-03)
 
