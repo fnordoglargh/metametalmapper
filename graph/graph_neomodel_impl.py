@@ -5,9 +5,9 @@ import settings
 
 import logging
 from neomodel import StringProperty, IntegerProperty, ArrayProperty, DateProperty, RelationshipTo, \
-    RelationshipFrom, StructuredRel, config, core, db
+    RelationshipFrom, StructuredRel, StructuredNode, config, db
 from neo4j import exceptions
-from neomodel.match import *
+from neomodel import match_q
 import progressbar
 
 from country_helper import COUNTRY_NAMES, COUNTRY_POPULATION
@@ -92,11 +92,9 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         error_text = 'Cannot connect to the Neo4j database.'
         # Cheap test to test if the DB is available.
         try:
-            Label.nodes.get(emid=-1)
-        # No node with 'emid' of -1 available means the DB is up and running.
-        except core.DoesNotExist:
+            # Attempt a simple database operation
+            db.cypher_query("RETURN 1")
             self.logger.info('Neo4j database is up and running.')
-            pass
         except exceptions.AuthError:
             self.logger.error(f'{error_text} Check the credentials in the settings.py.')
             raise
@@ -106,7 +104,7 @@ class NeoModelStrategy(GraphDatabaseStrategy):
         # Could happen while using an unsupported 4.x database.
         except exceptions.CypherSyntaxError as cse:
             if 'no longer supported' in cse.message:
-                self.logger.error(f'{error_text} Make sure a 3.5.x database is used.')
+                self.logger.error(f'{error_text} Make sure a 5.1.x database is used.')
             else:
                 self.logger.error(f'{error_text}')
             raise

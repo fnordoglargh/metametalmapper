@@ -64,7 +64,7 @@ class Band(DbEntity):
     theme: List[str] = field(default_factory=list)
     active: List[str] = field(default_factory=list)
     releases: Dict = field(default_factory=dict)
-    label: Label = Label()
+    label: Label = field(default_factory=Label)
     visited: str = 'not set'
     country: str = 'not set'
     locations: str = 'not set'
