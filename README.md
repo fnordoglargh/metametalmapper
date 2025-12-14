@@ -69,7 +69,7 @@ Install the following tools:
 2. Start the created graph.
 3. In the Neo4j Desktop application use _Add Application_ to install the Neo4j
    Browser.
-4. Open `settings.py` and change `NEO4J_PASSWORD`.
+4. Open [`settings.py`](settings.py) and change `NEO4J_PASSWORD`.
 
 ### First Crawl and Analysis
 
