@@ -28,7 +28,7 @@ projects.
 
 This is what Meta Metal Mapper already delivers:
 
-* Crawls your favorite bands to generate small networks. 
+* Crawls your favorite bands to generate small networks.
 * Generates lists for bands to crawl based on countries, regions or the entire
   database.  It also accepts handcrafted files with bands of your choice.
 * Extracts information about bands, their band members and releases from M-A.
@@ -74,7 +74,7 @@ Install the following tools:
 ### First Crawl and Analysis
 
 This rather short section uses example data, but gives an idea what it is
-about. A detailed [usage page](documentation/USAGE.md) explains what the 
+about. A detailed [usage page](documentation/USAGE.md) explains what the
 parameters mean and what to do with them.
 
 Call `python meta_metal_mapper.py` each time with one of the following
@@ -82,7 +82,7 @@ parameters:
 
 1. `-c data/true_kings.lnks`: Uses the supplied file with band names, crawls
   all of them and puts data in to the database.
-2. `-y ALL`: Prints analysis into terminal and generates several files with 
+2. `-y ALL`: Prints analysis into terminal and generates several files with
   exported data.
 
 Please note that the analysis is across the entire database and might result in
@@ -93,7 +93,7 @@ meaningless data e.g. when data is put into relation to a country.
 1. Open the Neo4j Browser you installed during setup.
 2. Click on the gear (lower left) and change _Initial Node Display_ to a number
   \>= 2000.
-3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $) 
+3. Copy `MATCH (n) RETURN n` into the command text field (starting with a $)
   and hit the play button.
 4. The displayed graph contains all crawled band, artist and album nodes.
 5. Click on some nodes or edges to see the individual properties.
@@ -134,6 +134,7 @@ the best albums, EPs and demos.
 * Fixed a defect in a country definition where Austria was used instead of Ukraine.
 
 ### 0.97.5 (2020-11-09)
+
 * Integrated handling of more gender options.
 * Fixed defects where new libraries needed different error handling.
 * Made crawling (option `-c`) consistent with the other options; it now accepts
@@ -141,26 +142,30 @@ the best albums, EPs and demos.
 * Refactored handling of internal data to dataclasses.
 
 ### 0.97.4 (2020-10-27)
+
 * Added ASCII art logos at startup.
 * Refactored the console logging (colors for bad things and less detailed).
-* Fixed a log message to report the accurate number of bands added in a 
+* Fixed a log message to report the accurate number of bands added in a
   single run.
 
 ### 0.97.3 (2020-08-11)
+
 * Rewrote parameter usage. It's now much more reliable and a bit easier
 to use.
 
 ### 0.97.2 (2020-06-28)
+
 * Added a function to make the location data more usable. The earlier used
   mechanism just split the location string at every "/". This results in
   unusable data for e.g.
- 
+
   `Kolbotn, Viken (early); Oslo (mid); Vinterbro, Viken / Trysil, Innlandet (later)`
 
   The new function returns the first city and state/territory it can determine
   (and ignores the rest for now).
 
 ### 0.97.0 (2020-06-06)
+
 * Added two new modes:
 * `-s <short link>` (e.g. Darkthrone/146): Crawls a single band and all
   connected bands (identified by the bands links the individual members
@@ -168,15 +173,17 @@ to use.
 * `-x`: Analyzes small networks (e.g. from one or several runs like above),
   essentially leaving out the country related details which depend e.g. on
   total band counts.
-* Added console notification and export of link files for invalid bands 
+* Added console notification and export of link files for invalid bands
   (which are in the database but not on M-A anymore) and missing bands (not
   in the database) but on M-A.
 * Fixed a defect which prevented processing of unrated releases.
 
 ### 0.87.1 (2020-05-01): Bugfix release
+
 * Added message in case an unsupported Neo4j 4.x database is used.
 
-### 0.87.0 (2020-04-19):
+### 0.87.0 (2020-04-19)
+
 * First public release.
 
 ## Acknowledgments
@@ -197,4 +204,3 @@ issue tracker in the repository or write to fnordoglargh at gmail dot com.
 * Connecting releases with labels. The screenshot shows additional label nodes
   (and their connections) from prototyping.
   ![Prototype including labels and Albums](img/intro_graph_2.png)
-
