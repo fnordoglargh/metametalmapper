@@ -1,8 +1,8 @@
-certifi~=2020.6.20
-urllib3~=1.26.5
-progressbar2~=3.53.1
-neomodel~=4.0.1
-beautifulsoup4~=4.9.3
-pyYAML~=5.4
-colorlog~=4.4.0
-dataclasses-serialization~=1.3.1
+certifi
+urllib3
+progressbar2
+neomodel
+beautifulsoup4
+pyYAML
+colorlog
+dataclasses-serialization
