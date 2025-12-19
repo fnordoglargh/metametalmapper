@@ -10,8 +10,8 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 from dataclasses import dataclass, field
-from dataclasses_serialization.json import JSONSerializer
 from typing import List, Dict
+from dataclasses_serialization.json import JSONSerializer
 
 import certifi
 import urllib3
@@ -29,17 +29,19 @@ __author__ = 'Martin Woelke'
 __license__ = 'Licensed under the Non-Profit Open Software License version 3.0'
 __copyright__ = 'Copyright 2019-2023, Martin Woelke'
 
-em_link_main = 'https://www.metal-archives.com/'
-em_link_label = em_link_main + 'labels/'
-bands = 'bands/'
+EM_LINK_MAIN = 'https://www.metal-archives.com/'
+EM_LINK_LABEL = EM_LINK_MAIN + 'labels/'
+BANDS_DASH = 'bands/'
 ajaxLinks = queue.Queue()
 entity_paths = {'bands': 'databases/visited_bands.txt', 'members': 'databases/visited_members.txt'}
-lineup_mapping = {"Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"}
+lineup_mapping = {
+        "Current lineup": "Current", "Last known lineup": "Last known", "Past members": "past"
+    }
 STATUS_ERROR = 'unrecoverable'
 STATUS_SKIPPED = 'skipped'
 STATUS_ADDED = 'added'
 STATUS_INITIAL = 'initial'
-stop_crawl_user_input = ""
+STOP_CRAWL_USER_INPUT = ""
 
 
 @dataclass
@@ -53,8 +55,10 @@ class DbEntity:
 @dataclass
 class Label(DbEntity):
 
+    type: str = 'label'
+
     def __init__(self):
-        self.type = 'label'
+        pass
 
 
 @dataclass
@@ -105,32 +109,35 @@ class Release(DbEntity):
 
 
 class VisitBandThread(threading.Thread):
-    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities, progress_bar,
-                 visited_bands, is_detailed=False, is_single_mode=True):
+    def __init__(self, thread_id, band_links, lock, db_handle, band_errors, visited_entities,
+                 progress_bar, visited_bands, is_detailed=False, is_single_mode=True):
         """Constructs a worker object which is used to get prepared data from a band page.
         The only remarkable thing is switching the ``chardet.charsetprober`` logger to INFO.
 
         :param thread_id: An integer number
-        :param band_links: A queue with short addresses of bands which are consumed one at a time by the workers.
+        :param band_links: A queue with short addresses of bands which are consumed one at a time by
+            the workers.
         :param lock: Secures concurrent access to ``database`` which is used by all other workers.
-        :param db_handle: The database handle is used to add all entities directly into the database with the strategy
-            defined on the outside.
+        :param db_handle: The database handle is used to add all entities directly into the
+            database with the strategy defined on the outside.
         :param band_errors: A shared dictionary with band links as keys and the number of unsuccessful crawl attempts as
             the value.
-        :param visited_entities: A dictionary with keys like 'bands' or 'artists' to quickly check if crawling is
-            needed. The value is the date the entry was written into the database. The dictionary must be filled on the
-            outside or everything will be crawled and applied to the database.
-        :param progress_bar: The progress bar is initialized on the outside with the size of the band_links as the
-            maximum value.
-        :param visited_bands: A list shared among the threads so that the progress bar is updated easily.
+        :param visited_entities: A dictionary with keys like 'bands' or 'artists' to quickly check
+            if crawling is needed. The value is the date the entry was written into the database.
+            The dictionary must be filled on the outside or everything will be crawled and applied
+            to the database.
+        :param progress_bar: The progress bar is initialized on the outside with the size of the
+            band_links as the maximum value.
+        :param visited_bands: A list shared among the threads so that the progress bar is updated
+            easily.
         :param is_detailed: A parameter that is not used and might be useful someday.
         :param is_single_mode: Indicates if a single band and its immediate connections is crawled.
         """
 
         super(VisitBandThread, self).__init__()
-        self.threadID = thread_id
+        self.thread_id = thread_id
         self.name = "BandVisitor_" + thread_id
-        self.bandLinks = band_links
+        self.band_links = band_links
         self.logger = logging.getLogger('chardet.charsetprober')
         self.logger.setLevel(logging.INFO)
         self.logger = logging.getLogger('Crawler')
@@ -147,7 +154,7 @@ class VisitBandThread(threading.Thread):
         self.band_errors = band_errors
         self.retries_max = 3
         self.progress_bar = progress_bar
-        global stop_crawl_user_input
+        global STOP_CRAWL_USER_INPUT
 
     def update_bar(self, band_link):
         self.visited_bands.append(band_link)
@@ -160,9 +167,9 @@ class VisitBandThread(threading.Thread):
         """
         self.logger.debug("Running " + self.name)
 
-        while stop_crawl_user_input != "Q":
+        while STOP_CRAWL_USER_INPUT != "Q":
             try:
-                link_band_temp = self.bandLinks.get_nowait()
+                link_band_temp = self.band_links.get_nowait()
             except queue.Empty:
                 return -1
 
@@ -177,7 +184,7 @@ class VisitBandThread(threading.Thread):
             try:
                 crawl_result = self.crawl_band(link_band_temp)
             except Exception as e:
-                self.logger.exception('Something bad happened while crawling.', e)
+                self.logger.exception('Something bad happened while crawling.')
                 crawl_result = None
 
             # Error case: putting the link back into circulation.
@@ -188,7 +195,7 @@ class VisitBandThread(threading.Thread):
                     self.band_errors[STATUS_ERROR][link_band_temp] += 1
 
                 if self.band_errors[STATUS_ERROR][link_band_temp] < self.retries_max:
-                    self.bandLinks.put(link_band_temp)
+                    self.band_links.put(link_band_temp)
                 else:
                     self.logger.error(f'Too many retries for {link_band_temp}.')
                     self.update_bar(link_band_temp)
@@ -202,17 +209,19 @@ class VisitBandThread(threading.Thread):
                 apply_to_db(crawl_result, self.db_handle, self.is_detailed)
                 self.band_errors[STATUS_ADDED][link_band_temp] = ''
             except Exception as e:
-                self.logger.exception('Writing artists failed! This is bad. Expect loss of data for the above band.', e)
+                self.logger.exception('Writing artists failed! This is bad. Expect loss of data for the above band.')
                 self.band_errors[STATUS_ERROR][link_band_temp] = ''
             finally:
                 self.lock.release()
                 self.update_bar(link_band_temp)
 
-            # Saving the data to disk will later enable us to limit getting live data if it is not needed.
+            # Saving the data to disk will later enable us to limit getting live data if it is not
+            # needed.
             actual_band_path = f"databases/{crawl_result.country}"
             os.makedirs(actual_band_path, exist_ok=True)
-            # We take the band link because it always uses escaped sequences. This way we have the highest
-            # compatibility for writing files in underlying filesystems. The slash must be replaced of course.
+            # We take the band link because it always uses escaped sequences. This way we have the
+            # highest compatibility for writing files in underlying filesystems. The slash must be
+            # replaced of course.
             db_path = Path(f"{actual_band_path}/{crawl_result.link.replace('/', '_')}.json")
             actual_band_file = open(db_path, "w", encoding="utf-8")
             # TODO: Add try block for the dump. It crashed once because it found a Tag object.
@@ -222,10 +231,11 @@ class VisitBandThread(threading.Thread):
             actual_band_file.close()
 
     def crawl_band(self, band_short_link):
-        """This is where the magic happens: A short band link is expanded, visited and parsed for data.
+        """This is where the magic happens: A short band link is expanded, visited and parsed for
+            data.
 
-            It still may throw an exception that must be caught and dealt with. Best by putting the link back
-            into circulation.
+            It still may throw an exception that must be caught and dealt with. Best by putting the
+            link back into circulation.
 
         :param band_short_link: Short form of the band link (e.g. Darkthrone/146).
         :return:
@@ -242,7 +252,7 @@ class VisitBandThread(threading.Thread):
         # is called. The line looks like this:
         # url = rfc3986.uri_reference(url).unsplit()
         # Needs to import rfc3986.
-        link_band = em_link_main + bands + band_short_link
+        link_band = EM_LINK_MAIN + BANDS_DASH + band_short_link
         logger = logging.getLogger('Crawler')
         logger.info(f'>>> Crawling [{band_short_link}]')
         band_soup = cook_soup(link_band)
@@ -260,7 +270,8 @@ class VisitBandThread(threading.Thread):
             logger.debug(band_soup.text)
             return None
 
-        # All data of a band is collected here.  Band members are referenced and collected in their own collection.
+        # All data of a band is collected here.  Band members are referenced and collected in their
+        # own collection.
         band_data_ref = Band()
         band_data_ref.name = str(s[0].next_element.text)
         band_data_ref.emid = band_short_link[band_short_link.rfind('/') + 1:]
@@ -283,8 +294,9 @@ class VisitBandThread(threading.Thread):
         year_tokens = years_raw.split(',')
 
         for year_token in year_tokens:
-            # First one filters the earlier incarnation. The second one is for a bit more obscure use case. In that an
-            # earlier incarnation exists but has a comma in the name (leading for the latter portion to be split).
+            # First one filters the earlier incarnation. The second one is for a bit more obscure
+            # use case. In that an earlier incarnation exists but has a comma in the name (leading
+            # for the latter portion to be split).
             if '(as' not in year_token and ')' not in year_token:
                 band_data_ref.active.append(year_token.lstrip())
 
@@ -294,9 +306,9 @@ class VisitBandThread(threading.Thread):
 
         label_node = s[3].contents[11].contents[0]
 
-        # The label from band page is only the active one. All others will only be available through the individual
-        # releases. TODO: Visit all releases and get more detailed info.
-        if type(label_node) is NavigableString:
+        # The label from band page is only the active one. All others will only be available through
+        # the individual releases. TODO: Visit all releases and get more detailed info.
+        if label_node.isinstance(NavigableString):
             label_name = str(s[3].contents[11].contents[0])
             if label_name == "Unsigned/independent":
                 label_id = -1
@@ -306,7 +318,7 @@ class VisitBandThread(threading.Thread):
         else:
             if len(label_node.contents) > 0:
                 label_name = label_node.contents[0]
-                label_link = label_node.attrs["href"][len(em_link_label):]
+                label_link = label_node.attrs["href"][len(EM_LINK_LABEL):]
                 label_id = label_link[label_link.find('/') + 1:]
             else:
                 logger.error("Label node appears to empty; dumping parent parent node.")
@@ -322,7 +334,8 @@ class VisitBandThread(threading.Thread):
         artists_and_band_element = artists_and_bands[0]
         actual_category = artists_and_band_element.contents[1].contents
 
-        # This check sets a flag if a band e.g. only has a "last known" lineup. In that case it is not "diverse".
+        # This check sets a flag if a band e.g. only has a "last known" lineup. In that case it is
+        # not "diverse".
         lineup_finder = band_soup.find_all(attrs={"href": "#band_tab_members_all"})
         is_lineup_diverse = True
 
@@ -332,13 +345,14 @@ class VisitBandThread(threading.Thread):
         # Needs to be outside because it won't be set in every iteration of the loop.
         header_category = ''
 
-        # The contents of actual_category starts with a LF (`Navigable String`) and has a LF at every even position.
-        # So we start at index 1 with actual payload and only take data from uneven indexes.
+        # The contents of actual_category starts with a LF (`Navigable String`) and has a LF at
+        # every even position. So we start at index 1 with actual payload and only take data from
+        # uneven indexes.
         # Data at even indexes are from one of three categories:
         #   * lineupHeaders: A header category like "Current" or "Past".
         #   * lineupRow: An artist including instruments and time spans.
-        #   * lineupBandsRow: Other bands an artist played in. We do not need to parse this as we connect each band
-        #     member with the actual band.
+        #   * lineupBandsRow: Other bands an artist played in. We do not need to parse this as we
+        #     connect each band member with the actual band.
         for i in range(1, len(actual_category), 2):
             actual_row = actual_category[i]
             last_found_header = actual_row.attrs["class"][0]
@@ -346,14 +360,15 @@ class VisitBandThread(threading.Thread):
             # Normal case.
             if last_found_header == "lineupHeaders":
                 header_category = actual_row.contents[1].contents[0].rstrip().lstrip().replace('\t', '')
-                # While crawling Tarot/4339 I found an unusual double space between Past and (Live). Let's remove it.
+                # While crawling Tarot/4339 I found an unusual double space between Past and (Live).
+                # Let's remove it.
                 header_category = header_category.replace('  ', ' ')
                 logger.debug(f"  Found header: {header_category}")
             # Special case where a band only has one line-up.
             elif last_found_header == "lineupRow":
-                # If a band has only one lineup (current, last-known or past) the usual headers will be missing on the
-                # page. For active bands with changing lineup we get 'Current'. For a band with no lineup changes it
-                # will be empty.
+                # If a band has only one lineup (current, last-known or past) the usual headers will
+                # be missing on the page. For active bands with changing lineup we get 'Current'.
+                # For a band with no lineup changes it will be empty.
                 if not is_lineup_diverse:
                     test_header2 = str(band_soup.find_all(attrs={"href": "#band_tab_members_current"})[0].contents[0])
                     header_category = lineup_mapping[test_header2]
@@ -362,8 +377,8 @@ class VisitBandThread(threading.Thread):
                 pass
 
             if header_category not in band_data_ref.lineup.keys() and header_category != '':
-                # Add an empty lineup list for the found header_category if it was not in before. `header_category` will
-                # always have a valid value.
+                # Add an empty lineup list for the found header_category if it was not in before.
+                # `header_category` will always have a valid value.
                 band_data_ref.lineup[header_category] = []
             elif header_category == '':
                 # For the unlikely case that the header category is not found.
@@ -373,8 +388,8 @@ class VisitBandThread(threading.Thread):
             if len(actual_row) == 5:
                 temp_artist_soup_link = actual_row.contents[1].contents[1].attrs["href"]
 
-                # The leading part ist not needed and stripped (https://www.metal-archives.com/artists/).
-                # It's always 39 letters long.
+                # The leading part ist not needed and stripped
+                # (https://www.metal-archives.com/artists/). It's always 39 letters long.
                 temp_artist_link = actual_row.contents[1].contents[1].attrs["href"][39:]
                 temp_artist_id = temp_artist_link[temp_artist_link.find('/') + 1:]
                 temp_artist_pseudonym = str(actual_row.contents[1].contents[1].contents[0])
@@ -434,8 +449,9 @@ class VisitBandThread(threading.Thread):
                     if not artist_exists:
                         return None
 
-                # If the band member does not have a name in the database we simply use the pseudonym. This
-                # unfortunately overwrites the name with whatever pseudonym we found last.
+                # If the band member does not have a name in the database we simply use the
+                # pseudonym. This unfortunately overwrites the name with whatever pseudonym we found
+                # last.
                 if 'N/A' in name:
                     name = temp_artist_pseudonym
 
@@ -513,11 +529,11 @@ class VisitBandThread(threading.Thread):
         return band_data_ref
 
     def add_connected_bands_to_queue(self, band_soup):
-        """Extracts all band links from the given band soup and adds them to the queue, resets the single mode flag and
-            updates the progressbar to the new band amount.
+        """Extracts all band links from the given band soup and adds them to the queue, resets the
+            single mode flag and updates the progressbar to the new band amount.
 
-        :param band_soup: The band soup of the band that's crawled right now. A band soup is cooked with
-            `cook_soup(link_band)` (which expects the _full_ address of a band page).
+        :param band_soup: The band soup of the band that's crawled right now. A band soup is cooked
+            with`cook_soup(link_band)` (which expects the _full_ address of a band page).
         :return The number of connected bands.
         """
         band_rows = band_soup.find_all('tr', attrs={'class': 'lineupBandsRow'})
@@ -529,7 +545,7 @@ class VisitBandThread(threading.Thread):
                 band_link = actual_bands[i].attrs['href'][37:]
                 if band_link not in linked_bands:
                     linked_bands.append(band_link)
-                    self.bandLinks.put(band_link)
+                    self.band_links.put(band_link)
 
         # Most of the time the crawler log is off, so this goes to the screen and the log file.
         if len(linked_bands) == 0:
@@ -538,14 +554,16 @@ class VisitBandThread(threading.Thread):
             log_message = f'Added {len(linked_bands)} connected bands to the crawl.'
             self.band_errors[STATUS_INITIAL] = len(linked_bands) + 1
 
-        # The logger named Crawler normally is not used for console output because it interferes with the progress bar.
-        # That's why we use a different logger to notify the user about connected bands instead of the object's logger.
+        # The logger named Crawler normally is not used for console output because it interferes
+        # with the progress bar. That's why we use a different logger to notify the user about
+        # connected bands instead of the object's logger.
         temp_logger = logging.getLogger('Connector')
         temp_logger.info(log_message)
-        # Switch off the single mode after the first call. At least for now. Maybe we'll do two levels (or more) later.
+        # Switch off the single mode after the first call. At least for now. Maybe we'll do two
+        # levels (or more) later.
         self.is_single_mode = False
         # The additional band is the actual one because it is not in the queue right now.
-        self.progress_bar.max_value = self.bandLinks.qsize() + 1
+        self.progress_bar.max_value = self.band_links.qsize() + 1
 
         return len(linked_bands)
 
@@ -571,14 +589,15 @@ def make_band_list(country_links):
             logger.error(f'  Invalid data for [{link_country_temp}]. Putting it back in circulation...')
             country_links.put(link_country_temp)
 
-        # The data string might contain an incomplete data definition which prevents conversion to the dict below.
+        # The data string might contain an incomplete data definition which prevents conversion to
+        # the dict below.
         json_data_string = json_data_string.replace('"sEcho": ,', '')
         json_data = None
 
         try:
             json_data = json.loads(json_data_string)
         except Exception as e:
-            logger.exception(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...', e)
+            logger.exception(f'  JSON error for [{link_country_temp}]. Putting it back in circulation...')
 
         if json_data is None or json_data == 0:
             country_links.put(link_country_temp)
@@ -630,8 +649,8 @@ def make_active_list(raw_activity):
     Will only convert pairs of string dates. Any 'N/A' or '?' in the strings will be ignored.
 
     :param raw_activity: A list of ISO dates as strings. A date pair must be delimited by a dash.
-    :return: A list of converted date objects. Since M-A only provides the year, we set the start always as the first
-        day of the year and the end as the last day of the year.
+    :return: A list of converted date objects. Since M-A only provides the year, we set the start
+        always as the first day of the year and the end as the last day of the year.
     """
     active_list = []
 
@@ -671,7 +690,7 @@ def apply_to_db(band: Band, db_handle, is_detailed):
 
     # Serialize a Band object and massage it so that the DB model understands it.
     temp_band_dict = JSONSerializer.serialize(band)
-    # TODO: Fond out if these are necessary.
+    # TODO: Find out if these are necessary.
     del temp_band_dict['lineup']
     del temp_band_dict['releases']
     # DB expects date objects instead of strings.
@@ -692,7 +711,8 @@ def apply_to_db(band: Band, db_handle, is_detailed):
         # This is not the accurate date, only the year.
         date_sanitized = release_copy['release_date']
 
-        # If the date is unknown, it sometimes comes as the string "0000". In this case we use 1900 as a default .
+        # If the date is unknown, it sometimes comes as the string "0000". In this case we use 1900
+        # as a default .
         if date_sanitized == "0000":
             date_sanitized = 1900
 
@@ -726,7 +746,7 @@ def apply_to_db(band: Band, db_handle, is_detailed):
                         get_dict_key(MEMBER_STATUS, status)
                     )
                 except Exception as e:
-                    logger.exception("Making member connection failed.", e, exc_info=True)
+                    logger.exception("Making member connection failed.")
                     logger.error(member)
                     logger.error(band.emid)
                     logger.error(instrument)
@@ -744,7 +764,8 @@ def cook_soup(link, retry_count=5):
     Retries several times to get the page if the request yields in a *Forbidden*.
 
     :param link: URL to get the web page from.
-    :param retry_count: Set to any number greater than 0 (will be set internally to 1 if smaller than 1).
+    :param retry_count: Set to any number greater than 0 (will be set internally to 1 if smaller 
+        than 1).
     :return: Either a BeautifulSoup object of the requested page or `None` if the request failed.
     """
     logger = logging.getLogger('Crawler')
@@ -755,7 +776,8 @@ def cook_soup(link, retry_count=5):
     logger.debug(f"Cooking soup for {link}")
 
     while retry_count > 0:
-        # Initialize the pool manager with certificates. There will be nasty warnings for every call if you don't.
+        # Initialize the pool manager with certificates. There will be nasty warnings for every call
+        # if you don't.
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         web_page = None
         retry_count -= 1
@@ -814,8 +836,8 @@ def cut_instruments_alt(instrument_string):
     # First split along the '),'.
     temp_instruments = instrument_string.split('),')
 
-    # Put the closing parenthesis back into every element but the last one. It's needed to preserve parts like
-    # "(earlier)".
+    # Put the closing parenthesis back into every element but the last one. It's needed to preserve
+    # parts like "(earlier)".
     for index in range(0, len(temp_instruments) - 1):
         temp_instruments[index] += ')'
 
@@ -828,9 +850,9 @@ def cut_instruments_alt(instrument_string):
         else:
             split_more = temp_instrument.split('(')
             back_together = split_more[0]
-            # The nastiest thing is users forgetting to use commas as delimiters. If `split_more` contains e.g. three
-            # elements, we might have such a case.
-            # There's currently no handling for this use case and easier to use the "report error" function on M-A.
+            # The nastiest thing is users forgetting to use commas as delimiters. If `split_more`
+            # contains e.g. three elements, we might have such a case. There's currently no handling
+            # for this use case and easier to use the "report error" function on M-A.
             ready_spans = []
             for inner in range(1, len(split_more)):
                 if bool(re.search(r'\d', split_more[inner])):
@@ -840,13 +862,15 @@ def cut_instruments_alt(instrument_string):
                     if 'Live' in time_spans or 'live' in time_spans:
                         continue
 
-                    # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
-                    # in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
-                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
-                    # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
+                    # Then we have one of four types of strings. (1) two years separated by a '-'
+                    # but the hyphen must be in the middle (if it is not we have e.g. a 10-string
+                    # bass: ARGH!) , (2) a single year, (3) a year followed by a '-' and 'present'
+                    # or (4) at least one '?'. (5) The nastiest special case so far: inside the
+                    # parenthesis is a string we cannot interpret (e.g. 'on EP 1').
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
-                        # Safeguard against sloppy instruments where the time span starts with a comma.
+                        # Safeguard against sloppy instruments where the time span starts with a
+                        # comma.
                         if time_span == '':
                             continue
                         # There still is a trailing ')' in the end.
@@ -893,8 +917,8 @@ def cut_instruments(instrument_string):
     instrument_string = instrument_string.rstrip().lstrip().replace('\t', '').replace(' ', '')
     temp_instruments = instrument_string.split('),')
 
-    # Put the closing parenthesis back into every element but the last one. It's needed to preserve parts like
-    # "(earlier)".
+    # Put the closing parenthesis back into every element but the last one. It's needed to preserve
+    # parts like "(earlier)".
     for index in range(0, len(temp_instruments) - 1):
         temp_instruments[index] += ')'
 
@@ -912,13 +936,15 @@ def cut_instruments(instrument_string):
                 if bool(re.search(r'\d', split_more[inner])):
                     # First split by commas.
                     time_spans = split_more[inner].split(',')
-                    # Then we have one of four types of strings. (1) two years separated by a '-' but the hyphen must be
-                    #  in the middle (if it is not we have e.g. a 10-string bass: ARGH!) , (2) a single
-                    # year, (3) a year followed by a '-' and 'present' or (4) at least one '?'. (5) The nastiest special
-                    # case so far: inside the parenthesis is a string we cannot interpret (e.g. 'on EP 1').
+                    # Then we have one of four types of strings. (1) two years separated by a '-'
+                    # but the hyphen must be in the middle (if it is not we have e.g. a 10-string
+                    # bass: ARGH!) , (2) a single year, (3) a year followed by a '-' and 'present'
+                    # or (4) at least one '?'. (5) The nastiest special case so far: inside the
+                    # parenthesis is a string we cannot interpret (e.g. 'on EP 1').
                     for time_span in time_spans:
                         time_span = time_span.lstrip().rstrip()
-                        # Safeguard against sloppy instruments where the time span starts with a comma.
+                        # Safeguard against sloppy instruments where the time span starts with a
+                        # comma.
                         if time_span == '':
                             continue
                         # There still is a trailing ')' in the end.
@@ -997,8 +1023,8 @@ def crawl_country(country_short):
     band_links = None
     alt_link = "https://www.metal-archives.com/browse/ajax-country/c/{0}/json/1?sEcho={1:.0f}&iDisplayStart={2}"
 
-    # I reworked this section multiple times but kept running into trouble infrequently. Running twice (and slowly)
-    # seems to do the trick.
+    # I reworked this section multiple times but kept running into trouble infrequently. Running
+    # twice (and slowly) seems to do the trick.
     for j in range(1):
         # Prepare the AJAX links for the actual run.
         for i in range(0, amount_entries, display_constant):
@@ -1047,10 +1073,10 @@ def read_user_input():
     """Continuously reads the standard input until a Q is entered.
 
     """
-    global stop_crawl_user_input
+    global STOP_CRAWL_USER_INPUT
 
-    while stop_crawl_user_input != "Q":
-        stop_crawl_user_input = input()
+    while STOP_CRAWL_USER_INPUT != "Q":
+        STOP_CRAWL_USER_INPUT = input()
 
     print('Received request to quit. Stand by for threads to finish.')
 
@@ -1065,8 +1091,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     for link in band_links:
         local_bands_queue.put_nowait(link)
 
-    # We do it once and give the collection to all threads. It was formerly done inside the thread initialization, but
-    # it took longer and longer the larger the database got.
+    # We do it once and give the collection to all threads. It was formerly done inside the thread
+    # initialization, but it took longer and longer the larger the database got.
     time_start = datetime.now()
     visited_entities = db_handle.get_all_links()
     time_delta = datetime.now() - time_start
@@ -1105,8 +1131,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     # Create threads.
     for i in range(0, thread_count):
         thread = VisitBandThread(
-            str(i), local_bands_queue, lock, db_handle, bands_status, visited_entities, progress_bar,
-            visited_bands, is_detailed, is_single_mode)
+            str(i), local_bands_queue, lock, db_handle, bands_status, visited_entities,
+            progress_bar, visited_bands, is_detailed, is_single_mode)
         threads.append(thread)
 
     # If we already start the threads in above loop, the queue count at initialization will not be the same for
@@ -1126,7 +1152,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
     progress_bar.finish()
     logger = logging.getLogger('Post-Crawler')
 
-    # Print all bands which were not added to the database to the log and save the short links into a file.
+    # Print all bands which were not added to the database to the log and save the short links into
+    # a file.
     if len(bands_status[STATUS_ERROR]) > 0:
         logger.error('The following bands had too many problems and were not added to the database:')
         actual_time = datetime.now()
@@ -1141,8 +1168,8 @@ def crawl_bands(band_links, db_handle, is_detailed=False, is_single_mode=False):
         unrecoverable_file.close()
         logger.info(f'The short links of the bands are available in [{unrecoverable_file_name}].')
 
-    # The mode -s adds an unknown number of bands. We get that number to display the correct number of added bands
-    # below.
+    # The mode -s adds an unknown number of bands. We get that number to display the correct number
+    # of added bands below.
     band_count = len(band_links)
     if bands_status[STATUS_INITIAL] > 0:
         band_count = bands_status[STATUS_INITIAL]
