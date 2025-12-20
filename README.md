@@ -1,5 +1,8 @@
 # Meta Metal Mapper
 
+> [!CAUTION]
+> Because of the Cloudflare security, the program can't crawl.
+
 _Meta Metal Mapper_ is a Python3 program to crawl [Encyclopaedia Metallum: The
 Metal Archives](https://www.metal-archives.com/) (M-A) for bands, artists and
 releases. The data is stored in a local database and can be analyzed and
